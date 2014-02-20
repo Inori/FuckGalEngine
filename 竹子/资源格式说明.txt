@@ -1,0 +1,90 @@
+Atelier Kaguya（下文简称kaguya）中文化流程：
+【资源导出
+《文本相关
+  |→解包scr.arc得到scr二进制脚本文件
+》
+《图片相关
+  |→解包parts.arc得到ap3图片资源文件
+》
+】
+
+【文本解析
+kaguya涉及到文本的共有3个文件：tblstr.arc、tblstr.ari、scr二进制脚本，
+文本单独塞在tblstr.arc里面，tblstr.ari是arc内文本的索引，scr二进制脚本里面有指向ari文件内的索引偏移，
+另外要注意的GAME_SYS.exe里面也有不少系统文本。
+
+《tblstr.ari
+  int[1]=文本项目数，
+  int[文本项目数]＝文本项目在arc内的偏移值
+》
+
+《tblstr.arc
+  int[1]=文件体积，
+  后面的数据都是
+  int[1]＝文本类型，0 ＝ 句子；2＝人名；3＝选项。
+  int[1]＝文本长度
+  char[文本长度]＝文本，需要取反处理。
+》
+
+《scr二进制脚本
+  BYTE[8]=固定文件头
+  int[1]=脚本大小
+  BYTE[脚本大小]=二进制脚本内容
+  
+  《二进制脚本内容
+   二进制脚本内容都是由一个个op code构成，基本格式为 BYTE[1]=op code，BYTE[1]=op code长度，
+   然后后面内容根据op code长度可以是各种参数和附加参数等等。
+   涉及到文本的op code为
+   0x13＝人名和句子 13 1c xx xx int[1]=人名（-1=无人名）int[1]=句子（均代表ari内第几项）
+   0x0a＝选项 0a 08 xx xx int[1]=选项（代表ari内第几项）
+  》
+  
+》
+】
+
+【图片解析
+从part.arc里面会解出来一堆ap3文件，这个文件其实是由info＋ap文件构成的。
+《ap3
+  BYTE[1]=标识长度
+  BYTE[标识长度]=AP3文件标识
+
+  int[1]=内含文件项目数
+
+  ……循环
+  int[1]=文件编号
+  BYTE[1]＝文件名长度
+  char[文件名长度]=文件名
+  int[1]=图像源left
+  int[1]=图像源top
+  int[1]=图像源right
+  int[1]=图像源bottom
+  int[1]=4
+  int[1]=在屏幕上显示的起始left
+  int[1]=在屏幕上显示的起始top
+  ……循环
+
+  int[1]=接下来数据的总大小
+  short[1]=ap文件压缩方式  1=lz压缩 2=无压缩
+  int[1]＝压缩后体积
+  int[1]=解压后体积
+》
+《ap文件
+  BYTE[2]=标识
+  int[1]=图像宽
+  int[1]=图像高
+  short[1]=图像位深
+  下面为图像DIB数据，补充完bmp头后将得到一个bmp文件。
+》
+
+然后再根据info里的信息把一个个图像从这个bmp里切出来。
+
+  
+
+改完后再根据以上信息导回即可。
+
+  
+】
+
+【EXE修改
+CreateFontIndirectA
+】

@@ -1,0 +1,26 @@
+开始俩xor解密(key自己找)
+然后有一个不知道啥玩应的解压算法 直接copy出来,懒得写
+
+
+之后提取出文件根据结构解包文件
+
+然后再某某vm指令识别解析字符串并且precache
+
+然后GetGxxxx函数drawtext
+
+
+之后有一个地方根据unicode判断text width(懒得搞 直接可以自己算...)
+
+
+封包 懒得看压缩算法
+直接nop掉解压算法,
+rep movsb替代
+
+
+stringpacker stringdump SceUnPacker ScePacker DePackerSec
+具体用法自己想
+
+
+我改了的地方自己对比fixed和Fixed2_mysce
+
+文字对齐我懒得搞,直接硬编码0x20

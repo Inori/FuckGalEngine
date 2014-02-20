@@ -1,0 +1,48 @@
+【73 6E 72 30   2E 74 78 74    00 00 00 00  00 00    00 00】 
+  name
+
+  FF FF FF FF 【1B E5 C4 66】  00 00 00 00 【8E 5E】 00 00 
+                m  n  p  q                   size
+
+
+
+00401141  |.  0FB60D 26E042>MOVZX ECX, p
+00401148  |.  0FB6D0        MOVZX EDX, m
+0040114B  |.  83C2 5A       ADD EDX,5A
+0040114E  |.  33D1          XOR EDX,ECX
+00401150  |.  8915 E0DE4200 MOV DWORD PTR DS:[42DEE0],EDX
+00401156  |.  0FB6D4        MOVZX EDX, n
+00401159  |.  0FB605 27E042>MOVZX EAX, q
+00401160  |.  81C2 A5000000 ADD EDX,0A5
+00401166  |.  33D0          XOR EDX,EAX
+00401168  |.  8915 E8DE4200 MOV DWORD PTR DS:[42DEE8],EDX
+
+
+
+
+
+
+00401213  |.  8B15 FCDE4200 MOV EDX,DWORD PTR DS:[42DEFC]            ;直接写入0xAA
+00401219  |.  A1 E0DE4200   MOV EAX,DWORD PTR DS:[42DEE0]
+0040121E  |.  8D0C10        LEA ECX,DWORD PTR DS:[EAX+EDX]
+00401221  |.  8B15 ECDE4200 MOV EDX,DWORD PTR DS:[42DEEC]            ;直接写入0x55
+00401227  |.  A1 E8DE4200   MOV EAX,DWORD PTR DS:[42DEE8]
+0040122C  |.  03C2          ADD EAX,EDX
+0040122E  |.  81E1 FF000000 AND ECX,0FF
+00401234  |.  25 FF000000   AND EAX,0FF
+
+
+
+
+
+
+00401247  |> /8A1E          /MOV BL,BYTE PTR DS:[ESI]                ;  解密
+00401249  |. |32D9          |XOR BL,CL                               ;  
+0040124B  |. |2AD8          |SUB BL,AL                               ;  
+0040124D  |. |02D3          |ADD DL,BL
+0040124F  |. |8816          |MOV BYTE PTR DS:[ESI],DL                ;  写入内存
+00401251  |. |46            |INC ESI                                 ;  指针 +1
+00401252  |. |4D            |DEC EBP                                 ;  size-1
+00401253  |.^\75 F2         \JNZ SHORT oreimo_h.00401247	     ;  循环
+
+ 
