@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PacPack", "PacPack\PacPack.vcxproj", "{8A265204-8CD6-4FC7-B5CA-A36FC4D53566}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GigaPatch", "GigaPatch\GigaPatch.vcxproj", "{DF61F85D-FA9C-44F9-8CB0-9D912FD1D10A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8A265204-8CD6-4FC7-B5CA-A36FC4D53566}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8A265204-8CD6-4FC7-B5CA-A36FC4D53566}.Debug|Win32.Build.0 = Debug|Win32
+		{8A265204-8CD6-4FC7-B5CA-A36FC4D53566}.Release|Win32.ActiveCfg = Release|Win32
+		{8A265204-8CD6-4FC7-B5CA-A36FC4D53566}.Release|Win32.Build.0 = Release|Win32
+		{DF61F85D-FA9C-44F9-8CB0-9D912FD1D10A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DF61F85D-FA9C-44F9-8CB0-9D912FD1D10A}.Debug|Win32.Build.0 = Debug|Win32
+		{DF61F85D-FA9C-44F9-8CB0-9D912FD1D10A}.Release|Win32.ActiveCfg = Release|Win32
+		{DF61F85D-FA9C-44F9-8CB0-9D912FD1D10A}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
