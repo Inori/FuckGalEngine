@@ -21,6 +21,39 @@ void SetNopCode(BYTE* pnop, size_t size)
 		pnop[i] = 0x90;
 	}
 }
+
+
+PVOID g_pOldCreateFontIndirectA = NULL;
+typedef int (WINAPI *PfuncCreateFontIndirectA)(LOGFONTA *lplf);
+int WINAPI NewCreateFontIndirectA(LOGFONTA *lplf)
+{
+	lplf->lfCharSet = ANSI_CHARSET;
+	//lplf->lfHeight = 100;
+	strcpy(lplf->lfFaceName, "黑体");
+	//lplf->lfCharSet = GB2312_CHARSET;
+
+	return ((PfuncCreateFontIndirectA)g_pOldCreateFontIndirectA)(lplf);
+}
+
+void InstallBorderPatch()
+{
+	//搜索常量： 0x81, 0x9F
+	//边界检测
+	BYTE Patch[] = { 0xFE };
+
+	//一共有9处边界检测 fuck!
+	memcopy((void*)0x41FE3B, Patch, sizeof(Patch));
+	memcopy((void*)0X504EC3, Patch, sizeof(Patch));
+	memcopy((void*)0X5059E6, Patch, sizeof(Patch));
+	memcopy((void*)0X505A95, Patch, sizeof(Patch));
+	memcopy((void*)0X505BAA, Patch, sizeof(Patch));
+	memcopy((void*)0X50635A, Patch, sizeof(Patch));
+	memcopy((void*)0X50644C, Patch, sizeof(Patch));
+	memcopy((void*)0X5067C2, Patch, sizeof(Patch));
+	memcopy((void*)0X506B51, Patch, sizeof(Patch));
+
+
+}
 /*
 char* fname = NULL;
 void* pGetFileName = (void*)0x0057B64E;
@@ -86,7 +119,7 @@ void RecoverJmp()
 void WINAPI SetJmp()
 {
 	static bool is_patched = false;
-	if (!strncmp(fname, "Script.pac", 10))
+	if (!strncmp(fname, "Update.pac", 10))
 	{
 		//MessageBoxA(NULL, fname, "check", MB_OK);
 		InstallJmp();
@@ -114,6 +147,14 @@ void SetHook()
 	g_pOldCreateFileA = DetourFindFunction("kernel32.dll", "CreateFileA");
 	DetourAttach(&g_pOldCreateFileA, NewCreateFileA);
 	DetourTransactionCommit();
+
+	DetourTransactionBegin();
+	DetourUpdateThread(GetCurrentThread());
+	g_pOldCreateFontIndirectA = DetourFindFunction("GDI32.dll", "CreateFontIndirectA");
+	DetourAttach(&g_pOldCreateFontIndirectA, NewCreateFontIndirectA);
+	DetourTransactionCommit();
+
+	InstallBorderPatch();
 }
 
 
