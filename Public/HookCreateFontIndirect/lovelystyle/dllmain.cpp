@@ -12,7 +12,7 @@ int WINAPI NewCreateFontIndirectA(LOGFONTA *lplf)
 {
 	lplf->lfCharSet = ANSI_CHARSET;
 	//lplf->lfHeight = 100;
-	strcpy(lplf->lfFaceName,"ºÚÌå");
+	strcpy(lplf->lfFaceName,"MyºÚÌå");
 	//lplf->lfCharSet = GB2312_CHARSET;
 
 	return ((PfuncCreateFontIndirectA)g_pOldCreateFontIndirectA)(lplf);
