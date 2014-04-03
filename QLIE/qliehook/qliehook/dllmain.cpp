@@ -67,6 +67,9 @@ void memcopy(void* dest,void*src,size_t size)
 }
 
 ///////////////Hook CreateFontIndirect//////////////////////////////////////////////////
+//00493152 | .  50            push    eax; / pLogfont
+//00493153 | .E8 544CF7FF   call    <jmp.&gdi32.CreateFontIndirectA>; \CreateFontIndirectA
+
 
 PVOID pOldLogFont = (void*)0x493152;
 
@@ -91,6 +94,16 @@ __declspec(naked)void _NewLogFont()
 }
 
 /////////////补丁//////////////////////////////////////////////////////////////
+//0049267A | .  81FB 80000000 | cmp     ebx, 0x80
+//00492680 | .  76 08 | jbe     short 0049268A
+//00492682 | .  81FB A0000000 | cmp     ebx, 0xA0
+//00492688 | .  72 10 | jb      short 0049269A
+//0049268A | >  81FB DF000000 | cmp     ebx, 0xDF
+//00492690 | .  76 20 | jbe     short 004926B2
+//00492692 | .  81FB FF000000 | cmp     ebx, 0xFF
+//00492698 | .  77 18 | ja      short 004926B2
+
+
 void InstallBorderPatch()
 {   
 	//边界检测
@@ -128,6 +141,13 @@ void InstallBorderPatch()
 }
 
 ///////////////Copy自己的文件到内存//////////////////////////////////////////////////////////////
+//004875F7 | . / 74 05         je      short 004875FE
+//004875F9 | . | 83E8 04       sub     eax, 0x4
+//004875FC | . | 8B00          mov     eax, dword ptr[eax]
+//004875FE | > \8BC8          mov     ecx, eax
+//00487600 | .  49            dec     ecx
+//00487601 | .  85C9          test    ecx, ecx
+
 
 
 PVOID pNameLength = (PVOID)0x4875FE;
@@ -141,6 +161,20 @@ __declspec(naked)void GetNameLength()
 		jmp pNameLength
 	}
 }
+
+//00487608 | > / 8D70 01 / lea     esi, dword ptr[eax + 0x1]
+//0048760B | . | 8B7D 08 | mov     edi, [arg.1]
+//0048760E | . | 8B7F 0C | mov     edi, dword ptr[edi + 0xC]
+//00487611 | . | 0FB67437 FF | movzx   esi, byte ptr[edi + esi - 0x1]
+//00487616 | . | 8BF8 | mov     edi, eax
+//00487618 | . | 81E7 FF000000 | and     edi, 0xFF
+//0048761E | . | 0FAFF7 | imul    esi, edi
+//00487621 | . | 03D6 | add     edx, esi
+//00487623 | . | 33DA | xor     ebx, edx
+//00487625 | . | 40 | inc     eax
+//00487626 | . | 49 | dec     ecx
+//00487627 | .^\75 DF         \jnz     short 00487608
+
 
 PVOID pGetName = (PVOID)0x487611;
 __declspec(naked)void GetName()
@@ -252,6 +286,14 @@ void WINAPI CopyMyFile(DWORD offset)
 	}
 	
 }
+
+//00483EFE | .  6A 00         push    0x0
+//00483F00 | .  6A 00         push    0x0
+//00483F02 | .  8B45 EC       mov     eax, [local.5]
+//00483F05 | .E8 36E3F9FF   call    00422240
+//00483F0A | .  8B45 EC       mov     eax, [local.5]
+//00483F0D | .  8B40 04       mov     eax, dword ptr[eax + 0x4]
+//00483F10 | .  8945 E8       mov[local.6], eax
 
 PVOID pCopyMyFile = (PVOID)0x483F10;
 __declspec(naked)void _CopyMyFile()
