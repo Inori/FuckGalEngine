@@ -32,7 +32,7 @@ def FormatString(string, count):
         '''
         res = "★%08d★\n%s\n"%(count, string)
         '''
-        res = "☆%08d☆\n%s★%08d★\n%s\n"%(count, string, count, string)
+        res = "☆%08d☆\r\n%s★%08d★\r\n%s\r\n"%(count, string, count, string)
  
     else:
         flag = False

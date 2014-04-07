@@ -806,7 +806,7 @@ void Decode_Data(PBYTE memoryData, DWORD fileSize)
 			}
 		}
 	}
-	return;
+	//return;
 	if (GetTreeItem("scenes", &in, &out))
 	{
 		byte* array_start = out.data2;
@@ -936,7 +936,8 @@ void CPSBReaderDlg::OnButton3()
 */
 int main()
 {
-	FILE* fp = fopen("after.psb", "rb");
+	FILE* fp = fopen("1_01.ks.scn", "rb");
+	//FILE* fp = fopen("after.psb", "rb");
 
 	fseek(fp, 0, SEEK_END);
 	DWORD size = ftell(fp);
