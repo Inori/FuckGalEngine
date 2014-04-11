@@ -1,0 +1,70 @@
+Some random notes as I hack.  Much or all of this may be nonsense.  Included in
+the package only in case you care about how little I know.  ^_^
+
+GRAPHICS
+use native .rc8/.rct formats, but can also use .png files if no native file of the
+given name is found.
+
+TEXT OUTPUT
+
+"＠name" uses "name" as a name, but only if the first character of 
+the subsequent text is "「".  It appears that the "「" is then only displayed 
+some of the time; for example, "「...」" displays as it is, but "「（...）" just 
+displays the "（...）".  This needs investigation.
+
+JUMPS
+are relative to the end of the pointer.
+
+  jmp ptr : unconditional
+  jne (value) ptr : jump if something (top of stack?) != value
+  switch { ptrs }: table jump based on something (top of stack?)
+
+CALLS
+
+  callXXX<function[, n]> (...)
+  
+    "function" is an entrypoint identifier as found in the entrypoint
+    table in the MJO header.  Presumably they're some sort of hash of
+    the function's actual name.  Goodness only knows what algorithm,
+    though.  :(
+    
+    If the identifier is in the current .mjo, presumably that version is
+    used, otherwise presumably other files are searched for it; the
+    precise mechanism is unclear.  A couple of music-related functions
+    are duplicated in most files.
+
+
+OPCODES (see also disasm.ml)
+
+  82b
+    rtl? end?
+
+  82c int32?
+  830 int32?
+  831 int32?
+    ??
+    pure guess, maybe arithmetic?
+
+  83a int16
+    int16 increments through the file: line references a la RealLive's 0x0a?
+
+  841
+    Always seems to follow a text display string: refresh? savepoint?
+
+
+SYSCALLS
+
+  0dc634c4 (intro, loop)
+    play music looping
+    
+  718ef651 (filename)
+    jump/call? another file
+
+  8d8fb32e ()
+    end
+
+MOON_CHILDe CALLS
+
+  a4eb1e4c (filename, fadetime)
+  5f271e74
+    load filename for fade in, actually do it

@@ -1,0 +1,19 @@
+szMagic[0x10];	//"MajiroSysV1.100"
+UINT nCount1;	//malloc_size=(nCount+0x100)*16
+UINT nSize2;
+
+struct entryOfBuff1{
+	DWORD unknown;
+	int nType;//可能值0-5
+	union{
+	00:unk,unk
+	02:nOffsetInBuff2,unk
+	};
+};
+
+entryOfBuff1 dbBuff1[nCount];
+BYTE dbBuff2[nSize2];
+
+根据dbBuff1和dbBuff2生成的栈表
+
+StackEntry entries[nCount1];

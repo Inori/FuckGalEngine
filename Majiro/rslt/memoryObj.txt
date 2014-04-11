@@ -1,0 +1,70 @@
+
+struct StackObj{	//In [57f948] size=28h
+	int scriptDepth;//脚本调用的深度，0为首个脚本。
+	int unk[2];
+	int unk[2];//可能是栈最大深度？
+	int unk[3];
+	LPVOID unk;
+	LPVOID lpStackBase;
+};
+
+struct ScriptObj{	//In [57f944] size=4ch
+	LPVOID lpCurrentPos;
+	int nBaseIndexOfStack;
+	int nCurrentDepthOfStack;
+	bool unk;//由虚拟机指令80f和810设置，具体含义不明
+	int number;//序号？
+	LPVOID lpToSelectTable[5];
+	...
+};
+
+struct HashProcList{	//用来储存mjo中的过程，In [4a135c]
+	int unk;
+	int unk;
+	DWORD nStringHashCode;
+	LPVOID lpProc;
+	HashProcList* lpPrev;
+	HashProcList* lpNext;
+};
+
+struct Type{
+	int unk1:3
+	int unk2:2
+	int SubType:3
+	int Type:3
+	int ArgCount:5
+};
+
+struct StackStr{
+	int nRefCount;
+	int unk;
+	int nLen;
+	char str[nLen+1]
+};
+struct IntArray{
+	int nRefCount;
+	int unk;
+	int x;
+	int y;
+	int z;
+	DWORD buff[x*y*z];
+};
+struct StrArray{
+	int nRefCount;
+	int unk;
+	int x;
+	int y;
+	int z;
+	StackStr* p[x*y*z];
+};
+struct StackEntry{
+	DWORD unknown;//nHash?
+	int nType;//0为整数，1为浮点数，2为字符串，3和4为三维整数数组，5为三维字符串数组
+	int unk;//nType2?
+	union Value{
+		DWORD value@00or01;
+		StackStr* p@02;
+		IntArray* p@03or04;
+		StrArray* p@05;
+	};
+};

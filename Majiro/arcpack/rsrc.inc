@@ -1,0 +1,10 @@
+DLG_MAIN                equ 1000
+IDC_REXP                equ 1001
+IDC_RCOMP               equ 1002
+IDC_GRP1                equ 1003
+IDC_ORI                 equ 1004
+IDC_GRP2                equ 1005
+IDC_DIR                 equ 1006
+IDC_START               equ 1007
+IDC_BROWSEORI           equ 1008
+IDC_BROWSEDIR           equ 1009

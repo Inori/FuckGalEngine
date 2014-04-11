@@ -1,0 +1,25 @@
+-------------------------------------------------------------------------------
+
+                                     MJDEV
+
+       an unofficial development toolkit for the Majiro virtual machine
+
+-------------------------------------------------------------------------------
+                              SOURCE INSTALLATION
+-------------------------------------------------------------------------------
+
+Requirements:
+
+  GNU make
+  Objective Caml 3.08 (http://caml.inria.fr)
+  ExtLib 1.5 or later (http://ocaml-lib.sf.net)
+
+(Note that at the time of writing ExtLib 1.5 had not been released. You'll need
+the CVS version.)
+
+The only supported build platform is Win32 + Cygwin.  Within this environment
+you can use any of the three Windows ports of OCaml.  Non-Windows will require
+trivial modifications to the makefile to remove the .exe suffixes, which are
+currently hardcoded because I'm lazy.
+
+-------------------------------------------------------------------------------

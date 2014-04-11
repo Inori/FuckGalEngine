@@ -1,0 +1,9 @@
+struct MssEntry{
+	char szMjoFileName[0x80];	//e.g. ¥×¥í¥í©`¥°-×·‘›-.mjo
+	UINT nBuffSize;
+	UINT nFileLen;//?
+	LPVOID lpBuff;	//Ö¸ÏòdbBuff[]
+	MssEntry* lpPrevEntry;
+	MssEntry* lpNextEntry;
+};
+BYTE dbBuff[nBuffSize];

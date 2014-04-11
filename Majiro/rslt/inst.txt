@@ -1,0 +1,202 @@
+str	len:word+str[len]:byte
+bf	len:word+buff[len]:byte
+bf2	len:word+buff[len]:dword
+
+栈运算指令(St*)的所有操作数均从栈中获得，用到的操作数全部弹出，运算结果入栈。操作数均为StackEntry.Value。操作数使用顺序：从栈底方向开始。
+100		0		StMul();//(s-1).unk@00*=s.unk@00
+101		0		StFmul();
+108		0		StDiv();//除数为零时商等于被除数*10000
+109		0		StFdiv();
+110		0		StMod();//除数为零时余数为0
+118		0		StAdd();
+119		0		StFadd();
+11a		0		StAddString();
+120		0		StSub();
+121		0		StFsub();
+128		0		StSar();
+130		0		StShl();
+138		0		StIsLE();//以下条件判断指令若无说明，结果均为1或0，操作数一般为2个
+139		0		StIsFLE();
+13a		0		StIsLEString();
+140		0		StIsL();
+141		0		StIsFL();
+142		0		StIsLString();
+148		0		StIsGE();//满足条件为-1，否则为0
+149		0		StIsFGE();//满足条件为-1，否则为0
+14a		0		StIsGEString();//满足条件为-1，否则为0
+150		0		StIsG();
+151		0		StIsFG();
+152		0		StIsGString();
+158		0		StIsE();
+159		0		StIsFE();
+15a		0		StIsEString();
+15b		0		StIsE();
+15c		0		StIsE();
+15d		0		StIsE();
+160		0		StIsNE();
+161		0		StIsFNE();
+162		0		StIsNEString();
+163		0		StIsNE();
+164		0		StIsNE();
+165		0		StIsNE();
+168		0		StXor();
+170		0		StAnd2();//&&条件
+178		0		StOr2();//||条件
+180		0		StAnd();
+188		0		StOr();
+190		0		StIsZero();
+191		0		Nop();
+198		0		StNot();
+1a0		0		StNeg();
+1a1		0		StFchs();
+1a8		0		Nop();
+1a9		0		Nop();
+
+1b0		8		func(Type nType,i32 nHash,i16 nStackIndex[out]);//卧槽，在nType.SubType被识别为3之后，把当前脚本栈顶内容复制到了栈基+StackIndex的地方，搞毛呢。
+1b1		8		//栈顶被改为nType。
+1b2		8		func(Type nType,i32 nHash,i16 nStackIndex[out]);
+1b3		8		//同上
+1b4		8		//同上
+1b5		8		//同上
+
+以下为一组对栈顶和“内存操作数”操作的指令。nType指示操作数类型，参数2为从System存档文件中读取到的StackEntry的Hash（无存档的话每次创建，创建过程未分析），参数3与2等价，以索引来快速定位。所有二元操作总是以栈顶数据为第一个操作数。操作结果同时保存到栈顶和“内存操作数”中。
+1b8		8		Mul(Type nType,i32 nHashOfSE,i16 nIndexSE);
+1b9		8		Fmul;
+1c0		8		Div;
+1c1		8		Fdiv;
+1c8		8		Mod;
+1d0		8		Add;
+1d1		8		Fadd;
+1d2		8		StrAdd;
+1d8		8		Sub;
+1d9		8		Fsub;
+1e0		8		Shl;
+1e8		8		Sar;
+1f0		8		And;
+1f8		8		Xor;
+200		8		Or;
+
+以下指令与1b0到1b5的指令一一对应，唯一的区别是执行完之后s--
+210		8		//同1b0,s--
+211		8		//同1b1,s--
+212		8		//同1b2,s--
+213		8		//同上
+214		8		//同上
+215		8		//同上
+
+以下指令与1b8开始到200的指令一一对应，唯一的区别是执行完之后s--。
+218		8
+219		8
+220		8
+221		8
+228		8
+230		8
+231		8
+232		8
+238		8
+239		8
+240		8
+248		8
+250		8
+258		8
+260		8
+
+以下为数组元素操作指令，本系统中数组均为3维数组。nType.ArgCount指示使用几个下标，然后依次从栈中获取下标（获取后弹出）。nHash和nStackIndex指代数组的StackEntry。具体同1b8的指令。以数组元素为第一操作数。一般s-=nType.ArgCount。
+270		8		Mov;//将栈顶整数赋给指定的数组元素。
+271		8		Mov;//完全同上。
+272		8		Movs;//将栈顶字符串赋给指定数组元素。（指针传递，不复制）
+278		8		Mul;//结果同时存入栈顶
+279		8		Fmul;
+280		8		Div;
+281		8		Fdiv;
+288		8		Mod;
+290		8		Add;
+291		8		Mov;//我去，玩我呢，完全同270
+292		8		AddStr;//估计是，没仔细看
+298		8		Sub;
+299		8		Fsub;
+2a0		8		Shl;
+2a8		8		Sar;
+2b0		8		And;
+2b8		8		Xor;
+2c0		8		Or;
+
+以下指令与270-2c0指令一一对应，唯一区别是最后s--
+2d0		8
+2d1		8
+2d2		8
+2d8		8
+2d9		8
+2e0		8
+2e1		8
+2e8		8
+2f0		8
+2f1		8
+2f2		8
+2f8		8
+2f9		8
+300		8
+308		8
+310		8
+318		8
+320		8
+
+800		4		pushInt(u32);//s++
+801		str		pushString(str);//s++
+802		8		pushCopy(Type nType,i32 nHash,i16 nStackIndex[out]);//s++
+803		4		pushFloat(float);//s++
+80f		10		func(u32 nHashOfProc,LPVOID lpProcLoc,i16 nValue);//先把nValue作为type=0的StackEntry.Value入栈，然后call到参数1或2指示的函数入口执行。call出函数s-=nValue，被call函数为入栈时状态。本指令被用在过选择支上。
+810		10		同80f。区别见ScriptObj声明。
+829		bf		pushStackRepeat(u16 nCount,byte nType[nCount]);//依次将byte数组中每个字节作为Type初始化一个StackEntry并压栈，s+=nCount;
+82b		0		returnScript();//s还原为调用之前的状态
+82c		4		Goto(u32 nDistance);//无条件跳转，计算方法如82e。
+82d		4		GotoIf(u32 nDistance);//s为字符串为空，或s为浮点数为0，或其余类型而Value不为0时，不跳转。s--
+82e		4		GotoIf(u32 nDistance);//当且仅当s为字符串且为空，或s为浮点数且值为0时，不跳转，否则从下一指令开始按distance跳转。s--
+82f		0		popStack();//s--
+830		4		Goto(u32 nDistance);//无条件跳转，顺便call 41ea60，s--
+831		4		GotoIf(u32 nDistance);//如果s-1与s的Value不等则跳转。type为3~5时要求Value值相等，即同一个缓冲区。type为2则比较字符串。
+832		4		GotoIf(u32 nDistance);//如果s.Value<=(StackEntry)[486b00].Value则跳转
+833		4		GotoIf(u32 nDistance);//如果s.Value>=(StackEntry)[486b10].Value则跳转
+834		6		CallWithHash(u32 nHash,u16 nParameterCount);//只清除调用前s中的参数。
+835		6		CallWithHash(u32 nHash,u16 nParameterCount);//s-=nParameterCount
+836		bf
+837		8
+838		4		GotoIf(u32 nDist);//如果s.Value<=unk.Value，不跳转。unk为同hash值的某stackentry
+839		4		GotoIf(u32 nDist);//同上，条件为>=
+83a		2
+83b		4		GotoIfSelect(u32 nDist);//如果StackObj+4c38不为0则跳转并将4c38置0，否则将跳转地址填入SelectTable[0]。
+83c		4		//同上，4c40，table[2]
+83d		4		//同83b，4c3c，Table[1]
+83e		0		SetStack0();//把栈顶设置为整数0
+83f		0		Int2Float();//栈顶整型转实型变量
+840		str		CopyString(str);//将4f7780指向的字符串连接上str，然后复制到4f6770开始的字符串数组中，该数组可以存放5个最长404h大小的字符串（应该是指的一共5行），同时4f6b70开始的同偏移位置指示该字符串是否已存在。最后把刚刚复制好的字符串地址放回4f7780
+841		0		ProcessString();//我去，好JB复杂，主要进行引号、空格的处理、人名拆分等各种显示准备操作，将一些结果压入栈中，然后调用其他脚本。本指令可使ScriptObj.lpCurrentPos后退以进行递归调用。s操作未分析出来。本指令汉化时需要修改的较多。
+842		str		//根据接下来的字符操作。开始新的行等等。哦呵呵，栈缓冲区溢出漏洞
+843		4		//GotoIfSelect(u32 nDist);//同时测试83b 83c 83d的三个位置，跳转地址同时填入三个table位置。依次决定是否跳转。
+844		0		ClearJumpTable();//清除table[0~2]
+845		4		WriteJumpTable(u32 nDist);//跳转地址填入table[3]
+846		0
+847		4		WriteJumpTable(u32 nDist);//跳转地址填入table[4]
+850		bf2		GotoInTable(i16 nCount,int table[nCount];//跳转到table[s.Value]的位置，超出界限就跳到表的最后一个位置，s--
+
+以下所有对s的操作均不影响835执行完毕之后的s状态，但是影响834。
+参数压栈顺序：从右到左。
+10db0a43(str):跳入str.mjo中，创建新的ScriptProcStruct，从该脚本默认入口地址开始执行。
+718ef651(str):还是跳入？
+
+
+以下为注册表选项操作函数
+72e738c(int):reg:SoundVolume
+c7a0e97(int):reg:MusicVolume=int,s++
+c93fcb4(int):reg:EffectSpeed=int,s++
+3eabf498(int):reg:FastModeFlg_AR=int，s++
+6501cc30(int);reg:MojiSpeed=int,s++
+6eaec2a0(int);reg:VoiceVolume=int,s++
+6ed38886(int):reg:AutoSpeed=int，s++
+
+3e11f2c5():获取程序设置区内存指针，入栈。s++
+78a756e(str,hash):str To hash2，hash To ProcAddr，两者链入lpHashList，s++
+1295bbda(str,hash):str To hash2，hash To ProcAddr，两者链入lpHashList，s++
+7a7b6ed4(str):str To new hash table,s++
+96b07aee(int,int=1,int=1):可变参数。将三个参数乘起来，分配对应的内存(积*4+18h)，构造type=3的StackEntry，入栈。s++
+e4e3b40d(str):打开str文件，分配内存将句柄扔进去，最后入栈，s++

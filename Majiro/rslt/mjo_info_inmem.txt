@@ -1,0 +1,26 @@
+struct MjoHeader{	
+	s8 magic[16];		/* "MajiroObjX1.000" */
+	u32 default_entry;	//默认入口点，通常为最后一个函数
+	u32 unknown1;
+	u32 entries;		/* 8 bytes per entry */
+	u8 *entries_buffer;
+	u32 data_length;
+	u8 *data_buffer;	
+} mjo_header_t;
+
+
+struct MjoInfo{	//内存中的
+	char szName[0x80];
+80	int unk;
+	int unk;
+	DWORD HashOfFileName;
+	UINT nEntries;
+90	UINT nRealFileLen;
+	DWORD offsetDefaultEntry;
+	int unk;
+	int unk;
+a0	LPVOID lpEntries;
+	LPVOID lpRealContent;
+	MjoInfo* lpPrev;
+	int unk;
+};

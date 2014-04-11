@@ -1,0 +1,1 @@
+for %%a in (*.rct) do vaconv.exe %%a
