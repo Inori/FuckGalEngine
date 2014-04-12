@@ -1,0 +1,15 @@
+Override.tjs最前面加上：
+
+
+Plugins.link("csvParser.dll");
+with(global.CSVParser) {
+.origParseStorage = .parseStorage;
+.parseStorage = function (filename, utf8) {this.parse([].load(filename).join('\n'));}; //for utf-16 CSV
+.initStorage = function (filename) {this.StorageBuffer = [].load(filename); this.StorageBuffer.reverse();};
+.getNextLine = function () {
+if (this.StorageBuffer!==void) {
+var retData=this.StorageBuffer.pop();
+if (retData!==void) return retData.split('\t');
+}
+};
+};

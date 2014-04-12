@@ -1,0 +1,11 @@
+header:
+00h  s8  Magic[4] = 'PSB\0'
+04h  u32 ver = 2
+08h  u32
+0Ch  u32 offset of hashtree = 28h
+10h  u32 offset of StrOffList
+14h  u32 offset of StrRes
+18h  u32 offset of DibOffList
+1Ch  u32 offset of DibSizeList
+20h  u32 offset of DibData
+24h  u32 offset of StrTable, MetaData
