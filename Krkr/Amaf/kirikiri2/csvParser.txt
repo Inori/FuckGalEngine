@@ -13,3 +13,10 @@ if (retData!==void) return retData.split('\t');
 }
 };
 };
+
+同时修改
+
+charlevel.csv
+charinit.csv
+envinit.tjs
+中人名
