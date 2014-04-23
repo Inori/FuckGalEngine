@@ -5,10 +5,11 @@
 #include <stdio.h>
 #include <string>
 
-
+#include "zlib.h"
+#include "zconf.h"
 #include "png.h"
-#include "zconf.h"
-#include "zconf.h"
+#include "pngconf.h"
+
 
 using namespace std;
 
@@ -47,13 +48,32 @@ typedef struct {		/* 接下来0x300字节是调色版 */
 class RCT
 {
 public:
-
+	RCT();
+	bool LoadRCT(string fname);
+	void RCT2PNG();
+	~RCT();
 private:
 	DWORD rc8_decompress(BYTE *uncompr, DWORD uncomprLen, BYTE *compr, DWORD comprLen, DWORD width);
 	DWORD rct_decompress(BYTE *uncompr, DWORD uncomprLen, BYTE *compr, DWORD comprLen, DWORD width);
-	int dump_rc8(rc8_header_t *rc8, DWORD length, BYTE **ret_buf, DWORD *ret_len);
-	int dump_rct(rct_header_t *rct, DWORD length, BYTE **ret_buf, DWORD *ret_len);
+
+	int dump_rc8(rc8_header_t *rc8, BYTE *&ret_rgb);
+	int dump_rct(rct_header_t *rct, BYTE *&ret_rgb);
+
 	int read_png_file(string filepath, pic_data *out);
 	int write_png_file(string file_name, pic_data *graph);
+
+	string fn_rct; //当前所处理rct文件名
+	FILE *f_rct;
+	BYTE* p_rct;
+	DWORD size_rct;
+	rct_header_t *h_rct; //在LoadRCT中初始化，指向地址与 p_rct 相同
+
+	string fn_rc8; //当前所处理rc8文件名
+	FILE *f_rc8;
+	BYTE* p_rc8;
+	DWORD size_rc8;
+	rc8_header_t *h_rc8; //在LoadRCT中初始化，指向地址与 p_rc8 相同
+
+	pic_data png_info;
 };
 #endif

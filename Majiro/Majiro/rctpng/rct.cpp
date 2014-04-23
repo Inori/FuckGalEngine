@@ -194,9 +194,9 @@ out:
 	return act_uncomprLen;
 }
 
-int RCT::dump_rc8(rc8_header_t *rc8, DWORD length, BYTE **ret_buf, DWORD *ret_len)
+int RCT::dump_rc8(rc8_header_t *rc8, BYTE *&ret_rgb)
 {
-	BYTE *compr, *uncompr, *palette, *act_palette;
+	BYTE *compr, *uncompr, *palette;
 	DWORD uncomprLen, comprLen, actLen;
 
 	uncomprLen = rc8->width * rc8->height;
@@ -208,40 +208,36 @@ int RCT::dump_rc8(rc8_header_t *rc8, DWORD length, BYTE **ret_buf, DWORD *ret_le
 	compr = palette + 0x300;
 	comprLen = rc8->data_length;
 	actLen = rc8_decompress(uncompr, uncomprLen, compr, comprLen, rc8->width);
-	if (actLen != uncomprLen) {
-		//		fprintf(stderr, "rc8 decompress error occured (%d VS %d)\n",
-		//			actLen, uncomprLen);
+
+	if (actLen != uncomprLen) 
+	{
+		MessageBoxA(NULL, "actLen != uncomprLen", "rc8 error", MB_OK);
 		free(uncompr);
 		return -1;
 	}
 
-	act_palette = (BYTE *)malloc(1024);
-	if (!act_palette) {
-		free(uncompr);
-		return -1;
-	}
 
-	for (unsigned int i = 0; i < 256; i++) {
-		act_palette[i * 4 + 0] = palette[i * 3 + 0];
-		act_palette[i * 4 + 1] = palette[i * 3 + 1];
-		act_palette[i * 4 + 2] = palette[i * 3 + 2];
-		act_palette[i * 4 + 3] = 0;
+	DWORD height, width;
+	height = rc8->height;
+	width = rc8->width;
+	//24位
+	ret_rgb = new BYTE[width * height * 3];
+
+	for (DWORD i = 0; i < height; i++)
+	{
+		for (DWORD j = 0; j < width; j++)
+		{
+			ret_rgb[i * width * 3 + j * 3]	   = palette[3*uncompr[i*width + j]];
+			ret_rgb[i * width * 3 + j * 3 + 1] = palette[3*uncompr[i*width + j] + 1];
+			ret_rgb[i * width * 3 + j * 3 + 2] = palette[3*uncompr[i*width + j] + 2];
+		}
 	}
-	/*
-	if (MyBuildBMPFile(uncompr, uncomprLen, act_palette, 1024,
-		rc8->width, 0 - rc8->height, 8, ret_buf, ret_len, my_malloc)) {
-		free(act_palette);
-		free(uncompr);
-		return -1;
-	}
-	*/
-	free(act_palette);
 	free(uncompr);
 
 	return 0;
 }
 
-int RCT::dump_rct(rct_header_t *rct, DWORD length, BYTE **ret_buf, DWORD *ret_len)
+int RCT::dump_rct(rct_header_t *rct, BYTE *&ret_rgb)
 {
 	BYTE *compr, *uncompr;
 	DWORD uncomprLen, comprLen, actLen;
@@ -254,21 +250,15 @@ int RCT::dump_rct(rct_header_t *rct, DWORD length, BYTE **ret_buf, DWORD *ret_le
 	compr = (BYTE *)(rct + 1);
 	comprLen = rct->data_length;
 	actLen = rct_decompress(uncompr, uncomprLen, compr, comprLen, rct->width);
-	if (actLen != uncomprLen) {
-		//		fprintf(stderr, "rct decompress error occured (%d VS %d)\n",
-		//			actLen, uncomprLen);
+	if (actLen != uncomprLen) 
+	{
+		MessageBoxA(NULL, "actLen != uncomprLen", "rct error", MB_OK);
 		free(uncompr);
 		return -1;
 	}
-/*
-	if (MyBuildBMPFile(uncompr, uncomprLen, NULL, 0,
-		rct->width, 0 - rct->height, 24, ret_buf, ret_len, my_malloc)) {
-		free(uncompr);
-		return -1;
-	}
-	*/
-	free(uncompr);
 
+	//RCT2PNG中释放
+	ret_rgb = uncompr;
 	return 0;
 }
 
@@ -443,6 +433,7 @@ int RCT::write_png_file(string file_name, pic_data *graph)
 	else temp = (3 * graph->width);
 
 	row_pointers = (png_bytep*)malloc(graph->height*sizeof(png_bytep));
+	
 	for (i = 0; i < graph->height; i++)
 	{
 		row_pointers[i] = (png_bytep)malloc(sizeof(unsigned char)*temp);
@@ -450,22 +441,24 @@ int RCT::write_png_file(string file_name, pic_data *graph)
 		{
 			for (j = 0; j < temp; j += 4)
 			{
-				row_pointers[i][j] = graph->rgba[i*temp + j]; // red
-				row_pointers[i][j + 1] = graph->rgba[i*temp + j + 1]; // green
-				row_pointers[i][j + 2] = graph->rgba[i*temp + j + 2];   // blue
-				row_pointers[i][j + 3] = graph->rgba[i*temp + j + 3]; // alpha
+				row_pointers[i][j] = graph->rgba[i*temp + j]; 
+				row_pointers[i][j + 1] = graph->rgba[i*temp + j + 1]; 
+				row_pointers[i][j + 2] = graph->rgba[i*temp + j + 2];  
+				row_pointers[i][j + 3] = graph->rgba[i*temp + j + 3];
 			}
 		}
 		else
 		{
 			for (j = 0; j < temp; j += 3)
 			{
-				row_pointers[i][j] = graph->rgba[i*temp + j]; // red
-				row_pointers[i][j + 1] = graph->rgba[i*temp + j + 1]; // green
-				row_pointers[i][j + 2] = graph->rgba[i*temp + j + 2];   // blue
+				row_pointers[i][j] = graph->rgba[i*temp + j]; 
+				row_pointers[i][j + 1] = graph->rgba[i*temp + j + 1]; 
+				row_pointers[i][j + 2] = graph->rgba[i*temp + j + 2];  
 			}
 		}
+		
 	}
+	
 	png_write_image(png_ptr, row_pointers);
 
 	/* end write */
@@ -483,4 +476,119 @@ int RCT::write_png_file(string file_name, pic_data *graph)
 	//free(graph->rgba);
 	fclose(fp);
 	return 0;
+}
+
+RCT::RCT()
+{
+	f_rct = NULL;
+	p_rct = NULL;
+	size_rct = 0;
+	h_rct = NULL;
+
+	f_rc8 = NULL;
+	p_rc8 = NULL;
+	size_rc8 = 0;
+	h_rc8 = NULL; 
+}
+
+bool RCT::LoadRCT(string fname)
+{
+	fn_rct = fname;
+	//处理rc8文件名
+	fn_rc8 = fn_rct.substr(0, fn_rct.find_last_of(".")) + "_.rc8";
+
+
+	/////rct///////////////////////////////////////////////////////////////////
+	f_rct = fopen(fname.c_str(), "rb");
+	if (!f_rct)
+		return false;
+
+	fseek(f_rct, 0, SEEK_END);
+	size_rct = ftell(f_rct);
+	fseek(f_rct, 0, SEEK_SET);
+
+	p_rct = new BYTE[size_rct];
+	if (!p_rct)
+		return false;
+
+	fread(p_rct, size_rct, 1, f_rct);
+	//判断文件头是否匹配
+	h_rct = (rct_header_t*)p_rct;
+	if (memcmp(h_rct->magic, "\x98\x5A\x92\x9ATC00", 8))
+	{
+		//方便在批处理脚本中发现错误，采用MessageBox而不是printf
+		MessageBoxA(NULL, "RCT header not match!", "RCT Error", MB_OK);
+		return false;
+	}
+	/////rc8///////////////////////////////////////////////////////////////////
+
+	f_rc8 = fopen(fn_rc8.c_str(), "rb");
+	if (!f_rc8)
+		return false;
+
+	fseek(f_rc8, 0, SEEK_END);
+	size_rc8 = ftell(f_rc8);
+	fseek(f_rc8, 0, SEEK_SET);
+
+	p_rc8 = new BYTE[size_rc8];
+	if (!p_rc8)
+		return false;
+
+	fread(p_rc8, size_rc8, 1, f_rc8);
+	//判断文件头是否匹配
+	h_rc8 = (rc8_header_t*)p_rc8;
+	if (memcmp(h_rc8->magic, "\x98\x5A\x92\x9A\x38_00", 8))
+	{
+		//方便在批处理脚本中发现错误，采用MessageBox而不是printf
+		MessageBoxA(NULL, "RC8 header not match!", "RC8 Error", MB_OK);
+		return false;
+	}
+
+	return true;
+}
+
+void RCT::RCT2PNG()
+{
+	//png信息
+	DWORD height, width;
+	height = h_rct->height;
+	width = h_rct->width;
+
+	png_info.width = width;
+	png_info.height = height;
+	png_info.flag = HAVE_ALPHA;
+	png_info.bit_depth = 8;
+
+	png_info.rgba = new BYTE[width * height * 4];
+	BYTE *rgb_data;
+	//dump_rct(h_rct, rgb_data);
+
+
+	dump_rc8(h_rc8, rgb_data);
+	
+	for (DWORD i = 0; i < height; i++)
+	{
+		for (DWORD j = 0; j < width ; j++)
+		{
+			png_info.rgba[i * width * 4 + j*4] =	 rgb_data[i*width*3 + j*3 + 2];
+			png_info.rgba[i * width * 4 + j*4 + 1] = rgb_data[i*width*3 + j*3 + 1];
+			png_info.rgba[i * width * 4 + j*4 + 2] = rgb_data[i*width*3 + j*3];
+			png_info.rgba[i * width * 4 + j*4 + 3] = 255;                               //alpha
+		}
+	}
+	delete[]rgb_data;
+	
+	//处理文件名
+	string fn_png = fn_rct.substr(0, fn_rct.find_last_of(".")) + ".png";
+	//写png文件
+	write_png_file(fn_png, &png_info);
+}
+
+RCT::~RCT()
+{
+	delete[]p_rct;
+	delete[]p_rc8;
+	delete[]png_info.rgba;
+	fclose(f_rct);
+	fclose(f_rc8);
 }

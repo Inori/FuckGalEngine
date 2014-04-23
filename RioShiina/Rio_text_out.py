@@ -23,43 +23,26 @@ def int2byte(num):
 
 
 def FormatString(string, count):
-    #格式说明：
-    #★字符串行数★字符串
-    res = ''
-    flag = False
-    if string != '':
-        flag = True
-        
-        res = "★%08d★\n%s\n"%(count, string)
-        '''
-        res = "☆%08d☆\n%s★%08d★\n%s\n"%(count, string, count, string)
-        '''
-    else:
-        flag = False
-
-    return flag, res
+    '''
+    res = "●%08d●%s\n"%(count, string)
+    '''
+    res = "○%08d○%s●%08d●%s\n"%(count, string, count, string)
+    
+    return res
 
 f_lst = walk('res')
 for fn in f_lst:
     dstname = 'script' + fn[3:]
     dst = open(dstname,'w', encoding='utf16')
     src = open(fn, 'r', encoding='sjis', errors='ignore')
+    
     lines = src.readlines()
+    
     j = 0
-    num = len(lines)
-    stringline = ''
     for index, line in enumerate(lines):
-        
         if line[0] != '$' and line[0] != ';' and line != '\n':
-            if index < num -1:
-                if lines[index+1] != '\n':
-                    stringline += line
-                else:
-                    stringline += line
-                    flag, string= FormatString(stringline, j)
-                    dst.write(string)
-                    stringline = ''
-                    j += 1
+            dst.write(FormatString(line,j))
+            j += 1
     print(dstname)
     src.close()
     dst.close()
