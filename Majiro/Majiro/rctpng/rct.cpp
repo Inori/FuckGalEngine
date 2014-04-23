@@ -544,6 +544,8 @@ bool RCT::LoadRCT(string fname)
 		return false;
 	}
 
+	fclose(f_rct);
+	fclose(f_rc8);
 	return true;
 }
 
@@ -561,22 +563,23 @@ void RCT::RCT2PNG()
 
 	png_info.rgba = new BYTE[width * height * 4];
 	BYTE *rgb_data;
-	//dump_rct(h_rct, rgb_data);
+	dump_rct(h_rct, rgb_data);
 
-
-	dump_rc8(h_rc8, rgb_data);
+	BYTE *alp_data;
+	dump_rc8(h_rc8, alp_data);
 	
 	for (DWORD i = 0; i < height; i++)
 	{
 		for (DWORD j = 0; j < width ; j++)
-		{
-			png_info.rgba[i * width * 4 + j*4] =	 rgb_data[i*width*3 + j*3 + 2];
-			png_info.rgba[i * width * 4 + j*4 + 1] = rgb_data[i*width*3 + j*3 + 1];
-			png_info.rgba[i * width * 4 + j*4 + 2] = rgb_data[i*width*3 + j*3];
-			png_info.rgba[i * width * 4 + j*4 + 3] = 255;                               //alpha
+		{ 
+			png_info.rgba[i * width * 4 + j * 4]     = rgb_data[i*width * 3 + j * 3 + 2];
+			png_info.rgba[i * width * 4 + j * 4 + 1] = rgb_data[i*width * 3 + j * 3 + 1] ;
+			png_info.rgba[i * width * 4 + j * 4 + 2] = rgb_data[i*width * 3 + j * 3];
+			png_info.rgba[i * width * 4 + j * 4 + 3] = ~alp_data[i*width * 3 + j * 3];                               //alpha
 		}
 	}
 	delete[]rgb_data;
+	delete[]alp_data;
 	
 	//处理文件名
 	string fn_png = fn_rct.substr(0, fn_rct.find_last_of(".")) + ".png";
@@ -589,6 +592,4 @@ RCT::~RCT()
 	delete[]p_rct;
 	delete[]p_rc8;
 	delete[]png_info.rgba;
-	fclose(f_rct);
-	fclose(f_rc8);
 }
