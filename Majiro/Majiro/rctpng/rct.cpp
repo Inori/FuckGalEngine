@@ -562,6 +562,7 @@ void RCT::RCT2PNG()
 	png_info.bit_depth = 8;
 
 	png_info.rgba = new BYTE[width * height * 4];
+
 	BYTE *rgb_data;
 	dump_rct(h_rct, rgb_data);
 
@@ -573,7 +574,7 @@ void RCT::RCT2PNG()
 		for (DWORD j = 0; j < width ; j++)
 		{ 
 			png_info.rgba[i * width * 4 + j * 4]     = rgb_data[i*width * 3 + j * 3 + 2];
-			png_info.rgba[i * width * 4 + j * 4 + 1] = rgb_data[i*width * 3 + j * 3 + 1] ;
+			png_info.rgba[i * width * 4 + j * 4 + 1] = rgb_data[i*width * 3 + j * 3 + 1];
 			png_info.rgba[i * width * 4 + j * 4 + 2] = rgb_data[i*width * 3 + j * 3];
 			png_info.rgba[i * width * 4 + j * 4 + 3] = ~alp_data[i*width * 3 + j * 3];                               //alpha
 		}
