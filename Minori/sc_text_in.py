@@ -21,11 +21,14 @@ def byte2int(byte):
 def int2byte(num):
     return struct.pack('L',num)
 
-
-def FormatString(string, count):
-    #res = "●%08d●%s\n"%(count, string)
-    res = "○%08d○%s●%08d●%s\n"%(count, string,count, string)
-    return res
+#将txt转换成文本列表
+def makestr(lines):
+    string_list = []
+    for index,line in enumerate(lines):
+        s = re.match('●[0-9A-Fa-f]+●', line)
+        if s:
+            string_list.append(line[10:])
+    return string_list
 
 alnum = [' ','.',',','[',']', '_',
          '-', '\t',
@@ -41,27 +44,39 @@ def is_alnum(string):
             return False
     return True
 
-fl = walk('sc')
-sumlen = 0
-for fn in fl:
-    src = open(fn, 'r', encoding='sjis')
-    lines = src.readlines()
+def m_split(string):
+    if not '★' in string:
+        print('name format error')
+        input()
+    return string.split('★')
 
-    dstname = 'script' + fn[2:-2] + 'txt'
-    dst = open(dstname, 'w', encoding='utf16')
+fl = walk('script')
+for fn in fl:
+    src = open(fn, 'r', encoding='utf16')
+    lines = src.readlines()
+    cn_lines = makestr(lines)
+
+    rawname = 'sc' + fn[6:-3] + 'sc'
+    raw = open(rawname, 'r', encoding='sjis')
+    raw_lines = raw.readlines()
+
+    dstname = 'done' + fn[6:-3] + 'sc'
+    dst = open(dstname, 'w', encoding='gbk', errors='ignore')
+    
+    dst_lines = []
     i = 0
-    j = 1
-    for line in lines:
+    j = 0
+    for line in raw_lines:
         '''
         if '★' in line:
             print('fuck!')
             input()
         '''
         if '.message' in line:
+            i += 1
             #print(line.split(' '))
             *dm, name, text = line.split(' ')
             #测试
-            sumlen += len(text.strip('\n'))*2 / 1024
             for t in dm:
                 if not is_alnum(t):
                     print('\n')
@@ -72,17 +87,27 @@ for fn in fl:
                     input()
             
             if not is_alnum(name):
-                dst.write(FormatString(name+'★'+text, i))
+                cur_name, cur_text = m_split(cn_lines[j])
+                j += 1
+                dm.append(cur_name)
+                dm.append(cur_text)
             else:
-                dst.write(FormatString(text, i))
+                dm.append(name)
+                dm.append(cn_lines[j])
+                j += 1
+                
+            dst_lines.append(' '.join(dm))
+        else:
+            dst_lines.append(raw_lines[i])
             i += 1
-        j+=1
-            
+
+    for string in dst_lines:
+        dst.write(string)
+    
     print(dstname)
     src.close()
     dst.close()
 
-print('文本总量'+str(sumlen)+' KB')
 
 
 

@@ -106,12 +106,31 @@ int WINAPI NewCreateFileA(
 }
 void InstallJmp()
 {
+	/*
+	004CBEBC    8B76 04         mov     esi, dword ptr[esi + 0x4]
+	004CBEBF    8B4D 0C         mov     ecx, dword ptr[ebp + 0xC]
+	004CBEC2    8B7D 08         mov     edi, dword ptr[ebp + 0x8]
+	004CBEC5    F3:A4           rep     movs byte ptr es:[edi], byte ptr [esi]
+	004CBEC7    E9 91000000     jmp     004CBF5D
+	004CBECC    90              nop
+	004CBECD    90              nop
+	*/
 	BYTE patch[] = {0x8B, 0x76, 0x04, 0x8B, 0x4D, 0x0C, 0x8B, 0x7D, 0x08, 0xF3, 0xA4, 0xE9, 0x91, 0x00, 0x00, 0x00, 0x90, 0x90};
 	memcopy((void*)0x004CBEBC, patch, sizeof(patch));
 }
 
 void RecoverJmp()
 {
+	/*
+	004CBEB3    0FB7C8         movzx   ecx, ax
+	004CBEB6    894D 10        mov     dword ptr [ebp+0x10], ecx
+	004CBEB9    397E 14        cmp     dword ptr [esi+0x14], edi
+	004CBEBC / 0F86 9B000000   jbe     004CBF5D
+	004CBEC2 | 53              push    ebx
+	004CBEC3 | BA 00010000     mov     edx, 0x100
+	004CBEC8 | 0FB7D9          movzx   ebx, cx
+	004CBECB | 66:3BCA         cmp     cx, dx
+	*/
 	BYTE patch[] = {0x0F, 0x86, 0x9B, 0x00, 0x00, 0x00, 0x53, 0xBA, 0x00, 0x01, 0x00, 0x00, 0x0F, 0xB7, 0xD9, 0x66, 0x3B, 0xCA};
 	memcopy((void*)0x004CBEBC, patch, sizeof(patch));
 }
