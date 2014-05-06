@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fuckpaz", "fuckpaz\fuckpaz.vcxproj", "{E19C8F01-222D-456C-B2EE-2C901899A0D4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MinoriPatch", "MinoriPatch\MinoriPatch.vcxproj", "{1B3B2FBB-A85D-40B7-B311-C1944E7E819B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -15,6 +17,10 @@ Global
 		{E19C8F01-222D-456C-B2EE-2C901899A0D4}.Debug|Win32.Build.0 = Debug|Win32
 		{E19C8F01-222D-456C-B2EE-2C901899A0D4}.Release|Win32.ActiveCfg = Release|Win32
 		{E19C8F01-222D-456C-B2EE-2C901899A0D4}.Release|Win32.Build.0 = Release|Win32
+		{1B3B2FBB-A85D-40B7-B311-C1944E7E819B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1B3B2FBB-A85D-40B7-B311-C1944E7E819B}.Debug|Win32.Build.0 = Debug|Win32
+		{1B3B2FBB-A85D-40B7-B311-C1944E7E819B}.Release|Win32.ActiveCfg = Release|Win32
+		{1B3B2FBB-A85D-40B7-B311-C1944E7E819B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
