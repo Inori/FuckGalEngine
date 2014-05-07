@@ -1,0 +1,89 @@
+02A9D270 <motionpl.GetPSBImage>                 .  6A FF         push    -0x1                             ;  loc_1003D270
+
+
+
+hook
+
+02A9D51E <motionpl.loc_1003D51E>                > \8D5424 20     lea     edx, dword ptr [esp+0x20]        ;  loc_1003D51E
+02A9D522                                        .  52            push    edx
+02A9D523                                        .  8D4424 18     lea     eax, dword ptr [esp+0x18]
+02A9D527                                        .  50            push    eax
+02A9D528                                        .  E8 136F0300   call    <GetItemInfo>
+
+
+ecx= strings
+
+记录
+[edx]的指针
+保存到vector
+
+
+
+
+
+比对ebx指针和刚才记录的record
+02A98E9C <motionpl.loc_10038E9C>                > \8B4C24 34     mov     ecx, dword ptr [esp+0x34]        ;  loc_10038E9C
+02A98EA0                                        .  E8 2BAD0300   call    <M2GetInt>
+02A98EA5                                        .  8B5C24 30     mov     ebx, dword ptr [esp+0x30]
+02A98EA9                                        .  50            push    eax
+02A98EAA                                        .  E8 31BF0300   call    <GetDibData>
+
+
+记录最开始的dest 之后根据文件名将内存读入
+
+02A98EF5                                        .  8B6C24 14     mov     ebp, dword ptr [esp+0x14]
+02A98EF9                                        .  03ED          add     ebp, ebp
+02A98EFB                                        .  03ED          add     ebp, ebp
+02A98EFD                                        .  8D49 00       lea     ecx, dword ptr [ecx]
+02A98F00 <motionpl.loc_10038F00>                >  55            push    ebp                              ; /loc_10038F00
+02A98F01                                        .  53            push    ebx                              ; |src
+02A98F02                                        .  56            push    esi                              ; |dest
+02A98F03                                        .  E8 E8260400   call    <memcpy>                         ; \memcpy
+02A98F08                                        .  037424 28     add     esi, dword ptr [esp+0x28]
+02A98F0C                                        .  83C4 0C       add     esp, 0xC
+02A98F0F                                        .  03DD          add     ebx, ebp
+02A98F11                                        .  83EF 01       sub     edi, 0x1
+02A98F14                                        .^ 75 EA         jnz     short <loc_10038F00>
+
+
+
+loc_1003B1DD往下
+
+
+02B9B232                                       |.  83C4 04       add     esp, 0x4
+02B9B235                                       |.  8D8D 4CFFFFFF lea     ecx, dword ptr [ebp-0xB4]
+02B9B23B                                       |.  51            push    ecx
+02B9B23C                                       |.  8BF8          mov     edi, eax
+02B9B23E                                       |.  8B06          mov     eax, dword ptr [esi]
+02B9B240                                       |.  8B50 0C       mov     edx, dword ptr [eax+0xC]
+02B9B243                                       |.  53            push    ebx
+02B9B244                                       |.  57            push    edi
+02B9B245                                       |.  56            push    esi
+02B9B246                                       |.  89BD 74FFFFFF mov     dword ptr [ebp-0x8C], edi
+02B9B24C                                       |.  FFD2          call    edx                              ;  ReadFile
+
+
+获取psb文件的大小并记录
+
+
+结构
+
+typedef struct psbinfo_s
+{
+    PDWORD psbfunctable;  //0
+    DWORD unknow1; //4
+    DWORD unknow2;  //8
+    PBYTE pPSBData;  //C
+    DWORD psbSize;  //10
+    DWORD unknow3;  //14
+    DWORD nType;  //18
+    DWORD nPSBhead;  //1C
+    DWORD nNameTree;  //20
+    DWORD nStrOffList;  //24
+    DWORD nStrRes;  //28
+    DWORD nDibOffList;  //2C
+    DWORD nDibSizeList;  //30
+    DWORD nDibRes;  //34
+    DWORD nResIndexTree;  //38
+    DWORD unknow13;  //3C
+}psbinfo_t;

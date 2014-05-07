@@ -1,0 +1,170 @@
+02BD4440 <motionpl.GetData>            /$  55            push    ebp                              ;  sub_10074440
+02BD4441                               |.  8BEC          mov     ebp, esp
+02BD4443                               |.  83E4 F8       and     esp, 0xFFFFFFF8
+02BD4446                               |.  83EC 2C       sub     esp, 0x2C
+02BD4449                               |.  53            push    ebx
+02BD444A                               |.  56            push    esi
+02BD444B                               |.  8B75 08       mov     esi, dword ptr [ebp+0x8]
+02BD444E                               |.  8B06          mov     eax, dword ptr [esi]
+02BD4450                               |.  8378 18 01    cmp     dword ptr [eax+0x18], 0x1
+02BD4454                               |.  57            push    edi
+02BD4455                               |.  8D5424 14     lea     edx, dword ptr [esp+0x14]
+02BD4459                               |.  52            push    edx
+02BD445A                               |.  51            push    ecx
+02BD445B                               |.  0F85 C9000000 jnz     <loc_1007452A>                   ;  ecx+18 ==1 ?
+02BD4461                               |.  E8 EA040000   call    <CompareNameTree>
+02BD4466                               |.  84C0          test    al, al
+02BD4468                               |.  75 0B         jnz     short <loc_10074475>
+02BD446A <motionpl.loc_1007446A>       |>  32C0          xor     al, al                           ;  loc_1007446A
+02BD446C                               |.  5F            pop     edi
+02BD446D                               |.  5E            pop     esi
+02BD446E                               |.  5B            pop     ebx
+02BD446F                               |.  8BE5          mov     esp, ebp
+02BD4471                               |.  5D            pop     ebp
+02BD4472                               |.  C2 0800       retn    0x8
+02BD4475 <motionpl.loc_10074475>       |>  8B5E 04       mov     ebx, dword ptr [esi+0x4]         ;  loc_10074475
+02BD4478                               |.  0FB673 01     movzx   esi, byte ptr [ebx+0x1]
+02BD447C                               |.  8D7B 01       lea     edi, dword ptr [ebx+0x1]
+02BD447F                               |.  8BCF          mov     ecx, edi
+02BD4481                               |.  83EE 0B       sub     esi, 0xB
+02BD4484                               |.  E8 F7F5FFFF   call    <M2GetInt>
+02BD4489                               |.  0FB60C3E      movzx   ecx, byte ptr [esi+edi]
+02BD448D                               |.  83E9 0C       sub     ecx, 0xC
+02BD4490                               |.  894C24 20     mov     dword ptr [esp+0x20], ecx
+02BD4494                               |.  0FAFC8        imul    ecx, eax
+02BD4497                               |.  8D4C31 01     lea     ecx, dword ptr [ecx+esi+0x1]
+02BD449B                               |.  894C24 18     mov     dword ptr [esp+0x18], ecx
+02BD449F                               |.  8D4C0B 01     lea     ecx, dword ptr [ebx+ecx+0x1]
+02BD44A3                               |.  8D543E 01     lea     edx, dword ptr [esi+edi+0x1]
+02BD44A7                               |.  894424 1C     mov     dword ptr [esp+0x1C], eax
+02BD44AB                               |.  895424 24     mov     dword ptr [esp+0x24], edx
+02BD44AF                               |.  894C24 10     mov     dword ptr [esp+0x10], ecx
+02BD44B3                               |.  C74424 0C 000>mov     dword ptr [esp+0xC], 0x0
+02BD44BB                               |.  8BD8          mov     ebx, eax
+02BD44BD                               |.  85C0          test    eax, eax
+02BD44BF                               |.^ 76 A9         jbe     short <loc_1007446A>
+02BD44C1 <motionpl.loc_100744C1>       |>  8B5424 0C     /mov     edx, dword ptr [esp+0xC]        ;  loc_100744C1
+02BD44C5                               |.  8D3C13        |lea     edi, dword ptr [ebx+edx]
+02BD44C8                               |.  D1EF          |shr     edi, 1
+02BD44CA                               |.  8BD7          |mov     edx, edi
+02BD44CC                               |.  8D4C24 18     |lea     ecx, dword ptr [esp+0x18]
+02BD44D0                               |.  E8 6BF7FFFF   |call    <M2GetArraryData>
+02BD44D5                               |.  8BF0          |mov     esi, eax
+02BD44D7                               |.  037424 10     |add     esi, dword ptr [esp+0x10]
+02BD44DB                               |.  8BCE          |mov     ecx, esi
+02BD44DD                               |.  E8 0EF6FFFF   |call    <M2GetInt>
+02BD44E2                               |.  8B4C24 14     |mov     ecx, dword ptr [esp+0x14]
+02BD44E6                               |.  3BC1          |cmp     eax, ecx
+02BD44E8                               |.  74 1C         |je      short <loc_10074506>
+02BD44EA                               |.  73 07         |jnb     short <loc_100744F3>
+02BD44EC                               |.  47            |inc     edi
+02BD44ED                               |.  897C24 0C     |mov     dword ptr [esp+0xC], edi
+02BD44F1                               |.  EB 02         |jmp     short <loc_100744F5>
+02BD44F3 <motionpl.loc_100744F3>       |>  8BDF          |mov     ebx, edi                        ;  loc_100744F3
+02BD44F5 <motionpl.loc_100744F5>       |>  395C24 0C     |cmp     dword ptr [esp+0xC], ebx        ;  loc_100744F5
+02BD44F9                               |.^ 72 C6         \jb      short <loc_100744C1>
+02BD44FB                               |.  32C0          xor     al, al
+02BD44FD                               |.  5F            pop     edi
+02BD44FE                               |.  5E            pop     esi
+02BD44FF                               |.  5B            pop     ebx
+02BD4500                               |.  8BE5          mov     esp, ebp
+02BD4502                               |.  5D            pop     ebp
+02BD4503                               |.  C2 0800       retn    0x8
+02BD4506 <motionpl.loc_10074506>       |>  0FB616        movzx   edx, byte ptr [esi]              ;  loc_10074506
+02BD4509                               |.  8B45 08       mov     eax, dword ptr [ebp+0x8]
+02BD450C                               |.  8B08          mov     ecx, dword ptr [eax]
+02BD450E                               |.  8B0495 B81EBF>mov     eax, dword ptr [edx*4+<dword_100>
+02BD4515                               |.  8B55 0C       mov     edx, dword ptr [ebp+0xC]
+02BD4518                               |.  03C6          add     eax, esi
+02BD451A                               |.  8942 04       mov     dword ptr [edx+0x4], eax
+02BD451D                               |.  B0 01         mov     al, 0x1
+02BD451F                               |.  890A          mov     dword ptr [edx], ecx
+02BD4521                               |.  5F            pop     edi
+02BD4522                               |.  5E            pop     esi
+02BD4523                               |.  5B            pop     ebx
+02BD4524                               |.  8BE5          mov     esp, ebp
+02BD4526                               |.  5D            pop     ebp
+02BD4527                               |.  C2 0800       retn    0x8
+02BD452A <motionpl.loc_1007452A>       |>  E8 21040000   call    <CompareNameTree>                ;  loc_1007452A
+02BD452F                               |.  84C0          test    al, al
+02BD4531                               |.^ 0F84 33FFFFFF je      <loc_1007446A>
+02BD4537                               |.  8B76 04       mov     esi, dword ptr [esi+0x4]
+02BD453A                               |.  0FB67E 01     movzx   edi, byte ptr [esi+0x1]
+02BD453E                               |.  46            inc     esi
+02BD453F                               |.  8BCE          mov     ecx, esi
+02BD4541                               |.  83EF 0B       sub     edi, 0xB
+02BD4544                               |.  E8 37F5FFFF   call    <M2GetInt>
+02BD4549                               |.  0FB60C37      movzx   ecx, byte ptr [edi+esi]
+02BD454D                               |.  83E9 0C       sub     ecx, 0xC
+02BD4550                               |.  894C24 20     mov     dword ptr [esp+0x20], ecx
+02BD4554                               |.  0FAFC8        imul    ecx, eax
+02BD4557                               |.  8D5437 01     lea     edx, dword ptr [edi+esi+0x1]
+02BD455B                               |.  8D4C39 01     lea     ecx, dword ptr [ecx+edi+0x1]
+02BD455F                               |.  33FF          xor     edi, edi
+02BD4561                               |.  894424 1C     mov     dword ptr [esp+0x1C], eax
+02BD4565                               |.  895424 24     mov     dword ptr [esp+0x24], edx
+02BD4569                               |.  894C24 18     mov     dword ptr [esp+0x18], ecx
+02BD456D                               |.  8BF0          mov     esi, eax
+02BD456F                               |.  85C0          test    eax, eax
+02BD4571                               |.^ 0F86 F3FEFFFF jbe     <loc_1007446A>
+02BD4577 <motionpl.loc_10074577>       |>  8D1C3E        /lea     ebx, dword ptr [esi+edi]        ;  loc_10074577
+02BD457A                               |.  D1EB          |shr     ebx, 1
+02BD457C                               |.  8BD3          |mov     edx, ebx
+02BD457E                               |.  8D4C24 18     |lea     ecx, dword ptr [esp+0x18]
+02BD4582                               |.  E8 B9F6FFFF   |call    <M2GetArraryData>
+02BD4587                               |.  8B4C24 14     |mov     ecx, dword ptr [esp+0x14]
+02BD458B                               |.  3BC1          |cmp     eax, ecx
+02BD458D                               |.  74 18         |je      short <loc_100745A7>
+02BD458F                               |.  73 05         |jnb     short <loc_10074596>
+02BD4591                               |.  8D7B 01       |lea     edi, dword ptr [ebx+0x1]
+02BD4594                               |.  EB 02         |jmp     short <loc_10074598>
+02BD4596 <motionpl.loc_10074596>       |>  8BF3          |mov     esi, ebx                        ;  loc_10074596
+02BD4598 <motionpl.loc_10074598>       |>  3BFE          |cmp     edi, esi                        ;  loc_10074598
+02BD459A                               |.^ 72 DB         \jb      short <loc_10074577>
+02BD459C                               |.  32C0          xor     al, al
+02BD459E                               |.  5F            pop     edi
+02BD459F                               |.  5E            pop     esi
+02BD45A0                               |.  5B            pop     ebx
+02BD45A1                               |.  8BE5          mov     esp, ebp
+02BD45A3                               |.  5D            pop     ebp
+02BD45A4                               |.  C2 0800       retn    0x8
+02BD45A7 <motionpl.loc_100745A7>       |>  3BFE          cmp     edi, esi                         ;  loc_100745A7
+02BD45A9                               |.^ 0F83 BBFEFFFF jnb     <loc_1007446A>
+02BD45AF                               |.  8B55 08       mov     edx, dword ptr [ebp+0x8]
+02BD45B2                               |.  8B42 04       mov     eax, dword ptr [edx+0x4]
+02BD45B5                               |.  8B4C24 18     mov     ecx, dword ptr [esp+0x18]
+02BD45B9                               |.  0FB67408 01   movzx   esi, byte ptr [eax+ecx+0x1]
+02BD45BE                               |.  8D7C08 01     lea     edi, dword ptr [eax+ecx+0x1]
+02BD45C2                               |.  8BCF          mov     ecx, edi
+02BD45C4                               |.  83EE 0B       sub     esi, 0xB
+02BD45C7                               |.  E8 B4F4FFFF   call    <M2GetInt>
+02BD45CC                               |.  0FB60C3E      movzx   ecx, byte ptr [esi+edi]
+02BD45D0                               |.  83E9 0C       sub     ecx, 0xC
+02BD45D3                               |.  894C24 30     mov     dword ptr [esp+0x30], ecx
+02BD45D7                               |.  0FAFC8        imul    ecx, eax
+02BD45DA                               |.  8D543E 01     lea     edx, dword ptr [esi+edi+0x1]
+02BD45DE                               |.  8D7431 01     lea     esi, dword ptr [ecx+esi+0x1]
+02BD45E2                               |.  895424 34     mov     dword ptr [esp+0x34], edx
+02BD45E6                               |.  8BD3          mov     edx, ebx
+02BD45E8                               |.  8D4C24 28     lea     ecx, dword ptr [esp+0x28]
+02BD45EC                               |.  894424 2C     mov     dword ptr [esp+0x2C], eax
+02BD45F0                               |.  897424 28     mov     dword ptr [esp+0x28], esi
+02BD45F4                               |.  E8 47F6FFFF   call    <M2GetArraryData>
+02BD45F9                               |.  8B4D 08       mov     ecx, dword ptr [ebp+0x8]
+02BD45FC                               |.  0341 04       add     eax, dword ptr [ecx+0x4]
+02BD45FF                               |.  8B5424 18     mov     edx, dword ptr [esp+0x18]
+02BD4603                               |.  8B09          mov     ecx, dword ptr [ecx]
+02BD4605                               |.  03C6          add     eax, esi
+02BD4607                               |.  8D4410 01     lea     eax, dword ptr [eax+edx+0x1]
+02BD460B                               |.  8B55 0C       mov     edx, dword ptr [ebp+0xC]
+02BD460E                               |.  5F            pop     edi
+02BD460F                               |.  5E            pop     esi
+02BD4610                               |.  8942 04       mov     dword ptr [edx+0x4], eax
+02BD4613                               |.  B0 01         mov     al, 0x1
+02BD4615                               |.  890A          mov     dword ptr [edx], ecx
+02BD4617                               |.  5B            pop     ebx
+02BD4618                               |.  8BE5          mov     esp, ebp
+02BD461A                               |.  5D            pop     ebp
+02BD461B                               \.  C2 0800       retn    0x8
+
+ 

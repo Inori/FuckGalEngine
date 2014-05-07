@@ -1,0 +1,101 @@
+xp3文件解密
+
+1E001F20                              83EC 08         sub     esp, 0x8
+1E001F23                              53              push    ebx
+1E001F24                              55              push    ebp
+1E001F25                              56              push    esi
+1E001F26                              8B7424 18       mov     esi, dword ptr [esp+0x18]
+1E001F2A                              57              push    edi
+1E001F2B                              33DB            xor     ebx, ebx
+1E001F2D                              8B6E 14         mov     ebp, dword ptr [esi+0x14]
+1E001F30                              8B46 08         mov     eax, dword ptr [esi+0x8]
+1E001F33                              8B56 04         mov     edx, dword ptr [esi+0x4]
+1E001F36                              8BFD            mov     edi, ebp
+1E001F38                              81E7 F0020000   and     edi, 0x2F0
+1E001F3E                              81C7 18040000   add     edi, 0x418
+1E001F44                              3BC3            cmp     eax, ebx
+1E001F46                              77 6A           ja      short 1E001FB2
+1E001F48                              72 04           jb      short 1E001F4E
+1E001F4A                              3BD7            cmp     edx, edi
+1E001F4C                              73 56           jnb     short 1E001FA4
+1E001F4E                              8B5E 10         mov     ebx, dword ptr [esi+0x10]
+1E001F51                              33C9            xor     ecx, ecx
+1E001F53                              03DA            add     ebx, edx
+1E001F55                              895C24 10       mov     dword ptr [esp+0x10], ebx
+1E001F59                              13C8            adc     ecx, eax
+1E001F5B                              33DB            xor     ebx, ebx
+1E001F5D                              3BCB            cmp     ecx, ebx
+1E001F5F                              72 43           jb      short 1E001FA4
+1E001F61                              77 06           ja      short 1E001F69
+1E001F63                              397C24 10       cmp     dword ptr [esp+0x10], edi
+1E001F67                              76 3B           jbe     short 1E001FA4
+1E001F69                              8B4E 04         mov     ecx, dword ptr [esi+0x4]
+1E001F6C                              8BDF            mov     ebx, edi
+1E001F6E                              2BD9            sub     ebx, ecx
+1E001F70                              8B4E 0C         mov     ecx, dword ptr [esi+0xC]
+1E001F73                              53              push    ebx
+1E001F74                              51              push    ecx
+1E001F75                              50              push    eax
+1E001F76                              52              push    edx
+1E001F77                              55              push    ebp
+1E001F78                              E8 93000000     call    1E002010
+1E001F7D                              8B56 10         mov     edx, dword ptr [esi+0x10]
+1E001F80                              8B4E 04         mov     ecx, dword ptr [esi+0x4]
+1E001F83                              8B46 0C         mov     eax, dword ptr [esi+0xC]
+1E001F86                              2BD7            sub     edx, edi
+1E001F88                              03D1            add     edx, ecx
+1E001F8A                              03C3            add     eax, ebx
+1E001F8C                              52              push    edx
+1E001F8D                              8BCD            mov     ecx, ebp
+1E001F8F                              50              push    eax
+1E001F90                              33C0            xor     eax, eax
+1E001F92                              C1E9 10         shr     ecx, 0x10
+1E001F95                              50              push    eax
+1E001F96                              33CD            xor     ecx, ebp
+1E001F98                              57              push    edi
+1E001F99                              51              push    ecx
+1E001F9A                              E8 71000000     call    1E002010
+1E001F9F                              83C4 28         add     esp, 0x28
+1E001FA2                              EB 28           jmp     short 1E001FCC
+1E001FA4                              3BC3            cmp     eax, ebx
+1E001FA6                              77 0A           ja      short 1E001FB2
+1E001FA8                              72 04           jb      short 1E001FAE
+1E001FAA                              3BD7            cmp     edx, edi
+1E001FAC                              73 04           jnb     short 1E001FB2
+1E001FAE                              8BCD            mov     ecx, ebp
+1E001FB0                              EB 07           jmp     short 1E001FB9
+1E001FB2                              8BCD            mov     ecx, ebp
+1E001FB4                              C1E9 10         shr     ecx, 0x10
+1E001FB7                              33CD            xor     ecx, ebp
+1E001FB9                              8B7E 10         mov     edi, dword ptr [esi+0x10]
+1E001FBC                              8B76 0C         mov     esi, dword ptr [esi+0xC]
+1E001FBF                              57              push    edi
+1E001FC0                              56              push    esi
+1E001FC1                              50              push    eax
+1E001FC2                              52              push    edx
+1E001FC3                              51              push    ecx
+1E001FC4                              E8 47000000     call    1E002010
+1E001FC9                              83C4 14         add     esp, 0x14
+1E001FCC                              E8 CF070000     call    1E0027A0
+1E001FD1                              8BC8            mov     ecx, eax
+1E001FD3                              E8 58020000     call    1E002230
+1E001FD8                              A1 8083031E     mov     eax, dword ptr [0x1E038380]
+1E001FDD                              5F              pop     edi
+1E001FDE                              48              dec     eax
+1E001FDF                              5E              pop     esi
+1E001FE0                              5D              pop     ebp
+1E001FE1                              A3 8083031E     mov     dword ptr [0x1E038380], eax
+1E001FE6                              5B              pop     ebx
+1E001FE7                              75 1B           jnz     short 1E002004
+1E001FE9                              68 4829031E     push    1E032948                               ; UNICODE "F4"
+1E001FEE                              E8 AD070000     call    1E0027A0
+1E001FF3                              8BC8            mov     ecx, eax
+1E001FF5                              E8 96050000     call    1E002590
+1E001FFA                              C705 8083031E 7>mov     dword ptr [0x1E038380], 0x2B73
+1E002004                              83C4 08         add     esp, 0x8
+1E002007                              C3              retn
+
+
+
+获取xp3函数后,内存搜索psb
+硬断读取 之后跟

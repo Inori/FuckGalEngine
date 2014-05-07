@@ -1,0 +1,55 @@
+02BC3C40 <motionpl.M2InitArray>    /$  8B41 08       mov     eax, dword ptr [ecx+0x8]                     ;  sub_10073C40
+02BC3C43                           |.  56            push    esi
+02BC3C44                           |.  8D70 FF       lea     esi, dword ptr [eax-0x1]                     ;  Switch (cases 1..4)
+02BC3C47                           |.  83FE 03       cmp     esi, 0x3
+02BC3C4A                           |.  77 70         ja      short <loc_10073CBC>
+02BC3C4C                           |.  FF24B5 D43CBC>jmp     dword ptr [esi*4+<off_10073CD4>]
+02BC3C53 <motionpl.loc_10073C53>   |>  8B49 0C       mov     ecx, dword ptr [ecx+0xC]                     ;  loc_10073C53; Case 1 of switch 02BC3C44
+02BC3C56                           |.  0FAFC2        imul    eax, edx
+02BC3C59                           |.  0FB60408      movzx   eax, byte ptr [eax+ecx]
+02BC3C5D                           |.  5E            pop     esi
+02BC3C5E                           |.  C3            retn
+02BC3C5F <motionpl.loc_10073C5F>   |>  0FAFC2        imul    eax, edx                                     ;  loc_10073C5F; Case 2 of switch 02BC3C44
+02BC3C62                           |.  0341 0C       add     eax, dword ptr [ecx+0xC]
+02BC3C65                           |.  5E            pop     esi
+02BC3C66                           |.  8BC8          mov     ecx, eax
+02BC3C68                           |.  0FB641 01     movzx   eax, byte ptr [ecx+0x1]
+02BC3C6C                           |.  0FB611        movzx   edx, byte ptr [ecx]
+02BC3C6F                           |.  C1E0 08       shl     eax, 0x8
+02BC3C72                           |.  0BC2          or      eax, edx
+02BC3C74                           |.  C3            retn
+02BC3C75 <motionpl.loc_10073C75>   |>  0FAFC2        imul    eax, edx                                     ;  loc_10073C75; Case 3 of switch 02BC3C44
+02BC3C78                           |.  0341 0C       add     eax, dword ptr [ecx+0xC]
+02BC3C7B                           |.  5E            pop     esi
+02BC3C7C                           |.  8BC8          mov     ecx, eax
+02BC3C7E                           |.  0FB641 02     movzx   eax, byte ptr [ecx+0x2]
+02BC3C82                           |.  0FB651 01     movzx   edx, byte ptr [ecx+0x1]
+02BC3C86                           |.  0FB609        movzx   ecx, byte ptr [ecx]
+02BC3C89                           |.  C1E0 08       shl     eax, 0x8
+02BC3C8C                           |.  0BC2          or      eax, edx
+02BC3C8E                           |.  C1E0 08       shl     eax, 0x8
+02BC3C91                           |.  0BC1          or      eax, ecx
+02BC3C93                           |.  C3            retn
+02BC3C94 <motionpl.loc_10073C94>   |>  0FAFC2        imul    eax, edx                                     ;  loc_10073C94; Case 4 of switch 02BC3C44
+02BC3C97                           |.  0341 0C       add     eax, dword ptr [ecx+0xC]
+02BC3C9A                           |.  5E            pop     esi
+02BC3C9B                           |.  8BC8          mov     ecx, eax
+02BC3C9D                           |.  0FB641 03     movzx   eax, byte ptr [ecx+0x3]
+02BC3CA1                           |.  0FB651 02     movzx   edx, byte ptr [ecx+0x2]
+02BC3CA5                           |.  C1E0 08       shl     eax, 0x8
+02BC3CA8                           |.  0BC2          or      eax, edx
+02BC3CAA                           |.  0FB651 01     movzx   edx, byte ptr [ecx+0x1]
+02BC3CAE                           |.  0FB609        movzx   ecx, byte ptr [ecx]
+02BC3CB1                           |.  C1E0 08       shl     eax, 0x8
+02BC3CB4                           |.  0BC2          or      eax, edx
+02BC3CB6                           |.  C1E0 08       shl     eax, 0x8
+02BC3CB9                           |.  0BC1          or      eax, ecx
+02BC3CBB                           |.  C3            retn
+02BC3CBC <motionpl.loc_10073CBC>   |>  68 CC7BBE02   push    offset <aPsbInternalErr>                     ;  psb: internal error: access to uninitialized array structure.\n; Default case of switch 02BC3C44
+02BC3CC1                           |.  E8 F5300000   call    <sub_10076DBB>
+02BC3CC6                           |.  83C4 04       add     esp, 0x4
+02BC3CC9                           |.  E8 B52F0000   call    <_abort>                                     ; [_abort
+02BC3CCE                           |.  33C0          xor     eax, eax
+02BC3CD0                           |.  5E            pop     esi
+02BC3CD1                           \.  C3            retn
+
