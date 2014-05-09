@@ -1,5 +1,6 @@
 // exef2paz, v1.22r5 2014/02/02
 // coded by asmodean•‰ü‘¢8pvc09vr11
+// modified by ¸£Òô   modified by Fuyin 2014/5/2
 
 // This tool extracts and rebuilds data from *.paz archives used by minori.
 
