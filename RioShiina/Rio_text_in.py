@@ -21,7 +21,10 @@ def byte2int(byte):
 def int2byte(num):
     return struct.pack('L',num)
 
-
+def StringFilter(string):
+    string = string.replace('【', '亂')
+    string = string.replace('】', '亃')
+    return string
 #将txt转换成文本列表
 def makestr(lines):
     string_list = []
@@ -47,7 +50,7 @@ for fn in f_lst:
     j = 0
     for index, line in enumerate(jp_lines):
         if line[0] != '$' and line[0] != ';' and line != '\n':
-            dstlines.append(cn_lines[j])
+            dstlines.append(StringFilter(cn_lines[j]))
             j += 1
         else:
             dstlines.append(line.encode('sjis').decode('gbk',errors='ignore'))
