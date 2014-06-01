@@ -24,12 +24,9 @@ def int2byte(num):
 
 
 def FormatString(string, count):
-    #格式说明：
-    #★字符串行数★字符串
+    res = "○%08d○%s\n●%08d●%s\n\n"%(count, string, count, string)
 
-    #res = "☆%08d☆\r\n%s\r\n★%08d★\r\n%s\r\n\r\n"%(count, string, count, string)
-    res = "☆%08d☆%s\r\n★%08d★%s\r\n\r\n"%(count, string, count, string)
-    #res = "☆%08d☆\r\n%s\r\n\r\n"%(count, string)
+    #res = "●%08d●%s\n\n"%(count, string)
 
     return res
 
@@ -65,7 +62,7 @@ def DumpText(src, offset):
             bytestream += byte
     return string
 
-src = open('decrypt_text.bin', 'rb')
+src = open('TEXT.DAT', 'rb')
 dst = open('text.txt', 'w', encoding='utf16')
 
 src.seek(0x0c)
@@ -78,7 +75,8 @@ for i in range(0, count):
     text_list.append([num, text])
 
 for [num, text] in text_list:
-    string = FormatString(text, num)
+    #string = FormatString(text, num)
+    string = text + '\n'
     dst.write(string)
 
 src.close()
