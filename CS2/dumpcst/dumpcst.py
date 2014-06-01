@@ -46,9 +46,9 @@ def int2byte(num):
 
 
 def FormatString(string, count):
-    #res = "○%08d○%s\n●%08d●%s\n\n"%(count, string, count, string)
+    res = "○%08d○%s\n●%08d●%s\n\n"%(count, string, count, string)
 
-    res = "●%08d●%s\n\n"%(count, string)
+    #res = "●%08d●%s\n\n"%(count, string)
 
     return res
 
