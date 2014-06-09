@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AesDecrypt", "AesDecrypt\AesDecrypt.vcxproj", "{DD5083AC-300E-49E4-AA0A-BD2069D746E4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpritePatch", "SpritePatch\SpritePatch.vcxproj", "{5ABBEFCD-19A7-4615-AF5D-51378AC5662D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cct_unpack", "cct_unpack\cct_unpack.vcxproj", "{9FE49714-8C3F-4828-82CD-7CFCD248DFE2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cct_repack", "cct_repack\cct_repack.vcxproj", "{372AA76E-3147-4D2F-9D1A-16FAE01F2854}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DD5083AC-300E-49E4-AA0A-BD2069D746E4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DD5083AC-300E-49E4-AA0A-BD2069D746E4}.Debug|Win32.Build.0 = Debug|Win32
+		{DD5083AC-300E-49E4-AA0A-BD2069D746E4}.Release|Win32.ActiveCfg = Release|Win32
+		{DD5083AC-300E-49E4-AA0A-BD2069D746E4}.Release|Win32.Build.0 = Release|Win32
+		{5ABBEFCD-19A7-4615-AF5D-51378AC5662D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5ABBEFCD-19A7-4615-AF5D-51378AC5662D}.Debug|Win32.Build.0 = Debug|Win32
+		{5ABBEFCD-19A7-4615-AF5D-51378AC5662D}.Release|Win32.ActiveCfg = Release|Win32
+		{5ABBEFCD-19A7-4615-AF5D-51378AC5662D}.Release|Win32.Build.0 = Release|Win32
+		{9FE49714-8C3F-4828-82CD-7CFCD248DFE2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9FE49714-8C3F-4828-82CD-7CFCD248DFE2}.Debug|Win32.Build.0 = Debug|Win32
+		{9FE49714-8C3F-4828-82CD-7CFCD248DFE2}.Release|Win32.ActiveCfg = Release|Win32
+		{9FE49714-8C3F-4828-82CD-7CFCD248DFE2}.Release|Win32.Build.0 = Release|Win32
+		{372AA76E-3147-4D2F-9D1A-16FAE01F2854}.Debug|Win32.ActiveCfg = Debug|Win32
+		{372AA76E-3147-4D2F-9D1A-16FAE01F2854}.Debug|Win32.Build.0 = Debug|Win32
+		{372AA76E-3147-4D2F-9D1A-16FAE01F2854}.Release|Win32.ActiveCfg = Release|Win32
+		{372AA76E-3147-4D2F-9D1A-16FAE01F2854}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
