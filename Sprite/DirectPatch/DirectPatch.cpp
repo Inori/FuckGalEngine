@@ -252,8 +252,14 @@ VOID PrintText(HDC dc,char* text,int x,int y)
 	SetBkColor(dc, RGB(0, 0, 0));              /**< 背景色为黑色 */
 	SetBkMode(dc, TRANSPARENT);                     /**< 用当前的背景颜色填充背景 */
 
+	                                     /**< 绘制阴影 */
+	SetTextColor(dc, RGB(0, 0, 0));      /**< 字体颜色黑色 */
+	TextOut(dc, x + 2, y + 2, text, strlen(text)); /**< 输出文字到暂存hDC */
+
 	SetTextColor(dc, RGB(255, 255, 255));      /**< 字体颜色白色 */
 	TextOut(dc, x, y, text, strlen(text)); /**< 输出文字到暂存hDC */
+
+
 
 	SelectObject(dc,oldObject);
 }
@@ -301,6 +307,8 @@ string fixstr(string dststr)
 	disp_text = replace_all(disp_text, "亃", "】");
 	disp_text = replace_all(disp_text, "乽", "「");
 	disp_text = replace_all(disp_text, "乿", "」");
+
+	//选择支文本 \x0D 为换行标志
 	disp_text = replace_all(disp_text, "\x0D", "<br>");
 
 	return disp_text;
@@ -363,8 +371,8 @@ vector <string> formatstring(string text)
 
 VOID WINAPI OutText(HDC dc, DWORD ydest)
 {
-	int y_offset = 10;
 	int x_offset = 50;
+	int y_offset = 5;
 
 	vector <string> disp_str_list;
 	for each (string s in g_str_cache)
@@ -409,8 +417,8 @@ VOID WINAPI OutText(HDC dc, DWORD ydest)
 
 	for (int i = 0; i < strlist.size(); i++)
 	{
-		y_offset += 25;
 		PrintText(dc, (char *)strlist[i].c_str(), x_offset, y_offset);
+		y_offset += 28;
 	}
 
 }
@@ -478,7 +486,7 @@ PVOID g_pOldMessageBoxA = NULL;
 typedef int (WINAPI *PfuncMessageBoxA)(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType);
 int WINAPI newMessageBoxA(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType)
 {
-	if (!memcmp(lpCaption, "\x97\xF6\x82\xC6", 4))
+	if (!memcmp(lpText, "\x8F\x49\x97\xB9", 4))
 	{
 		strcpy((char*)(LPCTSTR)lpText, "是否结束游戏？");
 		strcpy((char*)(LPCTSTR)lpCaption, "恋爱选举巧克力");
@@ -548,12 +556,12 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 		g_pOldSetWindowTextA = DetourFindFunction("USER32.dll", "SetWindowTextA");
 		DetourAttach(&g_pOldSetWindowTextA, newSetWindowTextA);
 		DetourTransactionCommit();
-
+		
 		DetourTransactionBegin();
 		g_pOldMessageBoxA = DetourFindFunction("USER32.dll", "MessageBoxA");
 		DetourAttach(&g_pOldMessageBoxA, newMessageBoxA);
 		DetourTransactionCommit();
-
+		
 		g_hFont = CreateFont(
 		24,						/**< 字体高度 */
 		0,						/**< 字体宽度 */
