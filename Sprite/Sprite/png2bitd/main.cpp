@@ -8,6 +8,9 @@ using namespace std;
 typedef unsigned char byte;
 typedef unsigned long dword;
 
+#define COPY_LEN 0x5
+#define FLAG (COPY_LEN-1)
+
 /*
 esi = src
 ebx = width
@@ -59,18 +62,18 @@ unsigned long cal_compresslen(unsigned long srclen, bool &have_mod, dword &mod_s
 {
 	dword dstlen = 0; 
 
-	dword num_7e = srclen / 0x7F;
-	dword mod = srclen % 0x7F;
+	dword num_flag = srclen / COPY_LEN;
+	dword mod = srclen % COPY_LEN;
 	mod_size = mod;
 
 	if (mod)
 	{
-		dstlen = srclen + num_7e + 1;
+		dstlen = srclen + num_flag + 1;
 		have_mod = true;
 	}
 	else
 	{
-		dstlen = srclen + num_7e;
+		dstlen = srclen + num_flag;
 		have_mod = false;
 	}
 
@@ -176,8 +179,8 @@ bool bitd_compress(byte* dst, dword dstlen, byte *src, bool have_mod, dword mod_
 	{
 		while (curbyte < dstlen)
 		{
-			dst[curbyte++] = 0x7E;
-			for (int i = 0; i<0x7F; i++)
+			dst[curbyte++] = FLAG;
+			for (int i = 0; i<COPY_LEN; i++)
 			{
 				dst[curbyte++] = src[psrc++];
 			}
@@ -187,8 +190,8 @@ bool bitd_compress(byte* dst, dword dstlen, byte *src, bool have_mod, dword mod_
 	{
 		while (curbyte < dstlen - mod_size - 1)
 		{
-			dst[curbyte++] = 0x7E;
-			for (int i = 0; i<0x7F; i++)
+			dst[curbyte++] = FLAG;
+			for (int i = 0; i<COPY_LEN; i++)
 			{
 				dst[curbyte++] = src[psrc++];
 			}
