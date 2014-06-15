@@ -415,9 +415,9 @@ VOID WINAPI OutText(HDC dc, DWORD ydest)
 	
 	vector <string>  strlist = formatstring(disp_text);
 
-	for (int i = 0; i < strlist.size(); i++)
+	for each (string str in strlist)
 	{
-		PrintText(dc, (char *)strlist[i].c_str(), x_offset, y_offset);
+		PrintText(dc, (char *)str.c_str(), x_offset, y_offset);
 		y_offset += 28;
 	}
 
