@@ -8,7 +8,9 @@ using namespace std;
 typedef unsigned char byte;
 typedef unsigned long dword;
 
-#define COPY_LEN 0x5
+//COPY_LEN 越大，输出的压缩文件越小
+//这里这个COPY_LEN到底应该是多少我也说不准，不过2是个保险的数字
+#define COPY_LEN 0x2
 #define FLAG (COPY_LEN-1)
 
 /*
@@ -222,7 +224,7 @@ int main(int argc, char* argv[])
 	}
 
 	string in_filename = argv[1];
-	string out_filename = in_filename.substr(0, in_filename.find("."));
+	string out_filename = "00" + in_filename.substr(0, in_filename.find("."));
 
 	pic_data png;
 	read_png_file(in_filename, &png);
