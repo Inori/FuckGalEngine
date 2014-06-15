@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cct_unpack", "cct_unpack\cc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cct_repack", "cct_repack\cct_repack.vcxproj", "{372AA76E-3147-4D2F-9D1A-16FAE01F2854}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "png2bitd", "png2bitd\png2bitd.vcxproj", "{F8A707BD-7E9C-4032-A005-65A55E2DFEE1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +35,10 @@ Global
 		{372AA76E-3147-4D2F-9D1A-16FAE01F2854}.Debug|Win32.Build.0 = Debug|Win32
 		{372AA76E-3147-4D2F-9D1A-16FAE01F2854}.Release|Win32.ActiveCfg = Release|Win32
 		{372AA76E-3147-4D2F-9D1A-16FAE01F2854}.Release|Win32.Build.0 = Release|Win32
+		{F8A707BD-7E9C-4032-A005-65A55E2DFEE1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F8A707BD-7E9C-4032-A005-65A55E2DFEE1}.Debug|Win32.Build.0 = Debug|Win32
+		{F8A707BD-7E9C-4032-A005-65A55E2DFEE1}.Release|Win32.ActiveCfg = Release|Win32
+		{F8A707BD-7E9C-4032-A005-65A55E2DFEE1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
