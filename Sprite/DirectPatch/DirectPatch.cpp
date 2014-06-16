@@ -102,7 +102,7 @@ HFONT WINAPI newCreateFontIndirectA(LOGFONTA *lplf)
 //此版本在Win32和MFC环境下测试通过
 //
 //使用GDI+ 保存HDC为位图文件
-
+/*
 #include <rpc.h>
 #include <rpcndr.h>
 #include <unknwn.h>
@@ -230,6 +230,8 @@ void WINAPI SaveToDisk(HDC hDC)
   DeleteObject(hBmp);
 }
 
+*/
+
 
 typedef HMODULE (WINAPI *fnLoadLibraryA)(
     __in LPCSTR lpLibFileName
@@ -258,7 +260,6 @@ VOID PrintText(HDC dc,char* text,int x,int y)
 
 	SetTextColor(dc, RGB(255, 255, 255));      /**< 字体颜色白色 */
 	TextOut(dc, x, y, text, strlen(text)); /**< 输出文字到暂存hDC */
-
 
 
 	SelectObject(dc,oldObject);
