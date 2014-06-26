@@ -44,7 +44,7 @@ BOOL APIENTRY WinMain(HINSTANCE hInstance,
                      LPSTR     lpCmdLine,
                      int       nCmdShow)
 {
-	PCHAR pszDllPath = "SpritePatch.dll";
+	PCHAR pszDllPath = "GTASALoader.dll";
 
 	CHAR szDllPath[1024];
     PCHAR pszFilePart = NULL;
@@ -86,8 +86,8 @@ BOOL APIENTRY WinMain(HINSTANCE hInstance,
     si.cb = sizeof(si);
 
     szCommand[0] = L'\0';
-	strcpy(szExe, "恋と選挙とチョコレート.exe");
-	strcpy(szCommand, "恋と選挙とチョコレート.exe");
+	strcpy(szExe, "gta_sa.exe");
+	strcpy(szCommand, "gta_sa.exe");
 	//////////////////////////////////////////////////////////////////////////////////
 	DWORD dwFlags = CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED;
 
