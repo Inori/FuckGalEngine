@@ -21,6 +21,9 @@
     <ClCompile Include="StdAfx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="drawtext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="DirectPatch.def">
@@ -35,9 +38,13 @@
     <ClInclude Include="StdAfx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="drawtext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="detours.lib" />
+    <Library Include="ftsdk\lib\freetype.lib" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

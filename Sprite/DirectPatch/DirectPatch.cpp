@@ -10,6 +10,8 @@
 #include <vector>
 #include <list>
 
+#include "drawtext.h"
+
 using namespace std;
 
 #pragma comment(lib,"shlwapi.lib")
@@ -20,7 +22,8 @@ typedef HFONT (WINAPI* fnCreateFontIndirectA)(LOGFONTA *lplf);
 fnCreateFontIndirectA pCreateFontIndirectA = (fnCreateFontIndirectA)CreateFontIndirectA;
 
 
-//
+GdipDrawer gdrawer;
+
 #define CACHE_SIZE 5
 //缓存5个字符串，用于显示履历
 list<string> g_str_cache(CACHE_SIZE);
@@ -232,6 +235,15 @@ void WINAPI SaveToDisk(HDC hDC)
 
 */
 
+wchar_t *AnsiToUnicode(const char *str)
+{
+	static wchar_t result[1024];
+	int len = MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0);
+	MultiByteToWideChar(CP_ACP, 0, str, -1, result, len);
+	result[len] = L'\0';
+	return result;
+}
+
 
 typedef HMODULE (WINAPI *fnLoadLibraryA)(
     __in LPCSTR lpLibFileName
@@ -418,7 +430,8 @@ VOID WINAPI OutText(HDC dc, DWORD ydest)
 
 	for each (string str in strlist)
 	{
-		PrintText(dc, (char *)str.c_str(), x_offset, y_offset);
+		gdrawer.DrawString(dc, AnsiToUnicode(str.c_str()), x_offset, y_offset, 30);
+		//PrintText(dc, (char *)str.c_str(), x_offset, y_offset);
 		y_offset += 28;
 	}
 
@@ -563,6 +576,14 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 		DetourAttach(&g_pOldMessageBoxA, newMessageBoxA);
 		DetourTransactionCommit();
 		
+		TextColor color(252, 255, 0, 255);
+		TextColor effcl(0, 0, 0, 255);
+		//TextColor effcl(0, 0, 0, 255);
+
+		gdrawer.InitDrawer("simhei.ttf", 21);
+		//gdrawer.SetTextColor(color);
+		gdrawer.ApplyEffect(Shadow, effcl, 2, 2.0);
+
 		g_hFont = CreateFont(
 		24,						/**< 字体高度 */
 		0,						/**< 字体宽度 */

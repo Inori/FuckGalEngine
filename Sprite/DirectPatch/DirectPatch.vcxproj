@@ -45,6 +45,7 @@
     <OutDir>.\Release\</OutDir>
     <IntDir>.\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>F:\Kan\FuckGalEngine\Sprite\DirectPatch\ftsdk\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>.\Debug\</OutDir>
@@ -142,6 +143,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DirectPatch.cpp" />
+    <ClCompile Include="drawtext.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -153,10 +155,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="detours.h" />
+    <ClInclude Include="drawtext.h" />
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="detours.lib" />
+    <Library Include="ftsdk\lib\freetype.lib" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
