@@ -1,0 +1,61 @@
+struct header
+{
+	BYTE magic[4];
+	DWORD version_info; //version_info - 109000 = version?
+
+	BYTE tag[4]; //CHAR
+	DWORD dummy_block_size;
+	BYTE dm[dummy_block_size]; // 0x00 0x00...
+
+	BYTE tag2[4]; //RTFC
+	DWORD filename_size;
+	BYTE filename[filename_size];
+
+	BYTE tag3[4]; //OPTN
+	DWORD option_block_size;
+	BYTE opt[option_block_size];
+
+	BYTE tag4[4]; //CZIT
+	DWORD czit_block_size;
+	DWORD ci[czit_block_size];
+
+	BYTE tag5[4]; //DTDE
+	DWORD dtde_block_size;
+	DWORD dd[dtde_block_size];
+
+	BYTE tag6[4]; //VARI
+	DWORD vari_block_size;
+	DWORD vr[vari_block_size];
+
+	BYTE tag7[4]; //CODE
+	DWORD code_block_size;
+	DWORD cd[code_block_size];
+
+	BYTE tag8[4]; //RES2
+	DWORD res2_block_size;
+	DWORD rs[res2_block_size];
+
+	BYTE tag9[4]; //ENDS
+	DWORD ends_block_size; // 0x00000000
+
+
+}
+
+filename part:
+第一个DWORD为文件个数，后面是文件名字符串，以0x00结尾。
+
+
+
+
+第二个dword
+
+014121E7  |.  56            push    esi
+014121E8  |.  E8 5322F7FF   call    01384440
+014121ED  |.  05 3856FEFF   add     eax, 0xFFFE5638               ;  eax = dword[1]; eax - 109000
+014121F2  |.  83C4 04       add     esp, 0x4
+014121F5  |.  3D E7030000   cmp     eax, 0x3E7
+014121FA  |.  0F96C0        setbe   al
+014121FD  |.  8BE5          mov     esp, ebp
+014121FF  |.  5D            pop     ebp
+01412200  |.  C3            retn
+

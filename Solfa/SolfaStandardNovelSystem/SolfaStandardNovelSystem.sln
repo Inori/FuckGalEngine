@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sec5unpack", "sec5unpack\sec5unpack.vcxproj", "{43744D0F-A80D-4DC9-B978-16CAA21A7FF1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "getstring", "getstring\getstring.vcxproj", "{B40D70C7-50D4-4EB5-A924-2D6CA24596A6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{43744D0F-A80D-4DC9-B978-16CAA21A7FF1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{43744D0F-A80D-4DC9-B978-16CAA21A7FF1}.Debug|Win32.Build.0 = Debug|Win32
+		{43744D0F-A80D-4DC9-B978-16CAA21A7FF1}.Release|Win32.ActiveCfg = Release|Win32
+		{43744D0F-A80D-4DC9-B978-16CAA21A7FF1}.Release|Win32.Build.0 = Release|Win32
+		{B40D70C7-50D4-4EB5-A924-2D6CA24596A6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B40D70C7-50D4-4EB5-A924-2D6CA24596A6}.Debug|Win32.Build.0 = Debug|Win32
+		{B40D70C7-50D4-4EB5-A924-2D6CA24596A6}.Release|Win32.ActiveCfg = Release|Win32
+		{B40D70C7-50D4-4EB5-A924-2D6CA24596A6}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
