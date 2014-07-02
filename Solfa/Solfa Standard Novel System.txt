@@ -41,21 +41,26 @@ struct header
 
 }
 
+
+
+
 filename part:
 第一个DWORD为文件个数，后面是文件名字符串，以0x00结尾。
 
 
 
+CODE段解密：
 
-第二个dword
+00CF4110  |> /8B4E 04       /mov     ecx, dword ptr [esi+0x4]                ;  decrypt_first
+00CF4113  |. |8A0439        |mov     al, byte ptr [ecx+edi]
+00CF4116  |. |8AD8          |mov     bl, al
+00CF4118  |. |32DA          |xor     bl, dl
+00CF411A  |. |881C39        |mov     byte ptr [ecx+edi], bl
+00CF411D  |. |04 12         |add     al, 0x12
+00CF411F  |. |47            |inc     edi
+00CF4120  |. |02D0          |add     dl, al
+00CF4122  |. |3B3E          |cmp     edi, dword ptr [esi]
+00CF4124  |.^\7C EA         \jl      short 00CF4110
 
-014121E7  |.  56            push    esi
-014121E8  |.  E8 5322F7FF   call    01384440
-014121ED  |.  05 3856FEFF   add     eax, 0xFFFE5638               ;  eax = dword[1]; eax - 109000
-014121F2  |.  83C4 04       add     esp, 0x4
-014121F5  |.  3D E7030000   cmp     eax, 0x3E7
-014121FA  |.  0F96C0        setbe   al
-014121FD  |.  8BE5          mov     esp, ebp
-014121FF  |.  5D            pop     ebp
-01412200  |.  C3            retn
+
 
