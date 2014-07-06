@@ -1,0 +1,30 @@
+
+
+Ω‚√‹decc
+
+1E003DD0  |> /8BC7                     /MOV EAX,EDI
+1E003DD2  |. |69C0 45320000            |IMUL EAX,EAX,3245
+1E003DD8  |. |05 011B0000              |ADD EAX,1B01
+1E003DDD  |. |C1EF 03                  |SHR EDI,3
+1E003DE0  |. |33F8                     |XOR EDI,EAX
+1E003DE2  |. |8BC7                     |MOV EAX,EDI
+1E003DE4  |. |83E0 03                  |AND EAX,3
+1E003DE7  |. |83F8 03                  |CMP EAX,3                               ;  Switch (cases 0..3)
+1E003DEA  |. |77 46                    |JA SHORT ¡µ§¨§µ_1.1E003E32
+
+
+1e02eecb
+
+Ω‚√‹Ω≈±æ£∫
+1E02C1F3    3108            XOR DWORD PTR DS:[EAX],ECX
+1E02C1F5    3148 04         XOR DWORD PTR DS:[EAX+4],ECX
+1E02C1F8    3148 08         XOR DWORD PTR DS:[EAX+8],ECX
+1E02C1FB    3148 0C         XOR DWORD PTR DS:[EAX+C],ECX
+1E02C1FE    83C0 10         ADD EAX,10
+1E02C201    3BC2            CMP EAX,EDX
+1E02C203  ^ 72 EE           JB SHORT 1E02C1F3
+
+
+
+
+

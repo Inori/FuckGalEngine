@@ -44,7 +44,7 @@ BOOL APIENTRY WinMain(HINSTANCE hInstance,
                      LPSTR     lpCmdLine,
                      int       nCmdShow)
 {
-	PCHAR pszDllPath = "GTASALoader.dll";
+	PCHAR pszDllPath = "PassKey.dll";
 
 	CHAR szDllPath[1024];
     PCHAR pszFilePart = NULL;
@@ -86,8 +86,8 @@ BOOL APIENTRY WinMain(HINSTANCE hInstance,
     si.cb = sizeof(si);
 
     szCommand[0] = L'\0';
-	strcpy(szExe, "gta_sa.exe");
-	strcpy(szCommand, "gta_sa.exe");
+	strcpy(szExe, "óˆÇ™Ç≥Ç≠Ç±ÇÎç˜Ç«Ç´.exe");
+	strcpy(szCommand, "óˆÇ™Ç≥Ç≠Ç±ÇÎç˜Ç«Ç´.exe");
 	//////////////////////////////////////////////////////////////////////////////////
 	DWORD dwFlags = CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED;
 

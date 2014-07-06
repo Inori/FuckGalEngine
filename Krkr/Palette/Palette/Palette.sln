@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PassKey", "PassKey\PassKey.vcxproj", "{D9A3EB69-ADC7-4F55-A718-12E972C01D7E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D9A3EB69-ADC7-4F55-A718-12E972C01D7E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D9A3EB69-ADC7-4F55-A718-12E972C01D7E}.Debug|Win32.Build.0 = Debug|Win32
+		{D9A3EB69-ADC7-4F55-A718-12E972C01D7E}.Release|Win32.ActiveCfg = Release|Win32
+		{D9A3EB69-ADC7-4F55-A718-12E972C01D7E}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
