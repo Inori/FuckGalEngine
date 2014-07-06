@@ -1,0 +1,17 @@
+0045778F                                               B9 20827900     mov     ecx, 00798220                    ; UNICODE "\Scene.pck"
+00457794                                               8D75 D0         lea     esi, dword ptr [ebp-0x30]
+00457797                                               E8 C4A6FAFF     call    00401E60
+0045779C                                               83C4 04         add     esp, 0x4
+0045779F                                               50              push    eax
+004577A0                                               8D83 A4E10300   lea     eax, dword ptr [ebx+0x3E1A4]
+004577A6                                               50              push    eax
+004577A7                                               C745 FC 0500000>mov     dword ptr [ebp-0x4], 0x5
+004577AE                                               E8 0D29FDFF     call    0042A0C0                         ; 读取脚本文件
+004577B3                                               84C0            test    al, al
+004577B5                                               0F9445 97       sete    byte ptr [ebp-0x69]
+004577B9                                               83CE FF         or      esi, 0xFFFFFFFF
+
+
+
+0042B4AA  |.  E8 F1060000   call    0042BBA0
+
