@@ -1,0 +1,13 @@
+自己的程序 
+链接选项里别选动态基址
+
+
+
+
+别人的程序
+
+
+pe头里Characteristics(COFF头 特征)第0位置1，表示没有重定位
+
+或者DLLCharacteristics第6位置0，表示不支持aslr技术
+ 
