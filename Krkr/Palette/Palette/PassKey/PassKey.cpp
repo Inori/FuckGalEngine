@@ -33,9 +33,16 @@ DWORD p_after_decrypt = 0;
 
 void WINAPI FixTjs(DWORD tjs_offset)
 {
-	if (!strncmp((char*)tjs_offset, "// Initialize.tjs", 17))
+	static bool isFixed = false;
+
+	//这里只能进行一次修改，否则会出bug
+	if (!isFixed)
 	{
-		memset((void*)(tjs_offset+0x30B), 'KCUF', 4);
+		if (!strncmp((char*)tjs_offset, "// Initialize.tjs", 17))
+		{
+			memset((void*)(tjs_offset + 0x30B), 'KCUF', 4);
+			isFixed = true;
+		}
 	}
 }
 
