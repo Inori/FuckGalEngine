@@ -1,0 +1,92 @@
+typedef char s8[8];
+
+struct SECTION {
+    s8 prefix;
+    int32 size;
+    int32 unknown;
+    char content[size];
+};
+
+struct UNICODE {
+    int32 len;
+    wchar_t str[len];
+};
+
+struct IMAGE {
+    s8 prefix;
+    int32 size;
+    int32 unknown;
+    char content[size];
+};
+
+struct FUNCTION {
+    s8 prefix;
+    int32 size;
+    int32 unknown1;
+    int32 records1;
+    int32 offset[records1];
+    int32 unknown2;
+    int32 records2;
+    struct {
+        int32 offset;
+        UNICODE name;
+    } namedOffsets[records2] <optimize=false>;
+};
+
+struct CSX {
+    struct HEADER {
+        s8 prefix;
+        int32 unknown1;
+        int32 zero;
+        char imageType[40];
+        int32 size;
+        int32 unknown2;
+    } header <bgcolor=cLtGray>;
+
+    IMAGE image <bgcolor=cLtBlue>;
+    FUNCTION function <bgcolor=cLtGreen>;
+    SECTION global <bgcolor=cLtYellow>;
+    SECTION data <bgcolor=cLtRed>;
+    SECTION conststr <bgcolor=cLtPurple>;
+    SECTION linkinf <bgcolor=cSilver>;
+} csx;
+
+if (csx.header.prefix != "Entis\x1A\x00\x00") {
+    return 1;
+}
+
+if (csx.header.imageType != "Cotopha Image file") {
+    return 2;
+}
+
+if (csx.header.zero != 0) {
+    return 3;
+}
+
+if (csx.header.size + 64 != FileSize()) {
+    return 4;
+}
+
+if (csx.image.prefix != "image   ") {
+    return 5;
+}
+
+if (csx.function.prefix != "function") {
+    return 6;
+}
+
+if (csx.global.prefix != "global  ") {
+    return 7;
+}
+
+if (csx.data.prefix != "data    ") {
+    return 8;
+}
+
+if (csx.conststr.prefix != "conststr") {
+    return 9;
+}
+
+if (csx.linkinf.prefix != "linkinf ") {
+    return 10;
+}

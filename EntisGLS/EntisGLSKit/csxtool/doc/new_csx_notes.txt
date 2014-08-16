@@ -1,0 +1,98 @@
+===== CSX File Format Notes
+used types:
+basic: uint16, uint32, char[]
+
+[US] - unicode string with format:
+[length : uint32] [content : char[2*length]]
+where <content> is sequence of <length> utf-16 little endian characters
+
+------ Normal Short Jumps
+<NormalShortJumpName> [prefix : uint16] [distance : uint32]
+prefix - make jump if certain number (0106 or 0700)
+distance: distance to skip after reading last arg (distance)
+
+-- OnFlag
+OnFlag [prefix : uint16] [distance : uint32]
+jump prefix: 0106
+other prefixes: 0100, 0102
+
+-- ChkFlagOn
+ChkFlagOn [prefix : uint16] [distance : uint32]
+jump prefix: 0700
+other prefixes: 0100, 0200, 0900
+
+-- IsGameClear
+IsGameClear [prefix : uint16] [distance : uint32]
+jump prefix: 0700
+other prefixes: 0000, 0200
+
+-- ChkSelect
+ChkSelect [prefix : uint16] [distance : uint32]
+jump prefix: 0700
+other prefixes: 0100
+
+-- All
+series of skips ended on:
+(6x) 02 00 06
+(9x) 02 00 04
+(3x) 08 05 00
+(1x) 09 00 02
+(probably nothing special, but good for confirmation)
+
+-- Double-skip
+if after skipping distance we have double-skip code:
+0x06 [distance : uint32]
+skip that distance again. do it until as many times as needed.
+
+------ IsRecollectMode Jump
+IsRecollectMode [prefix1 : uint16] [distance1 : uint32] [prefix2 : uint16] [distance2 : uint32]
+prefix1: make jump by distance1 if 0700
+other prefixes1: 0000, 0200
+prefix2: make jump by distance2 if 0506 (only if prefix1 made jump)
+other prefixes2: 0200
+distance1, distance2: distance to skip after reading distance1/distance2 arg (the one to skip from)
+
+skips1 end on:
+(9x) 08 05 00
+(17x) 02 00 06
+(1x) 02 00 04
+skips2 end on:
+(all, 9x) 04 00 00 00 00 00 00 00 00 02 00 06 [US]
+(probably nothing special, but good for confirmation)
+
+----- Choices
+Sequence of 2 choices is as follows:
+02 00 06
+[choice1 : US]
+02 00 04 00 00 00 00 08 05 02 00 00 00
+["AddSelect" : US]
+01 02 00 06
+[choice2 : US]
+02 00 04 00 00 00 00 08 05 02 00 00 00
+["AddSelect" : US]
+01 02 03 04
+presumably the part between stars can be repeated as many times as needed.
+
+----- Hitret (untested)
+probable combination for Hitret (command to split into another page, that could be used to split
+messages into 3-line-long pages):
+04 [index : uint16]
+00 00 08 05 01 00 00 00 06 00 00 00 48 00 69 00
+74 00 72 00 65 00 74 00 03 FF 01 02 03 04 01 00
+00 00 02 00 04 1E 00 00 00 0E 01 02 03 04 01 00
+00 00 02 00 04 14 00 00 00 0E 01 0C 06 07 00 46
+00 00 00 02 00 06 0D 00 00 00 45 00 58 00 49 00
+54 00 5F 00 53 00 43 00 45 00 4E 00 41 00 52 00
+49 00 4F 00 08 05 01 00 00 00 06 00 00 00 43 00
+68 00 61 00 6E 00 67 00 65 00 01 02 00 04 00 00
+00 00 09 00 06 1F 00 00 00 02 03 04 01 00 00 00
+02 00 04 28 00 00 00 0E 01 07 00 09 00 00 00 02
+00 04 00 00 00 00 09 00
+where index is some kind of counter increased by 1 after each message
+
+
+===== Yosuga no Sora specific notes
+- in name field, there is place for 20 half-width characters in 1 line
+- in message, there is place for 56 half-width characters in a line and there are 3 lines
+- both name field and message field are automatically scrolled if not enough lines
+- we don't need to split messages into Talk and Mess parts - it is done by the game engine

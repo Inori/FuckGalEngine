@@ -25,7 +25,7 @@ namespace ScriptEncoder
             var br = new BinaryReader(new FileStream(fileInput.Replace(".txt", ""), FileMode.Open));
 
             var scriptBuffer = br.ReadBytes((int) br.BaseStream.Length);
-            br.Close();
+            
 
             // Load translation file.
             var sr = new StreamReader(fileInput, Encoding.UTF8, true);
@@ -59,8 +59,8 @@ namespace ScriptEncoder
 
 
             // Get control bytes from original buffer.
-            var controlStream =
-                new MemoryStream(scriptBuffer.Slice(headerLength, GetSmallestOffset(lines) + headerLength));
+            //var controlStream = new MemoryStream(scriptBuffer.Slice(headerLength, GetSmallestOffset(lines) + headerLength));
+            var controlStream = new MemoryStream(scriptBuffer.Slice(headerLength, scriptBuffer.Length));
 
             // Let's begin.
             var textStream = new MemoryStream();
@@ -70,7 +70,18 @@ namespace ScriptEncoder
 
                 var info = GetLineInfo(line);
                 controlStream.WriteInt32(info[0], (int) (controlStream.Length + textStream.Length));
-                textStream.WriteBytes(Encoding.GetEncoding(936).GetBytes(GetText(line)));
+
+                string curline = GetText(line);
+                if (curline.IndexOf("_") == -1)
+                {
+                    textStream.WriteBytes(Encoding.GetEncoding(936).GetBytes(curline));
+                }
+                else
+                {
+                    textStream.WriteBytes(Encoding.GetEncoding(932).GetBytes(curline));
+                }
+                
+
                 textStream.WriteByte(0x00);
             }
 
@@ -83,6 +94,8 @@ namespace ScriptEncoder
             // Text bytes.
             bw.Write(textStream.ToArray());
             bw.Close();
+
+            br.Close();
         }
 
         private static int GetSmallestOffset(IEnumerable<string> lines)

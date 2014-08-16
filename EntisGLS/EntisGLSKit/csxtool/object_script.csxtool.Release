@@ -1,0 +1,13 @@
+INPUT(
+./release/main.o
+./release/functionsection.o
+./release/section.o
+./release/imagesection.o
+./release/unicodestring.o
+./release/csxparser.o
+./release/positioncomputer.o
+./release/header.o
+./release/talk.o
+./release/choice.o
+./release/txtparser.o
+);

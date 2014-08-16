@@ -1,0 +1,63 @@
+#!/bin/bash
+#script parses files yosuga_tl.txt and yosuga_orig.txt, merges them
+#taking JP lines from orig and EN lines from tl, then prints the result
+#to stdout
+#result consists of sequence of JP lines with same index, EN lines with
+#the same index and two empty lines
+#this script can be used to merge two extracted files (one from original
+#CSX and one from translated CSX), after removing [EN lines from
+#translated txt file and substituting [JP (which is really in English)
+#with [EN
+
+JP_LINE=""
+EN_LINE=""
+JP_NUM=""
+EN_NUM=""
+
+while true; do
+	echo "$JP_LINE"
+	JP_LINE_PREV3="$JP_LINE_PREV2"
+	JP_LINE_PREV2="$JP_LINE_PREV1"
+	JP_LINE_PREV1="${JP_LINE:10}"
+	while read -r -u3 JP_LINE; do
+		CUR_NUM="${JP_LINE:3:5}"
+		if [[ "$CUR_NUM" =~ [0-9]+ ]]; then
+			if [[ "$CUR_NUM" != "$JP_NUM" ]]; then
+				JP_NUM="$CUR_NUM"
+				break
+			fi
+			echo "$JP_LINE"
+			JP_LINE_PREV3="$JP_LINE_PREV2"
+			JP_LINE_PREV2="$JP_LINE_PREV1"
+			JP_LINE_PREV1="${JP_LINE:10}"
+		fi
+	done
+
+	echo $JP_NUM 1>&2
+
+	if [[ "${EN_LINE:10}" != "$JP_LINE_PREV1" && "${EN_LINE:10}" != "$JP_LINE_PREV2" && "${EN_LINE:10}" != "$JP_LINE_PREV3" ]]; then
+		echo "$EN_LINE"
+	else
+		echo "$EN_LINE" | sed 's/^\(\[[^]]*\] \(\[[^]]*\] \)\?\).*$/\1/'
+	fi
+	while true; do
+		if read -r -u4 EN_LINE; then
+			CUR_NUM="${EN_LINE:3:5}"
+			if [[ "$CUR_NUM" =~ [0-9]+ ]]; then
+				if [[ "$CUR_NUM" != "$EN_NUM" ]]; then
+					EN_NUM="$CUR_NUM"
+					break
+				fi
+
+				if [[ "${EN_LINE:10}" != "$JP_LINE_PREV1" && "${EN_LINE:10}" != "$JP_LINE_PREV2" && "${EN_LINE:10}" != "$JP_LINE_PREV3" ]]; then
+					echo "$EN_LINE"
+				fi
+			fi
+		else
+			exit
+		fi
+	done
+
+	echo
+	echo
+done 3< yosuga_orig.txt 4< yosuga_tl.txt

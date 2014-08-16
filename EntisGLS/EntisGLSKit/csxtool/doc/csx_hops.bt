@@ -1,0 +1,33 @@
+struct UNICODE {
+    int32 len;
+    wchar_t str[len];
+};
+
+
+char stuff[0xb3dad6] <bgcolor=cSilver>;
+//char stuff[0xc4f55e] <bgcolor=cSilver>;
+
+UNICODE u <bgcolor=cLtGray>;
+int16 p1 <bgcolor=cLtYellow>;
+int32 p2 <bgcolor=cLtRed>;
+char skipp[p2] <bgcolor=cLtBlue>;
+char r1 <bgcolor=cLtYellow>;
+int32 r2 <bgcolor=cLtRed>;
+char skipr[r2] <bgcolor=cLtBlue>;
+
+
+// double arg in 0x991C05, 0x7E1260, 0x706EF6, 0x50250D, 0x493F16, 0x444FA1, 0x3362FE, 0x2209B1, 0x1C1D7D
+/*
+char stuff[0x4a57f1] <bgcolor=cSilver>;
+
+UNICODE u <bgcolor=cLtGray>;
+int16 p1 <bgcolor=cLtYellow>;
+int32 p2 <bgcolor=cLtRed>;
+int16 p3 <bgcolor=cLtYellow>;
+int32 p4 <bgcolor=cLtRed>;
+char skipp[p4] <bgcolor=cLtBlue>;
+
+char r1 <bgcolor=cLtYellow>;
+char r2[8] <bgcolor=cLtRed>;
+char r3[3] <bgcolor=cLtYellow>;
+*/

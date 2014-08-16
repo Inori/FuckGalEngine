@@ -1,0 +1,13 @@
+INPUT(
+./debug/main.o
+./debug/functionsection.o
+./debug/section.o
+./debug/imagesection.o
+./debug/unicodestring.o
+./debug/csxparser.o
+./debug/positioncomputer.o
+./debug/header.o
+./debug/talk.o
+./debug/choice.o
+./debug/txtparser.o
+);

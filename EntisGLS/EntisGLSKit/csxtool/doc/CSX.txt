@@ -1,0 +1,146 @@
+
+  -----------------------------------------------
+  Attention: These notes might not be up-to-dote.
+             But the Russian notes are.
+  -----------------------------------------------
+  
+
+0011C545   30 |BF 7D| D3  - minus BF7D
+
+first line in "new game" - 11C414
+
+@000038:  [dw] size of all sections in the file with their headers and other data. i.e., the size of the whole file minus CSX header (offset @40 + this value should point exactly after the EOF);
+@000048:  [dw] "image" section size (@50 + this value points to the next section's header);
+@39EDDF:  adjust the "function" section:
+  adjust the first function table (array of DWord);
+  and the second (the one with names);
+don't forget to chenge the string's length (remember that it is a number of characters, not bytes).
+
+
+---
+
+0..64 - header
+
+
++16: (image\s{3} [dw: section size] [dw = 0])
+00000040   69 6D 61 67 65 20 20 20 8D  ED 39 00 00 00   image   ?i9...
+0000004E   00 00                                        ..
+
+read, size = 0039ED8F (@[DW] $48) (until next chunk)
+0039EDDA   ... 09 01 <|  66 75 6E 63                    ..func
+
+=> mem: 01190080
+chunk pos = image's section pos + its size + 8 (mini header0
+
+
+seek, read $10 (function [dw: section size] [dw = 0])
+0039EDDD   66 75 6E 63 74  69 6F 6E 48 3D      functionH=
+0039EDE7   00 00 00 00 00 00                   ......
+
+read (size = 4; [dw: func count])
+0039EDED   7C 00  00 00
+ $7C * 4 = 1F0 = func header length
+ 0039EFD9  CB BD 39 00 6C ED 39 00 <|  00 00 00 00 99 01
+
+now at 39EDF1...
+read all table. then read:
+1)            00 00 00 00
+2) 0039EFE5   99 01 00 00    - record count
+
+CYCLE: 1) [dw]; 2) [dw - str len]; 3) str (Unicode)
+0039EFE2   08 7D 01 00  - offset in "image"
+  offset is relative to the "image" section start ($50: 04 0C 00 00)
+
+0039EFED   0D 00 00 00  - name length in Unicode chars, actual len = x2
+0039EFF1   41 00 64 00 64 00 4D 00 65 00 73          A.d.d.M.e.s
+0039EFFC   00 73 00 61 00 67 00 65  00 4C 00 6F 00   .s.a.g.e.L.o.
+0039F009   67 00                                     g.
+
+
+now at 003A2B32...
+read (size = $10; [dw] [dw = 0])
+003A2B35   67 6C 6F 62 61  6C 20 20 3E 05            global  >.
+003A2B3F   00 00 00 00 00 00                         ......
+
+read (size = 4)
+           22 00 00 00  - header entries count
+CYCLE: 1) [dw - str len]; 2) str (Unicode); 3) [dw]; 4) [dw = 0]
+003A2B3F                                  0A 00 00             ...
+003A2B4C   00 4E 00 75 00 6D 00 5A  00 65 00 6E 00   .N.u.m.Z.e.n.
+003A2B59   6B 00 61 00 6B 00 75 00  02 00 00 00 00   k.a.k.u......
+003A2B66   00 00 00                                  ...
+
+
+now at 003A307A...
+read (size = $10)
+003A307A                               64 61 74 61            data
+003A3087   20 20 20 20 9C 00 00 00  00 00 00 00          ?.......
+
+read (size = 4)
+003A3093   03 00 00 00                                   ....
+CYCLE (usual Unicode str read):
+1) [dw - str len]; 2) str (Unicode); 3) [dw: usually seem to be 80000000]; 4) [dw = 0]
+003A30A5   00 00 00 80  00 00 00 00                  ...ˆ....
+
+5) read another str
+003A30AD   0B 00 00 00 49 00 6E 00 70  00 75 00 74 00   ....I.n.p.u.t.
+003A30BB   46 00 69 00 6C 00 74 00  65 00 72 00         F.i.l.t.e.r.
+
+  note: last [dw] in 4) is read and handled by the same func as 4) of "global" chunk
+
+
+now at 003A312F...
+next chunk: (dw dw dw w)
+003A312F   6C 69 6E 6B 69 6E 66 20 10  00 00 00 00 00   linkinf ......
+003A313D   00 00                                        ..
+
+[dw] [dw] [dw] [dw]
+003A313D         00 00 00 00 00 00  00 00 00 00 00      ...........
+003A314A   00 00 00 00 00                               .....
+
+  note: "linkinf" has two parts in the chunk: [dw] [dw] and [dw] [dw]. first [dw] is entries count (as usual) and second is usually 0 (as in other chunks).
+
+---
+
+script format (a sketch):
+              04 - [b] ???
+00008B0A      1E 00 00 00  - str len
+  + string follows...
+
+00008B4B      01 00 00 00 01  - ???
+00008B5D      00 02 06
+
+
+~ Talk function ~
+
+0011C523                             08 05 02 00 00           .....
+0011C530   00 04 00 00 00 54 00 61   00 6C 00 6B 00   .....T.a.l.k.
+0011C53D   01 02 00 06 1A 00 00 00  [00 30 ...]       .........0?
+
+
+~ Mess function ~
+
+0011C571                             08 05 01 00 00           .....
+0011C57E   00 04 00 00 00 4D 00 65   00 73 00 73 00   .....M.e.s.s.
+0011C58B   01 02 00 06 02 00 00 00  [44 30 ...]       .........0.
+
+
+~ HitretNewPage function ~
+
+0000C146         00 09 00 02 00 04  00 00 00 00 09     ...........
+0000C153   00 04 0D 00 00 00 48 00  69 00 74 00 72   ......H.i.t.r
+0000C160   00 65 00 74 00 4E 00 65  00 77 00 50 00   .e.t.N.e.w.P.
+0000C16D   61 00 67 00 65 00 01 00  00 00 04 02 00   a.g.e........
+0000C17A   00 00                                     ..
+
+
+~ AddSelect function ~
+
+00145034                               09 00 00 00            ....
+00145041   02 00 04 00 00 00 00 09  00 02 00 06 0B   .............
+0014504E   00 00 00 0F 90 50 5B 55  30 93 30 6B 30   ....?P[U0“0k0
+0014505B   8B 89 68 30 8C 30 66 30  44 30 5F 30 02   ‹‰h0?0f0D0_0.
+00145068   00 04 00 00 00 00 08 05  02 00 00 00 09   .............
+00145075   00 00 00 41 00 64 00 64  00 53 00 65 00   ...A.d.d.S.e.
+00145082   6C 00 65 00 63 00 74 00  01 02 00 06 0B   l.e.c.t......
+0014508F   00 00 00 EF 30 F3 30 B3  30               ...i0o0?0

@@ -50,30 +50,42 @@ class RCT
 public:
 	RCT();
 	bool LoadRCT(string fname);
+	bool LoadPNG(string pngname);
 	void RCT2PNG();
+	void PNG2RCT();
 	~RCT();
 private:
 	DWORD rc8_decompress(BYTE *uncompr, DWORD uncomprLen, BYTE *compr, DWORD comprLen, DWORD width);
 	DWORD rct_decompress(BYTE *uncompr, DWORD uncomprLen, BYTE *compr, DWORD comprLen, DWORD width);
 
-	int dump_rc8(rc8_header_t *rc8, BYTE *&ret_rgb);
-	int dump_rct(rct_header_t *rct, BYTE *&ret_rgb);
+	//计算伪压缩所需空间
+	DWORD rc_compressBound(DWORD srclen, int channels);
+	//伪压缩函数
+	DWORD rc8_compress(BYTE *compr, DWORD comprLen, BYTE *uncompr, DWORD uncomprLen);
+	DWORD rct_compress(BYTE *compr, DWORD comprLen, BYTE *uncompr, DWORD uncomprLen);
+
+	bool dump_rc8(rc8_header_t *rc8, BYTE *&ret_rgb);
+	bool dump_rct(rct_header_t *rct, BYTE *&ret_rgb);
+
+	bool write_rc8(rc8_header_t *hrc8, BYTE *alp);
+	bool write_rct(rct_header_t *hrct, BYTE *rgb);
 
 	int read_png_file(string filepath, pic_data *out);
 	int write_png_file(string file_name, pic_data *graph);
 
+	//用于读rct文件，有rc8时为真
+	bool have_alpha;
+	string fn_png;
+
 	string fn_rct; //当前所处理rct文件名
-	FILE *f_rct;
 	BYTE* p_rct;
-	DWORD size_rct;
-	rct_header_t *h_rct; //在LoadRCT中初始化，指向地址与 p_rct 相同
+	rct_header_t *h_rct;
 
 	string fn_rc8; //当前所处理rc8文件名
-	FILE *f_rc8;
 	BYTE* p_rc8;
-	DWORD size_rc8;
-	rc8_header_t *h_rc8; //在LoadRCT中初始化，指向地址与 p_rc8 相同
+	rc8_header_t *h_rc8;
 
+	//png信息
 	pic_data png_info;
 };
 #endif

@@ -1,6 +1,8 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <string>
+#include <unordered_map>
+
 
 using namespace std;
 
@@ -8,6 +10,7 @@ using namespace std;
 typedef  unsigned char byte;
 typedef  unsigned long dword;
 
+typedef unordered_map<dword, dword> DwordMap;
 
 wchar_t *AnsiToUnicode(const char *str)
 {
@@ -18,12 +21,37 @@ wchar_t *AnsiToUnicode(const char *str)
 	return result;
 }
 
+//È«²¿Ìæ»»
+string replace_all(string dststr, string oldstr, string newstr)
+{
+	string::size_type old_len = oldstr.length();
+	if (old_len == 0)
+		return dststr;
+
+	string ret = dststr;
+	string::size_type off;
+	while (true)
+	{
+		off = ret.find(oldstr);
+		if (off == string::npos)
+			break;
+		ret = ret.replace(off, old_len, newstr);
+	}
+
+	return ret;
+}
+
+
+byte* p_fileend;
+
+
 dword vm_strlen(byte* b)
 {
 	byte* c = b;
+	if (c >= p_fileend) return 0;
 	while (1)
 	{
-		if (*c == 0x1B)
+		if ((*c == 0x1B) && (*(c+1) == 0x03))
 		{
 			break;
 		}
@@ -31,7 +59,7 @@ dword vm_strlen(byte* b)
 	}
 	return c - b;
 }
-
+/*
 byte cmp_byte[]={0x1B,0x12,0x00,0x01,0x06,0x00,0x20,0x50,0x00,0x00,0x00,0xFF,0x02,0x06,0x00,0x19,0x60,0xA5,0x00,0x00,0xFF,0xFF};
 byte* text_point(byte* b)
 {
@@ -40,6 +68,29 @@ byte* text_point(byte* b)
 		return &b[sizeof(cmp_byte)];
 	}
 	return 0;
+}
+*/
+
+
+byte start_byte[] = { 0x1B, 0x12, 0x00, 0x01};
+byte end_byte[] = {  0x00, 0x00, 0xFF, 0xFF };
+byte* text_point(byte* b)
+{
+	byte *pos = b;
+	if (!memcmp(b, start_byte, sizeof(start_byte)))
+	{
+
+		while (memcmp(pos, end_byte, sizeof(end_byte)))
+		{
+			if (pos >= p_fileend)
+				return NULL;
+			pos++;
+		}
+		byte* end = pos + sizeof(end_byte);
+		if (*end != 0x1B)
+			return end;
+	}
+	return NULL;
 }
 
 
@@ -132,6 +183,8 @@ int main()
 	byte* char_pointer;
 	dword char_length;
 
+	DwordMap mydic;
+
 
 	f = fopen("CODE","rb");
 	txt = fopen("game_text.txt","wb");
@@ -148,8 +201,9 @@ int main()
 		data = (byte*)malloc(size);
 
 		fread(data,size,1,f);
-
 		fclose(f);
+		
+		p_fileend = data + size;
 
 		read_tell = 0;
 
@@ -160,9 +214,20 @@ int main()
 			if (char_pointer)
 			{
 				char_length = vm_strlen(char_pointer);
-				memcpy(print_chars, char_pointer, char_length);
-				print_chars[char_length] = 0;
-				fwprintf(txt, L"¡ð%08X¡ð%s\r\n¡ñ%08d¡ñ%s\r\n\r\n", (char_pointer - data), AnsiToUnicode(print_chars), line_num++, AnsiToUnicode(print_chars));
+				if (char_length != 0)
+				{
+					memcpy(print_chars, char_pointer, char_length);
+					print_chars[char_length] = 0;
+					if (mydic.find((char_pointer - data)) == mydic.end())
+					{
+						string dispstr = replace_all(print_chars, "\x1b\xf8\x01\xff", "\\n");
+						fwprintf(txt, L"¡ð%08X¡ð%08d¡ñ\r\n%s\r\n\r\n", (char_pointer - data), line_num++, AnsiToUnicode(dispstr.c_str()));
+
+						mydic.insert(DwordMap::value_type((char_pointer - data), 0));
+					}
+
+				}
+
 				//fprintf(txt, "%s\r\n", print_chars);
 			}
 
@@ -171,7 +236,12 @@ int main()
 			{
 				memcpy(print_chars, char_pointer, char_length);
 				print_chars[char_length] = 0;
-				fwprintf(txt, L"¡ð%08X¡ð%s\r\n¡ñ%08d¡ñ%s\r\n\r\n", (char_pointer - data), AnsiToUnicode(print_chars), line_num++, AnsiToUnicode(print_chars));
+				if (mydic.find((char_pointer - data)) == mydic.end())
+				{
+					fwprintf(txt, L"¡ð%08X¡ð%08d¡ñ\r\n%s\r\n\r\n", (char_pointer - data), line_num++, AnsiToUnicode(print_chars));
+
+					mydic.insert(DwordMap::value_type((char_pointer - data), 0));
+				}
 			}
 
 			char_pointer = is_select_text(&data[read_tell], char_length);
@@ -179,7 +249,12 @@ int main()
 			{
 				memcpy(print_chars, char_pointer, char_length);
 				print_chars[char_length] = 0;
-				fwprintf(txt, L"¡ð%08X¡ð%s\r\n¡ñ%08d¡ñ%s\r\n\r\n", (char_pointer - data), AnsiToUnicode(print_chars), line_num++, AnsiToUnicode(print_chars));
+				if (mydic.find((char_pointer - data)) == mydic.end())
+				{
+					fwprintf(txt, L"¡ð%08X¡ð%08d¡ñ\r\n%s\r\n\r\n", (char_pointer - data), line_num++, AnsiToUnicode(print_chars));
+
+					mydic.insert(DwordMap::value_type((char_pointer - data), 0));
+				}
 			}
 
 			char_pointer = is_box_text(&data[read_tell], char_length);
@@ -187,7 +262,12 @@ int main()
 			{
 				memcpy(print_chars, char_pointer, char_length);
 				print_chars[char_length] = 0;
-				fwprintf(txt, L"¡ð%08X¡ð%s\r\n¡ñ%08d¡ñ%s\r\n\r\n", (char_pointer - data), AnsiToUnicode(print_chars), line_num++, AnsiToUnicode(print_chars));
+				if (mydic.find((char_pointer - data)) == mydic.end())
+				{
+					fwprintf(txt, L"¡ð%08X¡ð%08d¡ñ\r\n%s\r\n\r\n", (char_pointer - data), line_num++, AnsiToUnicode(print_chars));
+
+					mydic.insert(DwordMap::value_type((char_pointer - data), 0));
+				}
 			}
 		}
 		

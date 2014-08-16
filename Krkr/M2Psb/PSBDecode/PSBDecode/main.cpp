@@ -162,6 +162,7 @@ uint m2_get_int_size(byte* data)
 	}
 	return result;
 }
+
 typedef struct arraydata_s
 {
 	DWORD maxsize;
@@ -169,6 +170,7 @@ typedef struct arraydata_s
 	DWORD datasize;
 	PBYTE datastart;
 }arraydata_t;
+
 typedef struct tree_s
 {
 	psbinfo_t* data1;
@@ -212,6 +214,8 @@ DWORD GetArrayOffset(arraydata_t* inbuffer, DWORD sub = 0)
 	}
 	return result;
 }
+
+
 void getpsbinfo(psbinfo_t *psbinfo)
 {
 	register PsbHeader* pPSBData = (PsbHeader*)psbinfo->pPSBData;
@@ -355,7 +359,9 @@ char* M2GetString(tree_t* in)
 
 	return (char*)((psbinfo_t*)in->data1)->nStrRes + GetArrayOffset(&d1, v1);
 }
+
 #define BMP_BIT 32
+
 BOOL SaveBMPFile(const char *file, int width, int height, void *data)
 {
 	//int nAlignWidth = (width*BMP_BIT+31)/32;
@@ -396,6 +402,7 @@ BOOL SaveBMPFile(const char *file, int width, int height, void *data)
 
 	return TRUE;
 }
+
 DWORD ConvertValueToInt(tree_t* in)
 {
 	DWORD result = 0;
@@ -423,6 +430,7 @@ DWORD ConvertValueToInt(tree_t* in)
 	}
 	return result;
 }
+
 bool ItemIsExists(char* name, tree_t* in)
 {
 	tree_t out;
@@ -432,6 +440,7 @@ bool ItemIsExists(char* name, tree_t* in)
 	}
 	return 1;
 }
+
 DWORD GetWidth(tree_t* in)
 {
 	tree_t out;
@@ -442,6 +451,7 @@ DWORD GetWidth(tree_t* in)
 	}
 	return ConvertValueToInt(&out);
 }
+
 DWORD GetHeight(tree_t* in)
 {
 	tree_t out;
@@ -452,6 +462,7 @@ DWORD GetHeight(tree_t* in)
 	}
 	return ConvertValueToInt(&out);
 }
+
 PBYTE GetDIBPointer(tree_t* in, int pixels)
 {
 	arraydata_t d1;
@@ -469,12 +480,14 @@ PBYTE GetDIBPointer(tree_t* in, int pixels)
 	}
 	return NULL;
 }
+
 void ShowError(char* name)
 {
 	char error[128];
 	sprintf(error, "psb: undefined object key '%s' is referenced.", name);
 	MessageBoxA(NULL, error, "201724", MB_OK);
 }
+
 bool RecursionTree(char* tree, tree_t* in, tree_t* out)
 {
 	char szCurTree[32] = { 0 };
@@ -516,6 +529,8 @@ bool RecursionTree(char* tree, tree_t* in, tree_t* out)
 	}
 	return false;
 }
+
+
 char* GetFileName(char* name)
 {
 	int len = strlen(name);
@@ -526,6 +541,7 @@ char* GetFileName(char* name)
 	}
 	return NULL;
 }
+
 char* GetFilePath(char* name)
 {
 	static char szname[MAX_PATH];
@@ -542,6 +558,7 @@ char* GetFilePath(char* name)
 	}
 	return NULL;
 }
+
 BOOL  RecursionDirectory(char*  lpszDir, int start = 0)
 {
 	int i = 0;
@@ -575,6 +592,7 @@ BOOL  RecursionDirectory(char*  lpszDir, int start = 0)
 
 	return TRUE;
 }
+
 wchar_t *UTIL_UTF8ToUnicode(const char *str)
 {
 	static wchar_t result[1024];
@@ -583,6 +601,7 @@ wchar_t *UTIL_UTF8ToUnicode(const char *str)
 	result[len] = L'\0';
 	return result;
 }
+
 char *UTIL_UnicodeToANSI(const wchar_t *str)
 {
 	static char result[1024];
@@ -591,6 +610,7 @@ char *UTIL_UnicodeToANSI(const wchar_t *str)
 	result[len] = '\0';
 	return result;
 }
+
 void FormatPath(char* name)
 {
 	int len = strlen(name);
@@ -600,6 +620,7 @@ void FormatPath(char* name)
 			name[i] = '/';
 	}
 }
+
 DWORD getOffset(tree_t* in)
 {
 	DWORD v1 = M2GetInt(in->data2);
@@ -712,6 +733,7 @@ void PeekDIB(char* name, tree_t* in)
 		}
 	}
 }
+
 void EnumFile(tree_t* in)
 {
 	static char path[1024];
@@ -776,10 +798,9 @@ char* M2GetDataString(tree_t * tree)
 	}
 	return NULL;
 }
+
 void Decode_Data(PBYTE memoryData, DWORD fileSize)
 {
-	CString cst;
-	CString cst2;
 	psbinfo_t psbinfo;
 	PsbHeader* psbhead = (PsbHeader*)memoryData;
 	memset(&psbinfo, 0, sizeof(psbinfo));
@@ -806,7 +827,9 @@ void Decode_Data(PBYTE memoryData, DWORD fileSize)
 			}
 		}
 	}
-	//return;
+	return;
+
+
 	if (GetTreeItem("scenes", &in, &out))
 	{
 		byte* array_start = out.data2;
@@ -936,7 +959,7 @@ void CPSBReaderDlg::OnButton3()
 */
 int main()
 {
-	FILE* fp = fopen("1_01.ks.scn", "rb");
+	FILE* fp = fopen("title_bg.psb", "rb");
 	//FILE* fp = fopen("after.psb", "rb");
 
 	fseek(fp, 0, SEEK_END);

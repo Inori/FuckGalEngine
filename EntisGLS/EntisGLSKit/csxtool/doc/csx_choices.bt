@@ -1,0 +1,19 @@
+struct UNICODE {
+    int32 len;
+    wchar_t str[len];
+};
+
+char stuff[0xcc1ead] <bgcolor=cSilver>;
+
+char st[3] <bgcolor=cLtYellow>;
+UNICODE choice1 <bgcolor=cLtRed>;
+char ukn1[13] <bgcolor=cLtGray>; // 02 00 04 00 00 00 00 08 05 02 00 00 00
+UNICODE adds1 <bgcolor=cLtYellow>;
+char p1[4] <bgcolor=cLtGray>;
+UNICODE choice2 <bgcolor=cLtRed>;
+char ukn2[13] <bgcolor=cLtGray>; // 02 00 04 00 00 00 00 08 05 02 00 00 00
+UNICODE adds2 <bgcolor=cLtYellow>;
+
+if (st[0] != 2 || st[1] != 0 || st[2] != 6) {
+    return 1;
+}
