@@ -1,4 +1,6 @@
 #include <string>
+#include <io.h>
+#include <direct.h>
 #include "zlib.h"
 
 using std::string;
@@ -36,6 +38,41 @@ typedef struct _fileinfo
 	ulong uncomplen;
 	ulong complen;
 }fileinfo;
+
+
+bool mkdirEx(const char* lpPath)
+{
+	string pathname = lpPath;
+
+	if (pathname[pathname.length() - 1] != '\\')	pathname += '\\';
+	int end = pathname.rfind('\\');
+	int pt = pathname.find('\\');
+	if (pathname[pt - 1] == ':')	pt = pathname.find('\\', pt + 1);
+	const char * path;
+	while (pt != -1 && pt <= end)
+	{
+		string p = pathname.substr(0, pt + 1);
+		path = p.c_str();
+		if (_access(path, 0) == -1)
+			_mkdir(path);
+		pt = pathname.find('\\', pt + 1);
+	}
+
+	return true;
+}
+
+void make_path(string filename)
+{
+	unsigned long i;
+	for (i = filename.length(); i >0; i--)
+	{
+		if (filename[i] == '\\')	break;
+	}
+	string path = filename.substr(0, i);
+	if (path == "")
+		return;
+	mkdirEx(path.c_str());
+}
 
 int main(int argc, char*argv[])
 {
@@ -102,6 +139,7 @@ int main(int argc, char*argv[])
 
 	for (ulong n = 0; n < filenum; n++)
 	{
+		make_path(flist[n].filename);
 		FILE * fout = fopen(flist[n].filename, "wb");
 		if (!fout)
 		{
