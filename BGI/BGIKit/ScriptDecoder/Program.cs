@@ -26,6 +26,9 @@ namespace ScriptDecoder
             var scriptBuffer = br.ReadBytes((int) br.BaseStream.Length);
             br.Close();
 
+            //if (!scriptBuffer.Slice(0, 0x8).EqualWith(new byte[] { 0x42, 0x75, 0x72, 0x69, 0x6B, 0x6F, 0x43, 0x6F }))
+                //return;
+
             // headerLength includes MAGIC and @[0x1C].
             int headerLength = 0;
 
