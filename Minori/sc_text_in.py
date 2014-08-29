@@ -25,9 +25,12 @@ def int2byte(num):
 def makestr(lines):
     string_list = []
     for index,line in enumerate(lines):
-        s = re.match('●[0-9A-Fa-f]+●', line)
-        if s:
+        if re.match('●[0-9A-Fa-f]+●', line):
             string_list.append(line[10:])
+        elif re.match('○[0-9A-Fa-f]+○', line):
+            pass
+        elif not line == '\n':
+            print(line)
     return string_list
 
 alnum = [' ','.',',','[',']', '_',
