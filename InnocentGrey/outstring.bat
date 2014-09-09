@@ -1,0 +1,1 @@
+for %%a in (*.s) do getstring.exe -x -p %%a %%a.txt
