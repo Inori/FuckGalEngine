@@ -42,6 +42,16 @@ string replace_all(string dststr, string oldstr, string newstr)
 }
 
 
+void fixstr(char *str, dword len)
+{
+	for (dword i = 0; i < len; i++)
+	{
+		if (str[i] == 0)
+			str[i] = 'b';
+	}
+}
+
+
 byte* p_fileend;
 
 
@@ -51,7 +61,7 @@ dword vm_strlen(byte* b)
 	if (c >= p_fileend) return 0;
 	while (1)
 	{
-		if ((*c == 0x1B) && (*(c+1) == 0x03))
+		if ((*c == 0x1B && *(c + 1) == 0x03) || (*c == 0x1B && *(c + 1) == 0x02))
 		{
 			break;
 		}
@@ -72,8 +82,9 @@ byte* text_point(byte* b)
 */
 
 
-byte start_byte[] = { 0x1B, 0x12, 0x00, 0x01};
-byte end_byte[] = {  0x00, 0x00, 0xFF, 0xFF };
+byte start_byte[] = {0x1B, 0x12, 0x00, 0x01};
+byte end_byte[] = {0x00, 0x00, 0xFF, 0xFF};
+byte tag[] = {0x1B, 0x03, 0x02, 0xFF};
 byte* text_point(byte* b)
 {
 	byte *pos = b;
@@ -87,6 +98,10 @@ byte* text_point(byte* b)
 			pos++;
 		}
 		byte* end = pos + sizeof(end_byte);
+		if (!memcmp(end, tag, 4))
+		{
+			return end + sizeof(tag);
+		}
 		if (*end != 0x1B)
 			return end;
 	}
@@ -218,9 +233,11 @@ int main()
 				{
 					memcpy(print_chars, char_pointer, char_length);
 					print_chars[char_length] = 0;
+					fixstr(print_chars, char_length);
 					if (mydic.find((char_pointer - data)) == mydic.end())
 					{
 						string dispstr = replace_all(print_chars, "\x1b\xf8\x01\xff", "\\n");
+						dispstr = replace_all(dispstr, "\n", "\\a");
 						fwprintf(txt, L"¡ð%08X¡ð%08d¡ñ\r\n%s\r\n\r\n", (char_pointer - data), line_num++, AnsiToUnicode(dispstr.c_str()));
 
 						mydic.insert(DwordMap::value_type((char_pointer - data), 0));
