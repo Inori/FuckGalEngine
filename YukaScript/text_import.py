@@ -22,6 +22,14 @@ def byte2int(byte):
 def int2byte(num):
     return struct.pack('L',num)
 
+#处理 '♪'
+def StringFilter(string):
+    
+    if '♪' in string:
+        string = string.replace('♪','☆')
+    
+    return string
+    
 #提取txt中控制信息，转换为二维列表
 def makestr(lines):
     sum_list = []
@@ -43,9 +51,11 @@ def makestr(lines):
             endoffset = int(endoffset_str, 16)
             continue
         if re.match('★[0-9A-Fa-f]+★', line):
-            string = line[10:-1]
+            string = StringFilter(line[10:-1])
             sum_list.append([indexoffset, length, startoffset, endoffset, string])
             continue
+        if line != '\n':
+            print(line)
             
     return sum_list
 
@@ -55,7 +65,7 @@ for fn in ftxt:
     if not fnmatch.fnmatch(fn,'*.txt'):
         continue
     
-    rawname = 'story' + fn[6:-4] + '.yks'
+    rawname = 'raw' + fn[6:-4] + '.yks'
     dstname = 'done' + fn[6:-4] + '.yks'
     src = open(fn, 'r', encoding='utf16')
     raw = open(rawname, 'rb')
@@ -80,7 +90,11 @@ for fn in ftxt:
     sum_diff = 0
     num = len(sum_list)
     for index,cell in enumerate(sum_list):
-        bytestr = cell[4].encode('sjis')
+        try:
+            bytestr = cell[4].encode('gbk', errors='ignore')
+        except:
+            bytestr = '???'.encode('gbk')
+            #bytestr = cell[4].encode('sjis')
         length = len(bytestr)
 
         #减去末尾0x00站位
@@ -166,6 +180,8 @@ for fn in ftxt:
     raw.close()
     src.close()
     print(dstname)
+
+input('导入完成')
     
 
     
