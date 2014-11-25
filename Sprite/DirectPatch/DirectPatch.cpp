@@ -580,9 +580,9 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 		TextColor effcl(0, 0, 0, 255);
 		//TextColor effcl(0, 0, 0, 255);
 
-		gdrawer.InitDrawer("simhei.ttf", 21);
+		gdrawer.InitDrawer("simhei.ttf", 20);
 		//gdrawer.SetTextColor(color);
-		gdrawer.ApplyEffect(Shadow, effcl, 2, 2.0);
+		gdrawer.ApplyEffect(Shadow, effcl, 1, 2.0);
 
 		g_hFont = CreateFont(
 		24,						/**< ×ÖÌå¸ß¶È */
