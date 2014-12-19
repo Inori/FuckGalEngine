@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "getstring", "getstring\gets
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "iar_unpacker", "iar_unpacker\iar_unpacker.vcxproj", "{79494B13-C6BA-4EDD-808D-12B2B8CA205B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "readfiletest", "readfiletest\readfiletest.vcxproj", "{58F545A2-EC83-46DF-8AAE-D608B8DA1E60}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,6 +29,10 @@ Global
 		{79494B13-C6BA-4EDD-808D-12B2B8CA205B}.Debug|Win32.Build.0 = Debug|Win32
 		{79494B13-C6BA-4EDD-808D-12B2B8CA205B}.Release|Win32.ActiveCfg = Release|Win32
 		{79494B13-C6BA-4EDD-808D-12B2B8CA205B}.Release|Win32.Build.0 = Release|Win32
+		{58F545A2-EC83-46DF-8AAE-D608B8DA1E60}.Debug|Win32.ActiveCfg = Debug|Win32
+		{58F545A2-EC83-46DF-8AAE-D608B8DA1E60}.Debug|Win32.Build.0 = Debug|Win32
+		{58F545A2-EC83-46DF-8AAE-D608B8DA1E60}.Release|Win32.ActiveCfg = Release|Win32
+		{58F545A2-EC83-46DF-8AAE-D608B8DA1E60}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

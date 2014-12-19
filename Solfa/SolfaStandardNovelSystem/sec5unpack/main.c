@@ -60,10 +60,6 @@ void ext_data(FILE* f)
 		}
 		
 
-		
-
-		
-
 		write_data_file(sec_name,sec_buffer,sec_length);
 
 		free(sec_buffer);

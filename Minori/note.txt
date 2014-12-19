@@ -1,0 +1,86 @@
+string:
+00420080  |>  8B43 28       /mov     eax, dword ptr [ebx+0x28]
+00420083  |. |0FB630        |movzx   esi, byte ptr [eax]
+00420086  |. |85F6          |test    esi, esi
+00420088  |. |0F84 15050000 |je      004205A3
+0042008E  |. |40            |inc     eax
+0042008F  |. |8943 28       |mov     dword ptr [ebx+0x28], eax
+00420092  |. |81FE 81000000 |cmp     esi, 0x81
+00420098  |. |72 20         |jb      short 004200BA
+0042009A  |. |81FE FE000000 |cmp     esi, 0xFE
+004200A0  |. |0F86 A1000000 |jbe     00420147
+004200A6  |. |81FE E0000000 |cmp     esi, 0xE0
+004200AC  |. |72 0C         |jb      short 004200BA
+004200AE  |. |81FE FE000000 |cmp     esi, 0xFE
+004200B4  |. |0F86 8D000000 |jbe     00420147
+004200BA  |> |80BB 4C030000>|cmp     byte ptr [ebx+0x34C], 0x0
+004200C1  |. |0F84 60030000 |je      00420427
+
+
+draw_text
+0041FDE0 >/$  55            push    ebp                                 ;  draw_text
+0041FDE1  |.  8BEC          mov     ebp, esp
+0041FDE3  |.  64:A1 0000000>mov     eax, dword ptr fs:[0]
+0041FDE9  |.  6A FF         push    -0x1
+0041FDEB  |.  68 A1AA4E00   push    004EAAA1
+0041FDF0  |.  50            push    eax
+0041FDF1  |.  64:8925 00000>mov     dword ptr fs:[0], esp
+0041FDF8  |.  81EC B4000000 sub     esp, 0xB4
+0041FDFE  |.  53            push    ebx
+0041FDFF  |.  8BD9          mov     ebx, ecx
+0041FE01  |.  807B 08 00    cmp     byte ptr [ebx+0x8], 0x0
+0041FE05  |.  56            push    esi
+0041FE06  |.  57            push    edi
+
+
+filename:
+00419342  |.  8D78 01         lea     edi, dword ptr [eax+0x1]
+00419345  |>  8A08            /mov     cl, byte ptr [eax]                      ;  eax == filename
+00419347  |.  40              |inc     eax
+00419348  |.  84C9            |test    cl, cl
+0041934A  |.^ 75 F9           \jnz     short 00419345
+0041934C  |.  2BC7            sub     eax, edi
+0041934E  |.  52              push    edx
+0041934F  |.  8BF8            mov     edi, eax
+00419351  |.  E8 7AC5FEFF     call    004058D0
+00419356  |.  8B7D 08         mov     edi, [arg.1]
+00419359  |.  E8 32FEFFFF     call    00419190                                 ;  filename_info!!!!!!
+
+
+
+
+generate_bmp:
+00426608  |> /8B45 D0       /mov     eax, [local.12]                           ;  generate_bmp
+0042660B  |. |3B45 C0       |cmp     eax, [local.16]
+0042660E  |. |73 38         |jnb     short 00426648
+00426610  |. |9C            |pushfd
+00426611  |. |FD            |std
+00426612  |. |8B4D C4       |mov     ecx, [local.15]
+00426615  |. |8B75 E8       |mov     esi, [local.6]
+00426618  |. |8B7D C8       |mov     edi, [local.14]
+0042661B  |. |BB 03000000   |mov     ebx, 0x3
+00426620  |. |BA 000000FF   |mov     edx, 0xFF000000
+00426625  |> |8B06          |/mov     eax, dword ptr [esi]
+00426627  |. |2BF3          ||sub     esi, ebx
+00426629  |. |25 FFFFFF00   ||and     eax, 0xFFFFFF
+0042662E  |. |0BC2          ||or      eax, edx
+00426630  |. |AB            ||stos    dword ptr es:[edi]
+00426631  |. |49            ||dec     ecx
+00426632  |.^|75 F1         |\jnz     short 00426625
+00426634  |. |9D            |popfd
+00426635  |. |8B4D 08       |mov     ecx, [arg.1]
+00426638  |. |8B41 78       |mov     eax, dword ptr [ecx+0x78]
+0042663B  |. |0145 E8       |add     [local.6], eax
+0042663E  |. |0145 C8       |add     [local.14], eax
+00426641  |. |FF45 D0       |inc     [local.12]
+00426644  |. |8BD9          |mov     ebx, ecx
+00426646  |.^\EB C0         \jmp     short 00426608
+
+
+
+
+
+
+
+
+
