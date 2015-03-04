@@ -244,7 +244,7 @@ void  GdipDrawer::DrawString(HDC hdc, wstring str, int xdest, int ydest, int lin
 				UnitPixel, &iAtt);
 		}
 		else if (has_glow)
-		{
+		{/*
 			ImageAttributes iAtt;
 			iAtt.SetColorMatrix(&effect_colorMatrix, ColorMatrixFlagsDefault, ColorAdjustTypeBitmap);
 
@@ -260,7 +260,7 @@ void  GdipDrawer::DrawString(HDC hdc, wstring str, int xdest, int ydest, int lin
 			
 			graphics.DrawImage(&bitmap, &srcRect, &myMatrix, &myBlur, &iAtt, UnitPixel);
 
-			dpixwidth = d_pixwidth;
+			dpixwidth = d_pixwidth;*/
 		}
 
 		//œ‘ æ«∞æ∞Œƒ◊÷Õº≤„

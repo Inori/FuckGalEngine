@@ -17,7 +17,7 @@ using namespace std;
 #include FT_STROKER_H
 
 //定义高版本GDI+, 以使用一些渲染函数
-#define GDIPVER 0x0110
+//#define GDIPVER 0x0110
 
 #include <objidl.h>
 #include <gdiplus.h>
