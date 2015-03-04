@@ -1,3 +1,34 @@
+反调试：
+第二个GetTickCount：
+00F23690   .  8B3D A8A0F700 mov     edi, dword ptr [<&KERNEL32.GetTickCount>]    ;  KERNEL32.GetTickCount
+下面
+cmp     ecx, 0xBB8 --> cmp ecx, ecx
+
+
+
+Blowfish_Decrypt入口sig:
+
+004756F3  |.  83E4 F8       and     esp, 0xFFFFFFF8
+004756F6  |.  B8 54100000   mov     eax, 0x1054
+
+Generate_Key:
+每次调用call eax返回Blowfish key的一个字节，32次即为完整的key
+
+00475448   .  56            push    esi
+00475449   .  FFD0          call    eax
+0047544B   .  0FB6C8        movzx   ecx, al                                  ;  al = key
+0047544E   .  C1E7 08       shl     edi, 0x8
+00475451   .  0BF9          or      edi, ecx
+00475453   .  B9 01000000   mov     ecx, 0x1
+00475458   .  03F1          add     esi, ecx
+0047545A   .  3B75 F4       cmp     esi, dword ptr [ebp-0xC]
+
+
+
+
+
+
+
 string:
 00420080  |>  8B43 28       /mov     eax, dword ptr [ebx+0x28]
 00420083  |. |0FB630        |movzx   esi, byte ptr [eax]

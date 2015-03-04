@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <string>
+#include <map>
 #include <io.h>
 #include <d3d9.h>
 #include <d3dx9core.h>
@@ -36,7 +37,7 @@ int WINAPI NewCreateFontIndirectA(LOGFONTA *lplf)
 {
 	lplf->lfCharSet = ANSI_CHARSET;
 	//lplf->lfCharSet = GB2312_CHARSET;
-	strcpy(lplf->lfFaceName, "黑体");
+	//strcpy(lplf->lfFaceName, "黑体");
 
 	return ((PfuncCreateFontIndirectA)g_pOldCreateFontIndirectA)(lplf);
 }
@@ -218,9 +219,90 @@ End:
 	return get_glyph(var1, var2, var3, var4);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma pack (1)
+typedef struct {
+	char magic[8];			/* "FUYINPAK" */
+	DWORD header_length;
+	DWORD is_compressed;
+	DWORD index_offset;
+	DWORD index_length;
+} header_t;
+
+typedef struct {
+	DWORD name_offset;
+	DWORD name_length;
+	DWORD offset;
+	DWORD length;
+	DWORD org_length;
+} entry_t;
+
+typedef struct {
+	DWORD offset;
+	DWORD length;
+	DWORD org_length;
+} info_t;
+
+typedef struct {
+	char name[MAX_PATH];
+	info_t info;
+} my_entry_t;
+
+#pragma pack ()
+
+typedef map<string, info_t> NameMap;
+NameMap NameDic;
+
+
+void FillNameDic()
+{
+	HANDLE hfile = CreateFileA("cnbg.paz", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_ARCHIVE, NULL);
+	if (hfile)
+	{
+		header_t header;
+		DWORD len = 0;
+		ReadFile(hfile, (LPVOID)&header, sizeof(header_t), &len, NULL);
+
+		SetFilePointer(hfile, header.index_offset, NULL, FILE_BEGIN);
+
+		ulong entry_count = header.index_length / sizeof(entry_t);
+		entry_t *entries = new entry_t[entry_count];
+
+		ReadFile(hfile, (LPVOID)entries, header.index_length, &len, NULL);
+
+		my_entry_t * my_entry = new my_entry_t[entry_count];
+		for (int i = 0; i < entry_count; i++)
+		{
+			SetFilePointer(hfile, entries[i].name_offset, NULL, FILE_BEGIN);
+			ReadFile(hfile, (LPVOID)my_entry[i].name, entries[i].name_length, &len, NULL);
+
+			my_entry[i].info.offset = entries[i].offset;
+			my_entry[i].info.length = entries[i].length;
+			my_entry[i].info.org_length = entries[i].org_length;
+
+			NameDic.insert(NameMap::value_type(my_entry[i].name, my_entry[i].info));
+		}
+
+
+		delete[]my_entry;
+		delete entries;
+	}
+	else
+	{
+		MessageBoxA(NULL, "读取cnbg.paz失败!", "Error", MB_OK);
+	}
+	CloseHandle(hfile);
+}
+
+
 bool is_file_readable(string filename)
 {
-	return (_access(filename.c_str(), 04) == 0);
+	NameMap::iterator it = NameDic.find(filename);
+	if (it == NameDic.end())
+		return false;
+	else
+		return true;
 }
 
 #define NAME_LEN 128
@@ -257,15 +339,29 @@ typedef struct _bmp_imfo
 
 bool read_bmp(string bmp_name, bmp_info *info)
 {
-	HANDLE hbmp = CreateFileA(bmp_name.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_ARCHIVE, NULL);;
+	NameMap::iterator iter;
+	iter = NameDic.find(bmp_name);
+	info_t file_info = iter->second;
+
+	DWORD off = file_info.offset;
+	DWORD len = file_info.length;
+	DWORD orglen = file_info.org_length;
+
+	HANDLE hbmp = CreateFileA("cnbg.paz", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_ARCHIVE, NULL);
 	if (hbmp != INVALID_HANDLE_VALUE)
 	{
+		SetFilePointer(hbmp, off, NULL, FILE_BEGIN);
+
 		BITMAPFILEHEADER file_header;
 		BITMAPINFOHEADER info_header;
 		ulong read_size;
 		ReadFile(hbmp, &file_header, sizeof(BITMAPFILEHEADER), &read_size, NULL);
+		if (file_header.bfType != 'MB')
+		{
+			MessageBox(NULL, "not a bmp file", "Error", MB_OK);
+			return false;
+		}
 		ReadFile(hbmp, &info_header, sizeof(BITMAPINFOHEADER), &read_size, NULL);
-
 		if (info_header.biBitCount != 32)
 		{
 			MessageBox(NULL, "not a 32 bit bmp file", "Error", MB_OK);
@@ -288,8 +384,8 @@ bool read_bmp(string bmp_name, bmp_info *info)
 			MessageBox(NULL, "not enough memory!", "Error", MB_OK);
 			return false;
 		}
-		
-		SetFilePointer(hbmp, file_header.bfOffBits, 0, 0);
+
+		SetFilePointer(hbmp, off+file_header.bfOffBits, NULL, FILE_BEGIN);
 		ReadFile(hbmp, info->data, data_size, &read_size, NULL);
 
 		CloseHandle(hbmp);
@@ -463,7 +559,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		//MessageBox(NULL, "Thread hook", "keyboard", MB_OK);
 	}
 		
-	return 1;
+	return 0; //这里必须返回0
 }
 
 
@@ -558,6 +654,7 @@ void InitProc()
 	name_translator = new Translator(*name_parser);
 	name_engine = new TranslateEngine(*name_translator);
 
+	FillNameDic();
 	SetHook();
 }
 
