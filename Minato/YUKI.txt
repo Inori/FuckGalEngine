@@ -1,0 +1,61 @@
+decode_index tag:
+xor     eax, 0x26ACA46E
+
+
+
+
+
+004B75C1  |> /8B5424 10     /mov     edx, dword ptr [esp+0x10]
+004B75C5  |. |8B4424 14     |mov     eax, dword ptr [esp+0x14]
+004B75C9  |. |8A0428        |mov     al, byte ptr [eax+ebp]
+004B75CC  |. |3BD3          |cmp     edx, ebx
+004B75CE  |. |74 09         |je      short 004B75D9
+004B75D0  |> |30040E        |/xor     byte ptr [esi+ecx], al              ;  decode_tlg
+004B75D3  |. |4A            ||dec     edx
+004B75D4  |. |41            ||inc     ecx
+004B75D5  |. |3BD3          ||cmp     edx, ebx
+004B75D7  |.^|75 F7         |\jnz     short 004B75D0
+004B75D9  |> |45            |inc     ebp
+004B75DA  |. |3BEF          |cmp     ebp, edi
+004B75DC  |.^\72 E3         \jb      short 004B75C1
+
+
+
+004CB470 >/$  55                push    ebp
+004CB471  |.  8BEC              mov     ebp, esp
+004CB473  |.  8B4D 08           mov     ecx, [arg.1]
+004CB476  |.  33C0              xor     eax, eax
+004CB478  |.  85C9              test    ecx, ecx
+004CB47A  |.  74 17             je      short 004CB493
+004CB47C  |.  8B49 5C           mov     ecx, dword ptr [ecx+0x5C]
+004CB47F  |.  85C9              test    ecx, ecx
+004CB481  |.  74 10             je      short 004CB493
+004CB483  |.  8B55 0C           mov     edx, [arg.2]
+004CB486  |.  8B41 0C           mov     eax, dword ptr [ecx+0xC]
+004CB489  |.  8B40 0C           mov     eax, dword ptr [eax+0xC]
+004CB48C  |.  52                push    edx
+004CB48D  |.  51                push    ecx
+004CB48E  |.  FFD0              call    eax                                    ;  FT_Get_Char_Index
+004CB490  |.  83C4 08           add     esp, 0x8
+004CB493  |>  5D                pop     ebp
+004CB494  \.  C3                retn
+
+
+
+
+
+004546C2   .  A9 00FF0000       test    eax, 0xFF00                            ;  sjis_to_utf16
+004546C7   .  74 0D             je      short 004546D6
+004546C9   .  8BD0              mov     edx, eax
+004546CB   .  A1 A0906200       mov     eax, dword ptr [0x6290A0]              
+004546D0   .  0FB70450          movzx   eax, word ptr [eax+edx*2]
+004546D4   .  EB 08             jmp     short 004546DE
+004546D6   >  0FB70445 E08B5C00 movzx   eax, word ptr [eax*2+0x5C8BE0]
+004546DE   >  0FB7D0            movzx   edx, ax
+004546E1   .  8B87 94840900     mov     eax, dword ptr [edi+0x98494]
+
+
+
+
+
+
