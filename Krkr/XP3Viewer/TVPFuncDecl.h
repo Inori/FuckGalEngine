@@ -7,7 +7,7 @@
 
 #include "pragma_once.h"
 #include "krkr2/tjs2/tjsCommHead.h"
-#include "../../Unpacker/krkr2/krkr2.h"
+#include "krkr2.h"
 
 #define SAVE_ESP    INLINE_ASM mov ebx, esp
 #define RESTORE_ESP INLINE_ASM mov esp, ebx

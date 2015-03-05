@@ -1,7 +1,7 @@
 #pragma comment(lib, "../../GUI/Babylon/Image/Image.lib")
 
 #include "Krkr2Lite.h"
-#include "../../Unpacker/krkr2/TLGDecoder.cpp"
+#include "TLGDecoder.cpp"
 #include "../../GUI/Babylon/Image/Image.h"
 
 #include <WinCodecSDK.h>

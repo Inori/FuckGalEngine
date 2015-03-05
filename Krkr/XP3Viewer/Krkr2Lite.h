@@ -5,7 +5,7 @@
 
 #include <Windows.h>
 #include "TVPFuncDecl.h"
-#include "../../Unpacker/krkr2/krkr2.h"
+#include "krkr2.h"
 //#include "../../Unpacker/krkr2/cxdec.cpp"
 
 #define KRKR2_FLAG_KEEP_RAW             0x00000001
