@@ -37,5 +37,9 @@
       <Filter>zlib</Filter>
     </ClCompile>
     <ClCompile Include="Loader.cpp" />
+    <ClCompile Include="Library.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Library.h" />
   </ItemGroup>
 </Project>

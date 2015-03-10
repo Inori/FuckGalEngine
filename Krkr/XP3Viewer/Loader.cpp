@@ -5,7 +5,8 @@
 #pragma comment(lib, "ntdll.lib")
 #pragma comment(lib, "undoc_k32.lib")
 
-#include "MyLibrary.cpp"
+//#include "MyLibrary.cpp"
+#include "Library.h"
 #include <shlobj.h>
 
 NTSTATUS GetPathFromLinkFile(PCWSTR LinkFilePath, PWCHAR FullPath, ULONG BufferCount)
