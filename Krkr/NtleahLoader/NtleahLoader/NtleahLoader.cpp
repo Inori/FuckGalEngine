@@ -82,7 +82,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	DWORD oep = 0x00401000; //不同程序不一样，这里暂时硬编码。
 	ReadProcessMemory(pi.hProcess, (LPCVOID)oep, oep_code, 2, NULL);
 
-	BYTE jmp_code[] = {0xEB, 0xFE};
+	BYTE jmp_code[] = {0xEB, 0xFE}; //跳回本条指令，死循环
 	WriteProcessMemory(pi.hProcess, (LPVOID)oep, jmp_code, 2, NULL);
 	FlushInstructionCache(pi.hProcess, (LPVOID)oep, 2);
 
@@ -121,8 +121,9 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	CloseHandle(hMapFile);
 
 	//SuspendThread(pi.hThread);
-	WriteProcessMemory(pi.hProcess, (LPVOID)oep, oep_code, 2, NULL);
+	WriteProcessMemory(pi.hProcess, (LPVOID)oep, oep_code, 2, NULL); //恢复原OEP处指令
 	ResumeThread(pi.hThread);
+	VirtualFreeEx(pi.hProcess, pVirtualMemory, 0x1000, MEM_RELEASE);
 
 	return 0;
 
