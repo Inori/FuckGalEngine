@@ -1324,7 +1324,7 @@ VOID Init(HINSTANCE hInstance)
         if (CallRtlDispatchException == NULL)
         {
             CallRtlDispatchException = (PVOID)IMAGE_INVALID_RVA;
-            RtlAddVectoredExceptionHandler(TRUE, GetFilterExceptionHandler);
+            RtlAddVectoredExceptionHandler(TRUE, GetFilterExceptionHandler); //Win7x64会执行到这
         }
 
         WICConvert32bppBGRTo32bppBGRA = FindWICConvert32bppBGRTo32bppBGRAAddress();
@@ -1375,7 +1375,7 @@ VOID Init(HINSTANCE hInstance)
     Peb = Nt_CurrentPeb();
     LdrModule = FIELD_BASE(Peb->Ldr->InLoadOrderModuleList.Flink, LDR_MODULE, InLoadOrderLinks);
 
-    if (NT_SUCCESS(ReLoadDll(LdrModule->FullDllName.Buffer, &NewExeBase, LdrModule->DllBase)))
+    if (NT_SUCCESS(ReLoadDll(LdrModule->FullDllName.Buffer, &NewExeBase, LdrModule->DllBase))) //exe's name and baseaddress (0x00400000)
         RedirectExporter(NewExeBase);
 
     DosHeader       = (PIMAGE_DOS_HEADER)LdrModule->DllBase;

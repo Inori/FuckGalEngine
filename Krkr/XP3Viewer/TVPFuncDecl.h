@@ -5,7 +5,8 @@
 
 #define NO_DECRYPT
 
-#include "pragma_once.h"
+//#include "pragma_once.h"
+#include "tp_stub.h"
 #include "krkr2/tjs2/tjsCommHead.h"
 #include "krkr2.h"
 

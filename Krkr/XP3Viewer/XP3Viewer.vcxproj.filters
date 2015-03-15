@@ -39,12 +39,19 @@
     <ClCompile Include="Krkr2Lite.cpp" />
     <ClCompile Include="TVPFuncDecl.cpp" />
     <ClCompile Include="XP3Viewer.cpp" />
+    <ClCompile Include="XP3ViewerUI.cpp" />
+    <ClCompile Include="cxdec.cpp" />
+    <ClCompile Include="krkr2.cpp" />
+    <ClCompile Include="tp_stub.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Krkr2Lite.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TVPFuncDecl.h" />
     <ClInclude Include="XP3Viewer.h" />
+    <ClInclude Include="cxdec.h" />
+    <ClInclude Include="krkr2.h" />
+    <ClInclude Include="tp_stub.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="XP3ViewerUI.rc" />

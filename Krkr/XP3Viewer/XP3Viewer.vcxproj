@@ -92,6 +92,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cxdec.cpp" />
     <ClCompile Include="E:\Library\zlib\adler32.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /GS- /GL /MP /arch:SSE   /GS- /GL /MP /arch:SSE </AdditionalOptions>
@@ -132,11 +133,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /GS- /GL /MP /arch:SSE   /GS- /GL /MP /arch:SSE </AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="krkr2.cpp" />
     <ClCompile Include="Krkr2Lite.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /GS- /GL /MP /arch:SSE   /GS- /GL /MP /arch:SSE </AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="tp_stub.cpp" />
     <ClCompile Include="TVPFuncDecl.cpp">
       <OmitFramePointers Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</OmitFramePointers>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -148,10 +151,14 @@
       </PrecompiledHeader>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /GS- /GL /MP /arch:SSE   /GS- /GL /MP /arch:SSE </AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="XP3ViewerUI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cxdec.h" />
+    <ClInclude Include="krkr2.h" />
     <ClInclude Include="Krkr2Lite.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="tp_stub.h" />
     <ClInclude Include="TVPFuncDecl.h" />
     <ClInclude Include="XP3Viewer.h" />
   </ItemGroup>
