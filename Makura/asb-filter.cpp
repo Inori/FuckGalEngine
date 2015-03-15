@@ -1,7 +1,7 @@
 
 // asb-filter.cpp  by  wiki908@github
 
-#include "stdafx.h"
+#include <stdio.h>
 
 
 int openfs(const wchar_t* fn, char* &buff)
