@@ -75,8 +75,8 @@ for i in range(0, count):
     text_list.append([num, text])
 
 for [num, text] in text_list:
-    #string = FormatString(text, num)
-    string = text + '\n'
+    string = FormatString(text, num)
+    #string = text + '\n'
     dst.write(string)
 
 src.close()

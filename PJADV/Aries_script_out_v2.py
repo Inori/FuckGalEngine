@@ -25,8 +25,8 @@ def dumpstring(file,offset):
             char2 = char_tuple[0]
 
             if char2 == 0:
-                string += str(bytestream, encoding='sjis')
-                string += str(b'\x81\x9a', encoding='sjis')
+                string += str(bytestream, encoding='sjis', errors='ignore')
+                #string += str(b'\x81\x9a', encoding='sjis', errors='ignore')
                 break
             else:
                 bytestream += struct.pack('B', char)
@@ -37,26 +37,29 @@ def dumpstring(file,offset):
 
 
 def scriptout(file,indexoffset,nameoffset,scriptoffset,count):
-    res = "●%08x●\n"%(indexoffset)
+    res = "☆%08x☆\n"%(indexoffset)
     
     if nameoffset != 0:
         name=dumpstring(file,nameoffset)
-        res += "◎%08d◎%s\n"%(count, name)
+        res += "★%08d★%s\n"%(count, name)
     else:
         name=''
-        res += "◎%08d◎%s\n"%(count, name)
+        res += "★%08d★%s\n"%(count, name)
         
     string = dumpstring(file,scriptoffset)
-    res += "◆%08d◆%s\n\n"%(count, string)
+    res += "○%08d○%s\n"%(count, string)
+    res += "●%08d●%s\n\n"%(count, string)
     return res
         
 
 
-startoffset=[0x469c, 0x6c400, 0xaed98, 0xe7178, 0x113964]
-endoffset = [0x6c3c0, 0xaebdc, 0xe7118, 0x113900, 0x16d67f]
+#startoffset=[0x469c, 0x6c400, 0xaed98, 0xe7178, 0x113964]
+#endoffset = [0x6c3c0, 0xaebdc, 0xe7118, 0x113900, 0x16d67f]
+startoffset=[0]
+endoffset = [0xd2020]
 
 index = open('scenario.dat', 'rb')
-src = open('script.bin', 'rb')  
+src = open('textdata.bin', 'rb')  
 
 indexoffsetlist=[]
 scriptoffsetlist=[]
@@ -64,7 +67,7 @@ nameoffsetlist=[]
 
 
 #获取各地址存入相应列表
-for i in range(0,5):
+for i in range(0,1):
     index.seek(startoffset[i])
     for j in range(0,0xffffffff):
         
@@ -87,6 +90,14 @@ for i in range(0,5):
 
             nameoffsetlist.append(0)
             
+            scriptoffset_byte=index.read(4)
+            scriptoffset=byte2int(scriptoffset_byte)
+            scriptoffsetlist.append(scriptoffset)
+        elif long == 0x01010804:
+            indexoffsetlist.append(index.tell()-4)
+
+            nameoffsetlist.append(0)
+
             scriptoffset_byte=index.read(4)
             scriptoffset=byte2int(scriptoffset_byte)
             scriptoffsetlist.append(scriptoffset)
