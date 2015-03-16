@@ -1,6 +1,8 @@
 ﻿
 AdvHD (WillPlus Engine V2) Resource Processing Collection
 
+by wiki908@github
+
 用于新版 WillPlus 引擎(V2)的资源处理
 提供解包, 封包, 脚本转换, 提取与整合, 翻译文本全文替换, 系统图片提取与封装这几项服务
 解包与封包程序借助 asmodean 的代码完成
