@@ -26,3 +26,7 @@ envinit.tjs
 config.tjsÖÐ
 
 showFixedPitchOnlyInFontSelector = false
+
+
+C6 43 17 80 80->86
+8A 40 1A 88 45 D7 -> C6 45 D7 86 90 90
