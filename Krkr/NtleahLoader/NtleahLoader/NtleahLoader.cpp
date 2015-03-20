@@ -54,7 +54,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
 
 	GetCurrentDirectoryW(sizeof(wszExePath), wszExePath);
-	wcscat(wszExePath, L"\\鳥籠のマリアージュCHS.raw");
+	wcscat(wszExePath, L"\\DllLoader.exe");
 
 	si.cb = sizeof(STARTUPINFOW);
 	GetStartupInfoW(&si);
@@ -73,7 +73,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 		);
 	if (!status)
 	{
-		MessageBoxA(NULL, "目录下可能没有 “鳥籠のマリアージュCHS.raw” 文件", "Error", MB_OK);
+		MessageBoxA(NULL, "目录下可能没有 “DllLoader.exe” 文件", "Error", MB_OK);
 		return -1;
 	}
 		

@@ -168,6 +168,11 @@ TVPGetFunctionExporterFunc InitializeExporter()
     return pfTVPGetFunctionExporter;
 }
 
+//找到TVPGetFunctionExporter
+//0061A664 > / $  E8 D3F2FFFF   call    0061993C
+//0061A669 | .B8 C0986F00   mov     eax, 006F98C0
+//0061A66E  \.C3            retn
+//将  mov eax, 006F98C0 中的绝对地址更新
 VOID RedirectExporter(PVOID RedirectBase)
 {
     PBYTE       Buffer;
