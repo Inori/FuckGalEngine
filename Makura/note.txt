@@ -1,0 +1,19 @@
+calc index decompress size:
+
+file_count * sizeof(entry_t)
+
+eg:script.arc --> 0x90 * 0x30
+
+
+
+
+计算获取key：
+0040D875  |.  E8 36000000   call    0040D8B0                                      ;  eax = 0xADD1F4AA 或 0x80CDFAEE
+0040D87A  |.  B9 0100379E   mov     ecx, 0x9E370001
+0040D87F  |.  F7E1          mul     ecx
+0040D881  |.  52            push    edx
+0040D882  |.  50            push    eax
+0040D883  |.  E8 DBFEFFFF   call    0040D763
+
+
+
