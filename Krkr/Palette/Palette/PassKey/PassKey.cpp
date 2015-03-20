@@ -88,10 +88,46 @@ HMODULE WINAPI newLoadLibraryA(LPCSTR lpLibFileName)
 	return pLoadLibraryA(lpLibFileName);
 }
 
+PVOID g_pOldCreateFontIndirectA = CreateFontIndirectA;
+typedef int (WINAPI *PfuncCreateFontIndirectA)(LOGFONTA *lplf);
+int WINAPI NewCreateFontIndirectA(LOGFONTA *lplf)
+{
+	lplf->lfCharSet = GB2312_CHARSET;
+	//lplf->lfHeight = 100;
+	//strcpy(lplf->lfFaceName, "MyºÚÌå");
+	//lplf->lfCharSet = GB2312_CHARSET;
+
+	return ((PfuncCreateFontIndirectA)g_pOldCreateFontIndirectA)(lplf);
+}
+
+
+PVOID g_pOldCreateFontIndirectW = CreateFontIndirectW;
+typedef int (WINAPI *PfuncCreateFontIndirectW)(LOGFONTW *lplf);
+int WINAPI NewCreateFontIndirectW(LOGFONTW *lplf)
+{
+	lplf->lfCharSet = GB2312_CHARSET;
+	//lplf->lfHeight = 100;
+	//strcpy(lplf->lfFaceName, "MyºÚÌå");
+	//lplf->lfCharSet = GB2312_CHARSET;
+
+	return ((PfuncCreateFontIndirectW)g_pOldCreateFontIndirectW)(lplf);
+}
+
 void SetHook()
 {
 	DetourTransactionBegin();
 	DetourAttach((void**)&pLoadLibraryA, newLoadLibraryA);
+	DetourTransactionCommit();
+
+
+	DetourTransactionBegin();
+	//DetourUpdateThread(GetCurrentThread());
+	DetourAttach(&g_pOldCreateFontIndirectA, NewCreateFontIndirectA);
+	DetourTransactionCommit();
+
+	DetourTransactionBegin();
+	//DetourUpdateThread(GetCurrentThread());
+	DetourAttach(&g_pOldCreateFontIndirectW, NewCreateFontIndirectW);
 	DetourTransactionCommit();
 }
 
