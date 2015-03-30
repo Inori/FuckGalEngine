@@ -1,0 +1,5 @@
+To find the .exe key manually:
+
+    Locate the last occurence of \x05TIcon within the game's executable.
+    The key is located right after that.
+    The key is 256 bytes long.
