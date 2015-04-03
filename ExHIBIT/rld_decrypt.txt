@@ -1,0 +1,27 @@
+03FDC4E0    8BD9            MOV EBX,ECX                              ; 开始解密
+03FDC4E2    81E3 FF000000   AND EBX,0FF
+03FDC4E8    8B5C9F 08       MOV EBX,DWORD PTR DS:[EDI+EBX*4+8]       ; 读取key
+03FDC4EC    33DE            XOR EBX,ESI                              ; ESI = 0x20121203
+03FDC4EE    3118            XOR DWORD PTR DS:[EAX],EBX		     ; 异或
+03FDC4F0    83C1 01         ADD ECX,1                                ; 计数 +1
+03FDC4F3    83C0 04         ADD EAX,4                                ; 指针后移4字节
+03FDC4F6    3BCA            CMP ECX,EDX				     ; EDX * 4 + 0x10 + 3 = filesize
+03FDC4F8  ^ 7C E6           JL SHORT resident.03FDC4E0		     ; 循环
+
+English comment version, many thanks to Josh Duncan <jduncanator@gmail.com>:
+
+MOV EBX,ECX                             ; Move loop iteration (ECX) into key pointer (EBX)
+AND EBX,0xFF                            ; Wrap key pointer (EBX) at 255; Cheap modulus operation (EBX % 256)
+MOV EBX,DWORD PTR DS:[EDI+EBX*4+0x8]    ; Reads a 4-byte integer from the address pointer at EDI+EBX*4+0x8
+                                        ; into EBX (keystream)
+                                        ; EBX starts at 0x0 and increase by 1 each iteration.
+                                        ; You can deduce that it is increasing a pointer into a DWORD array
+                                        ; every iteration.
+XOR EBX,ESI                             ; XOR the keystream (EBX) with the seed (ESI)
+XOR DWORD PTR DS:[EAX],EBX              ; XOR the file stream (file pointer is EAX) with the keystream (EBX)
+ADD ECX,0x1                             ; Increase the loop iteration (ECX) by 1
+ADD EAX,0x4                             ; Increase file pointer (EAX) by 4
+CMP ECX,EDX                             ; Loop bounds check; loop iteration (ECX) != file size / 4 (EDX)
+
+ 75 26 A1 30 8B 03 1E 85 C0 75 12 68 DC 80 02 1E E8 E3 FB 00 00 83 C4 04 A3 30 8B 03 1E 68 80 28
+
