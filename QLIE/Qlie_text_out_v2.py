@@ -52,7 +52,7 @@ f_lst = walk('scenario')
 for fn in f_lst:
     dstname = 'script' + fn[8:-2] + '.txt'
     dst = open(dstname,'w', encoding='utf16')
-    src = open(fn, 'r', encoding='sjis')
+    src = open(fn, 'r', encoding='sjis', errors='ignore')
     lines = src.readlines()
 
     num = len(lines)
