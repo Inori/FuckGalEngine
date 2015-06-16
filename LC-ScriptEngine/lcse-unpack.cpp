@@ -74,7 +74,7 @@ int wmain(int argc, wchar_t** argv)
     {
         if (argc < 2)
         {
-            printf("usage: %s <infile> [outdir]\n", argv[0]);
+            printf("usage: {program} <infile> [outdir]\n");
             return 0;
         }
 
