@@ -64,6 +64,7 @@ int wmain(int argc, wchar_t** argv)
         output[0] = 0; // Clean.
 
         // Filt unreadable chars.
+        // But text can auto wrap in game. So you can ignore \x01 inside the sentence.
         for (int j = 0; j < str_length - 1; ++j)
         {
             if (anchor[j] > 0 && anchor[j] < 0x20)
