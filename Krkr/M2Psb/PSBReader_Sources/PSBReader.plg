@@ -1,0 +1,36 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: PSBReader - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP23F.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR"Debug/" /Fp"Debug/PSBReader.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /c 
+"F:\DRACU-RIOT!\PSBReader_Sources\PSBReaderDlg.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP23F.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP240.tmp" with contents
+[
+bufferoverflowu.lib zlib.lib /nologo /subsystem:windows /incremental:no /pdb:"Debug/PSBReader.pdb" /debug /machine:I386 /nodefaultlib:"msvcrt.lib" /out:"Debug/PSBReader.exe" /pdbtype:sept 
+".\Debug\PSBReader.obj"
+".\Debug\PSBReaderDlg.obj"
+".\Debug\StdAfx.obj"
+".\Debug\PSBReader.res"
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP240.tmp"
+<h3>Output Window</h3>
+Compiling...
+PSBReaderDlg.cpp
+F:\DRACU-RIOT!\PSBReader_Sources\PSBReaderDlg.cpp(1008) : warning C4018: '<' : signed/unsigned mismatch
+Linking...
+
+
+
+<h3>Results</h3>
+PSBReader.exe - 0 error(s), 1 warning(s)
+</pre>
+</body>
+</html>

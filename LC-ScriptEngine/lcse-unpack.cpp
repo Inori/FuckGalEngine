@@ -125,7 +125,7 @@ int wmain(int argc, wchar_t** argv)
             entry[i].offset ^= *(long*)header.key;
 
             export_file(fdata, entry + i, header.key[0] + 1);
-            // export_file(fdata, entry, 0x02); // Set the XOR value manually
+            // export_file(fdata, entry + i, 0x02); // Set the XOR value manually
         }
 
         fclose(fdata);
