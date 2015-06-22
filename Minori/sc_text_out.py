@@ -43,6 +43,7 @@ def is_alnum(string):
 
 fl = walk('sc')
 sumlen = 0
+namedic = {}
 for fn in fl:
     src = open(fn, 'r', encoding='sjis')
     lines = src.readlines()
@@ -73,6 +74,7 @@ for fn in fl:
             
             if not is_alnum(name):
                 dst.write(FormatString(name+'★'+text, i))
+                namedic[name] = '';
             else:
                 dst.write(FormatString(text, i))
             i += 1
@@ -83,6 +85,13 @@ for fn in fl:
     dst.close()
 
 print('文本总量'+str(sumlen)+' KB')
+
+namefile = open('name.txt', 'w', encoding='utf16')
+count = 0
+for name in namedic.keys():
+    string = "<%04d>%s\=\n\n"%(count, name.encode('sjis').decode('gbk'))
+    namefile.write(string)
+    count += 1
 
 
 

@@ -169,7 +169,8 @@ void __stdcall d3d_drawtext()
 0041490C   .  56            push    esi
 0041490D.FFD0          call    eax;  Present(CBaseDevice *this, const struct tagRECT *, const struct tagRECT *, HWND, const struct _RGNDATA *Src)
 */
-//在D3D::Present之前DrawText
+//在D3D::Present之前DrawText\
+//查找第一个cmp     eax, 0x88760868，在上面
 void *p_drawtext = (void*)0x4148FC;
 __declspec(naked) void _d3d_drawtext()
 {

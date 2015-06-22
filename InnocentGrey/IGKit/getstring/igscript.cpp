@@ -75,33 +75,35 @@ int main(int argc, char *argv[]) {
 
 	switch (argv[1][1])
 	{
-	case 'p':
-		ParseScript(argv[2], argv[3]); break;
-	case 'c':
-		CreateScript(argv[2], argv[3], argv[4]); break;
-	case 'x':
-	{
-		if (argc < 5)
+		case 'p':
+			ParseScript(argv[2], argv[3]); break;
+		case 'c':
+			CreateScript(argv[2], argv[3], argv[4]); break;
+		case 'd':
+			Crypt(argv[2], 1); break;
+		case 'x':
 		{
-			cerr << "This flag requires you to set the input files. "\
-				"See usage for more detail." << endl; 
-			return -1;
-		}
+			if (argc < 5)
+			{
+				cerr << "This flag requires you to set the input files. "\
+					"See usage for more detail." << endl; 
+				return -1;
+			}
 
-		char *tmp = Crypt(argv[3], 1);
+			char *tmp = Crypt(argv[3], 1);
 
-		if (strcmp(argv[2], "-p") == 0)
-			ParseScript(tmp, argv[4]);
-		else if (strcmp(argv[2], "-c") == 0)
-		{
-			CreateScript(tmp, argv[4], argv[5]);
-			Crypt(argv[5], 0);
+			if (strcmp(argv[2], "-p") == 0)
+				ParseScript(tmp, argv[4]);
+			else if (strcmp(argv[2], "-c") == 0)
+			{
+				CreateScript(tmp, argv[4], argv[5]);
+				Crypt(argv[5], 0);
+			}
+			remove(tmp);
+			break;
 		}
-		remove(tmp);
-		break;
-	}
-	default:
-		cerr << "Unknown flag: " << argv[1] << endl; break;
+		default:
+			cerr << "Unknown flag: " << argv[1] << endl; break;
 	}
 
 	return 0;
@@ -130,42 +132,43 @@ void ParseScript(char *scrfn, char *txtfn)
 			infile.read((char *)&temp, sizeof(temp));
 			switch(ins.opcode)
 			{
-			case 0x080D://jump
-				break;
-			case 0x0817:
-			case 0x081D:
-				{//option and jump
-					len = ins.opnum;
-					if(len != 0)
-					{
-						buf = new u8[len];
-						infile.read((char *)buf, len);
-						string txt((const char*)buf);
-						s32 padlen = len - txt.length();
-						if(padlen < 0) txt = txt.substr(0,len);
-						outtxt<<txt<<endl;
-					}
+				case 0x080D://jump
+				case 0x083B:
 					break;
-				}
-			case 0x081E://ogg -- 1E 0800 00
-			case 0x081F://ogg -- 1F 0800 00
-			case 0x0820://ogg -- 20 0800 01
-			case 0x0822://ogg -- 22 0800 01
-			case 0x0827://ogg -- 27 0800 00
-			case 0x0828://ogg -- 28 0800 00
-			case 0x082E://ogg -- 2E 0800 00
-			case 0x0830:{//ogg -- 30 0800 00
-					len = temp.unknown2>>8;
-					if(len != 0)
-					{
-						buf = new u8[len];
-						infile.read((char *)buf, len);
-						//outtxt.write((const char *)buf, len); outtxt<<endl;
+				case 0x0817:
+				case 0x081D:
+					{//option and jump
+						len = ins.opnum;
+						if(len != 0)
+						{
+							buf = new u8[len];
+							infile.read((char *)buf, len);
+							string txt((const char*)buf);
+							s32 padlen = len - txt.length();
+							if(padlen < 0) txt = txt.substr(0,len);
+							outtxt<<txt<<endl;
+						}
+						break;
 					}
+				case 0x081E://ogg -- 1E 0800 00
+				case 0x081F://ogg -- 1F 0800 00
+				case 0x0820://ogg -- 20 0800 01
+				case 0x0822://ogg -- 22 0800 01
+				case 0x0827://ogg -- 27 0800 00
+				case 0x0828://ogg -- 28 0800 00
+				case 0x082E://ogg -- 2E 0800 00
+				case 0x0830:{//ogg -- 30 0800 00
+						len = temp.unknown2>>8;
+						if(len != 0)
+						{
+							buf = new u8[len];
+							infile.read((char *)buf, len);
+							//outtxt.write((const char *)buf, len); outtxt<<endl;
+						}
+						break;
+					}
+				default:
 					break;
-				}
-			default:
-				break;
 			}
 		}
 		else if((ins.opcode>>8) == 0x04)
@@ -209,6 +212,7 @@ void ParseScript(char *scrfn, char *txtfn)
 			case 0x043C://bmp -- 3C 0400 09
 			case 0x047B://bmp -- 7B 0401 09
 			case 0x0499://bmp -- 99 0400 0C/99 0401 0C
+			case 0x049C://png -- 9C 0401 0D
 			case 0x04AD:
 				{//bmp -- AD 0400 09
 					len = ins.opnum>>8;
@@ -327,6 +331,7 @@ void CreateScript(char *scrfn, char *txtfn, char *outfn)
 			switch(ins.opcode)
 			{
 			case 0x080D:
+			case 0x083B:
 				{//jump
 					jplst[idx].oldadd = temp.unknown1; idx++;
 					outfile.write((const char*)&ins, sizeof(ins));
@@ -440,6 +445,7 @@ void CreateScript(char *scrfn, char *txtfn, char *outfn)
 			case 0x043C://bmp -- 3C 0400 09
 			case 0x047B://bmp -- 7B 0401 09
 			case 0x0499://bmp -- 99 0400 0C/99 0401 0C
+			case 0x049C://png -- 9C 0401 0D
 			case 0x04AD:
 				{//bmp -- AD 0400 09
 					outfile.write((const char*)&ins, sizeof(ins));
@@ -569,6 +575,7 @@ void RebuildPointer(char *oldscr, char *newscr){
 			switch(ins.opcode)
 			{
 			case 0x080D:
+			case 0x083B:
 				{//jump
 					temp.unknown1 = jplst[idx].newadd; idx++;
 					outfile.write((const char*)&ins, sizeof(ins));
@@ -646,6 +653,7 @@ void RebuildPointer(char *oldscr, char *newscr){
 			case 0x043C://bmp -- 3C 0400 09
 			case 0x047B://bmp -- 7B 0401 09
 			case 0x0499://bmp -- 99 0400 0C/99 0401 0C
+			case 0x049C://png -- 9C 0401 0D
 			case 0x04AD:{//bmp -- AD 0400 09
 					outfile.write((const char*)&ins, sizeof(ins));
 					len = ins.opnum>>8;
@@ -729,7 +737,8 @@ void RebuildPointer(char *oldscr, char *newscr){
 	outfile.close();
 }
 
-char* Crypt(char *fn, bool encrypt){//encrypt or decrypt
+char* Crypt(char *fn, bool encrypt)
+{//encrypt or decrypt
 
 	ifstream infile(fn, ios::binary);
 	if(!infile.is_open())

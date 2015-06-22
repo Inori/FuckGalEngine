@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import struct,os,fnmatch,re,zlib
+import os,re
 
 #遍历文件夹，返回文件列表
 def walk(adr):
@@ -11,15 +11,6 @@ def walk(adr):
             mylist.append(adrlist)
     return mylist
 
-#将4字节byte转换成整数
-def byte2int(byte):
-    long_tuple=struct.unpack('L',byte)
-    long = long_tuple[0]
-    return long
-
-#将整数转换为4字节二进制byte
-def int2byte(num):
-    return struct.pack('L',num)
 
 #将txt转换成文本列表
 def makestr(lines):
@@ -28,13 +19,24 @@ def makestr(lines):
         s = re.match('●[0-9A-Fa-f]+●', line)
         if s:
             string_list.append(line[10:])
+        elif line == '\n' or re.match('○[0-9A-Fa-f]+○', line):
+            pass
+        else:
+            pass
     return string_list
 
 def StringFilter(string):
-    if '〈ハ〉' in string:
-        string = string.replace('〈ハ〉', '乹僴乺')
-    if '【草太' in string and not'【草太】' in string:
-        string = string.replace('【草太', '【草太】')
+    lst = re.findall('\[.+?\]', string)
+    if not lst: return string
+
+    for part in lst:
+        temp = part.replace('，', ',')
+        string = string.replace(part, temp)
+    return string
+
+def StringFilter2(string):
+    if '，' in string:
+        string = string.replace('，', ',')
     return string
     
         
@@ -51,11 +53,20 @@ for fn in f_lst:
     src = open(fn, 'r', encoding='sjis', errors='ignore')
     jp_lines = src.readlines()
     
-    
+    selection_name = 'selection' + fn[2:-2] + '.txt'
+    if os.path.exists(selection_name):
+        selection = open(selection_name, 'r', encoding='utf16')
+        selection_lines = selection.readlines()
 
     dstlines = []
+    i = 0
     j = 0
     for index, line in enumerate(jp_lines):
+        if line[0:8] == '^select,':
+            dstlines.append(StringFilter2(selection_lines[i]))
+            i += 1
+            continue
+        
         if (line[0] != '^'
             and line[0] != '\\'
             and line[0] != '@'

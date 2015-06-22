@@ -30,9 +30,13 @@ def makestr(lines):
             string_list.append(line[6:-1])
         elif re.match('○[0-9]+ Cho○', line):
             string_list.append(line[10:-1])
+        elif re.match('○[0-9]+ Msg○', line):
+            string_list.append(line[10:-1])
         elif re.match('●[0-9]+●', line):
             pass
         elif re.match('●[0-9]+ Cho●', line):
+            pass
+        elif re.match('●[0-9]+ Msg●', line):
             pass
         elif line != '\n':
             print(line)
@@ -53,15 +57,31 @@ def processName(strlist):
     return  rst_list
 
 
-def StringFilter(string):
-    left = b'\x6a\x22'.decode('utf16')
-    right = b'\x6b\x22'.decode('utf16')
-    if left in string:
-        string = string.replace(left, '《')
-    if right in string:
-        string = string.replace(right, '》')
-    return string
-        
+def strQ2B(ustring):
+    """全角转半角"""
+    rstring = ''
+    for uchar in ustring:
+        inside_code=ord(uchar)
+        if inside_code == 12288:                              #全角空格直接转换
+            inside_code = 32
+        elif (inside_code >= 65281 and inside_code <= 65374): #全角字符（除空格）根据关系转化
+            inside_code -= 65248
+
+        rstring += chr(inside_code)
+    return rstring
+    
+def strB2Q(ustring):
+    """半角转全角"""
+    rstring = ""
+    for uchar in ustring:
+        inside_code=ord(uchar)
+        if inside_code == 0x20:                                 #半角空格直接转化
+            inside_code = 0x3000
+        elif inside_code >= 0x21 and inside_code <= 0x7E:        #半角字符（除空格）根据关系转化
+            inside_code += 0xFEE0
+
+        rstring += chr(inside_code)
+    return rstring
 
 f_lst = walk('format')
 for fn in f_lst:
@@ -74,7 +94,7 @@ for fn in f_lst:
     strlist = makestr(src.readlines())
     newlist = processName(strlist)
     for string in newlist:
-        dst.write(string + '\n')
+        dst.write(strB2Q(string) + '\n')
             
             
     print(dstname)

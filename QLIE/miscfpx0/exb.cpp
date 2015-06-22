@@ -66,8 +66,10 @@ struct BIMAGEDAT14SECT2 {
 
 using std::string;
 
-int main(int argc, char** argv) {
-  if (argc != 2) {
+int main(int argc, char** argv)
+{
+  if (argc != 2) 
+  {
     fprintf(stderr, "exb v1.05 by asmodean\n\n");
     fprintf(stderr, "usage: %s <input.b>\n", argv[0]);
     return -1;
@@ -78,14 +80,16 @@ int main(int argc, char** argv) {
   {
     string::size_type pos = prefix.find_last_of(".");
 
-    if (pos != string::npos) {
+    if (pos != string::npos) 
+    {
       prefix = prefix.substr(0, pos);
     }
   }
   
   int fd = open(in_filename, O_RDONLY | O_BINARY);
 
-  if (fd == -1) {
+  if (fd == -1) 
+  {
     fprintf(stderr, "Could not open %s (%s)\n", in_filename, strerror(errno));
     return -1;
   }
@@ -96,21 +100,26 @@ int main(int argc, char** argv) {
 
   BSECTHDR secthdr;
 
-  while (read(fd, &secthdr, sizeof(secthdr)) > 0) {
+  while (read(fd, &secthdr, sizeof(secthdr)) > 0) 
+  {
     if (!strcmp(secthdr.signature, "abdata10") ||
         !strcmp(secthdr.signature, "abdata11") ||
         !strcmp(secthdr.signature, "abdata12") ||
-        !strcmp(secthdr.signature, "abdata13")) {
+        !strcmp(secthdr.signature, "abdata13")) 
+    {
       BDATASECT datasect;
       
       read(fd, &datasect, sizeof(datasect));
       lseek(fd, datasect.length, SEEK_CUR);
-    } else if (!strcmp(secthdr.signature, "abimage10")) {
+    } 
+    else if (!strcmp(secthdr.signature, "abimage10")) 
+    {
       BIMAGESECT imagesect;
 
       read(fd, &imagesect, sizeof(imagesect));
 
-      for (int i = 0; i < imagesect.image_count; i++) {
+      for (int i = 0; i < imagesect.image_count; i++) 
+      {
         BIMAGEDATSECT1 ids1;        
         read(fd, &ids1, sizeof(ids1));
 
@@ -129,31 +138,39 @@ int main(int argc, char** argv) {
 
         unsigned long len = 0;
 
-        if (!memcmp(ids1.signature, "abimgdat14", 10)) {
+        if (!memcmp(ids1.signature, "abimgdat14", 10)) 
+        {
           BIMAGEDAT14SECT2 ids2;
           read(fd, &ids2, sizeof(ids2));
 
           len = ids2.data_length;
-        } else if (!memcmp(ids1.signature, "abimgdat13", 10)) {
+        } 
+        else if (!memcmp(ids1.signature, "abimgdat13", 10)) 
+        {
           BIMAGEDAT13SECT2 ids2;
           read(fd, &ids2, sizeof(ids2));
 
           len = ids2.data_length;
-        } else {
+        } 
+        else 
+        {
           BIMAGEDATSECT2 ids2;
           read(fd, &ids2, sizeof(ids2));
 
           len = ids2.data_length;
         }
 
-        if (len == 0) {
+        if (len == 0) 
+        {
           printf("%s: Null skipped.\n", in_filename);
           continue;
         }
 
         // Fix some junk that at least the English Windows XP doesn't like in filenames
-        for (int j = 0; j < ids1.name_length; j++) {
-          if (filename[j] == '<' || filename[j] == '>' || filename[j] == '*' || filename[j] == '/') {
+        for (int j = 0; j < ids1.name_length; j++) 
+        {
+          if (filename[j] == '<' || filename[j] == '>' || filename[j] == '*' || filename[j] == '/') 
+          {
             filename[j] = '_';
           }
         }
@@ -163,29 +180,42 @@ int main(int argc, char** argv) {
         read(fd, buff, len);
 
         string ext;
-        if (!memcmp(buff, "\x89PNG", 4)) {
+        if (!memcmp(buff, "\x89PNG", 4)) 
+        {
           ext = ".png";
-        } else if (!memcmp(buff, "BM", 2)) {
+        } 
+        else if (!memcmp(buff, "BM", 2)) 
+        {
           ext = ".bmp";
-        } else if (!memcmp(buff + 6, "JFIF", 4)) {
+        } 
+        else if (!memcmp(buff + 6, "JFIF", 4)) 
+        {
           ext = ".jpg";
-        } else if (!memcmp(buff, "IMOAVI", 6)) {
+        } 
+        else if (!memcmp(buff, "IMOAVI", 6)) 
+        {
           ext = ".imoavi";
-        }  else if (!memcmp(buff, "abmp", 4)) {
+        }  
+        else if (!memcmp(buff, "abmp", 4)) 
+        {
           ext = ".b";
         }
 
         char out_filename[1024] = { 0 };
 
-        if (ids1.name_length) {
+        if (ids1.name_length) 
+        {
           sprintf(out_filename, "%s+%03d+%s%s", prefix.c_str(), i, filename, ext.c_str());
-        } else {
+        } 
+        else 
+        {
           sprintf(out_filename, "%s+%03d%s", prefix.c_str(), i, ext.c_str());
         }
 
         int out_fd = open(out_filename, O_CREAT | O_WRONLY | O_BINARY, S_IREAD | S_IWRITE);
 
-        if (out_fd == -1) {
+        if (out_fd == -1) 
+        {
           fprintf(stderr, "Could not open %s (%s)\n", out_filename, strerror(errno));
           return -1;
         }

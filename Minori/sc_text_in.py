@@ -50,6 +50,7 @@ def is_alnum(string):
 def m_split(string):
     if not '★' in string:
         print('name format error')
+        print(string)
         input()
     return string.split('★')
 
@@ -92,7 +93,7 @@ for fn in fl:
             if not is_alnum(name):
                 cur_name, cur_text = m_split(cn_lines[j])
                 j += 1
-                dm.append(cur_name)
+                dm.append(name.encode('sjis').decode('gbk'))#保持乱码
                 dm.append(cur_text)
             else:
                 dm.append(name)

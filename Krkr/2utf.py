@@ -25,7 +25,7 @@ def int2byte(num):
 
 flist = walk('data')
 for fn in flist:
-    src = open(fn, 'r', encoding='sjis')
+    src = open(fn, 'r', encoding='sjis‘， errors='ignore')
     dstname = 'patch' + fn[4:]
     dst = open(dstname, 'w', encoding='utf16')
 
