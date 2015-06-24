@@ -1,0 +1,4 @@
+LIBRARY   "DISTORTION"   
+  EXPORTS     
+      DISTORTION_register_cui     @2 
+	  DISTORTION_cui_information  @1 

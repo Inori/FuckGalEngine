@@ -1,0 +1,4 @@
+LIBRARY   "Echeross"   
+  EXPORTS     
+      Echeross_register_cui
+	  Echeross_cui_information

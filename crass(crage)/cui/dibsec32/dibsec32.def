@@ -1,0 +1,4 @@
+LIBRARY   "dibsec32"   
+  EXPORTS     
+      dibsec32_register_cui
+	  dibsec32_cui_information

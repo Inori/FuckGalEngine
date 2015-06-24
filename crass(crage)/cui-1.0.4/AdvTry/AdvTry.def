@@ -1,0 +1,4 @@
+LIBRARY   "AdvTry"   
+  EXPORTS     
+      AdvTry_register_cui     @2 
+	  AdvTry_cui_information  @1 

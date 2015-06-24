@@ -1,0 +1,4 @@
+LIBRARY   "QLIE"   
+  EXPORTS     
+      QLIE_register_cui
+	  QLIE_cui_information

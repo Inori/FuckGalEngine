@@ -1,0 +1,4 @@
+LIBRARY   "CaramelBox"   
+  EXPORTS     
+	CaramelBox_register_cui     @1 
+	CaramelBox_cui_information  @2 

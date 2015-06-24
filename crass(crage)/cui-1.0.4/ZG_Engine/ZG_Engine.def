@@ -1,0 +1,4 @@
+LIBRARY   "ZG_Engine"   
+  EXPORTS     
+      ZG_Engine_register_cui
+	  ZG_Engine_cui_information

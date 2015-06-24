@@ -1,0 +1,4 @@
+LIBRARY   "SaiSys"   
+  EXPORTS     
+      SaiSys_register_cui
+	  SaiSys_cui_information

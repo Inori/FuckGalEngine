@@ -1,0 +1,4 @@
+LIBRARY   "DMC4"   
+  EXPORTS     
+	DMC4_register_cui
+	DMC4_cui_information

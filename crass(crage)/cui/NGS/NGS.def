@@ -1,0 +1,4 @@
+LIBRARY   "NGS"   
+  EXPORTS     
+      NGS_register_cui     @2 
+	  NGS_cui_information  @1 

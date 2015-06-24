@@ -1,0 +1,4 @@
+LIBRARY   "AVGEngine"   
+  EXPORTS     
+      AVGEngine_register_cui
+	  AVGEngine_cui_information

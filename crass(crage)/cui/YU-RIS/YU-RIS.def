@@ -1,0 +1,4 @@
+LIBRARY   "YU_RIS"   
+  EXPORTS     
+      YU_RIS_register_cui
+	  YU_RIS_cui_information

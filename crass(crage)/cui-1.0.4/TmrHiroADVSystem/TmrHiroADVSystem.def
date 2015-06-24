@@ -1,0 +1,4 @@
+LIBRARY   "TmrHiroADVSystem"   
+  EXPORTS     
+	TmrHiroADVSystem_register_cui     @1 
+	TmrHiroADVSystem_cui_information  @2 

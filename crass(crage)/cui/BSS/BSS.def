@@ -1,0 +1,4 @@
+LIBRARY   "BSS"   
+  EXPORTS     
+      BSS_register_cui     @2 
+	  BSS_cui_information  @1 

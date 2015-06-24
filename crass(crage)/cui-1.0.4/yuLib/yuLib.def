@@ -1,0 +1,4 @@
+LIBRARY   "yuLib"   
+  EXPORTS     
+	yuLib_register_cui     @1 
+	yuLib_cui_information  @2 

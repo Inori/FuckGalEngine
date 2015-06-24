@@ -1,0 +1,4 @@
+LIBRARY   "vnengine"   
+  EXPORTS     
+	vnengine_register_cui
+	vnengine_cui_information

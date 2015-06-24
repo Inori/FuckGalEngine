@@ -1,0 +1,4 @@
+LIBRARY   "MarbleEngine"   
+  EXPORTS     
+      MarbleEngine_register_cui     @2 
+	  MarbleEngine_cui_information  @1 

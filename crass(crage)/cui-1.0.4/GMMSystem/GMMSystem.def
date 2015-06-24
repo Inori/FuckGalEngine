@@ -1,0 +1,4 @@
+LIBRARY   "GMMSystem"   
+  EXPORTS     
+      GMMSystem_register_cui     @2 
+	  GMMSystem_cui_information  @1 

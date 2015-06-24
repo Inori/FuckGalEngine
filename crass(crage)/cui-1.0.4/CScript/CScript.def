@@ -1,0 +1,4 @@
+LIBRARY   "CScript"   
+  EXPORTS     
+      CScript_register_cui
+	  CScript_cui_information

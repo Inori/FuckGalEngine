@@ -1,0 +1,4 @@
+LIBRARY   "TACTICS_ARC"   
+  EXPORTS     
+      TACTICS_ARC_register_cui     @1 
+	  TACTICS_ARC_cui_information  @2

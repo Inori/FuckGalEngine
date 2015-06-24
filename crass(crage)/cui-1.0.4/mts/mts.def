@@ -1,0 +1,4 @@
+LIBRARY   "mts"   
+  EXPORTS     
+      mts_register_cui
+	  mts_cui_information

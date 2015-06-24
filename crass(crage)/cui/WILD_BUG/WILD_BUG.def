@@ -1,0 +1,4 @@
+LIBRARY   "WILD_BUG"   
+  EXPORTS     
+      WILD_BUG_register_cui
+	  WILD_BUG_cui_information

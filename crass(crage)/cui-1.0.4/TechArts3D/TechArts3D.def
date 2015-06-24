@@ -1,0 +1,4 @@
+LIBRARY   "TechArts3D"   
+  EXPORTS     
+	TechArts3D_register_cui
+	TechArts3D_cui_information

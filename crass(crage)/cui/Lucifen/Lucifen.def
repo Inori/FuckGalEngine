@@ -1,0 +1,4 @@
+LIBRARY   "Lucifen"   
+  EXPORTS     
+      Lucifen_register_cui     @2 
+	  Lucifen_cui_information  @1 

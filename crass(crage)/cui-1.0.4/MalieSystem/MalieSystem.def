@@ -1,0 +1,4 @@
+LIBRARY   "MalieSystem"   
+  EXPORTS     
+      MalieSystem_register_cui     @1 
+	  MalieSystem_cui_information  @2 

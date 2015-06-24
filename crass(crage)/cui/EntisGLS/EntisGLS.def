@@ -1,0 +1,4 @@
+LIBRARY   "EntisGLS"   
+  EXPORTS     
+      EntisGLS_register_cui
+	  EntisGLS_cui_information

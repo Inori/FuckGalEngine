@@ -1,0 +1,4 @@
+LIBRARY   "GrowLanser"   
+  EXPORTS     
+      GrowLanser_register_cui
+	  GrowLanser_cui_information

@@ -1,0 +1,4 @@
+LIBRARY   "MAIKA"   
+  EXPORTS     
+	MAIKA_register_cui
+	MAIKA_cui_information

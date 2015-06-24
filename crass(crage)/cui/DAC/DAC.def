@@ -1,0 +1,4 @@
+LIBRARY   "DAC"   
+  EXPORTS     
+      DAC_register_cui
+	  DAC_cui_information

@@ -1,0 +1,4 @@
+LIBRARY   "KineticNovel"   
+  EXPORTS     
+      KineticNovel_register_cui
+	  KineticNovel_cui_information

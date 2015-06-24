@@ -1,0 +1,4 @@
+LIBRARY   "kagura"   
+  EXPORTS     
+      kagura_register_cui
+	  kagura_cui_information

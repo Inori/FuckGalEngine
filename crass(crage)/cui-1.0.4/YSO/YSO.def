@@ -1,0 +1,4 @@
+LIBRARY   "YSO"   
+  EXPORTS     
+	YSO_register_cui
+	YSO_cui_information

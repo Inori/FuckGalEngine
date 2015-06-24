@@ -1,0 +1,4 @@
+LIBRARY   "bruns_system"   
+  EXPORTS     
+      bruns_system_register_cui
+	  bruns_system_cui_information

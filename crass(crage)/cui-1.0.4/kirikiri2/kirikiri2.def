@@ -1,0 +1,4 @@
+LIBRARY   "kirikiri2"   
+  EXPORTS     
+      kirikiri2_register_cui
+	  kirikiri2_cui_information

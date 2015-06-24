@@ -1,0 +1,4 @@
+LIBRARY   "ggRMV"   
+  EXPORTS     
+      ggRMV_register_cui
+	  ggRMV_cui_information

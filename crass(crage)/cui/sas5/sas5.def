@@ -1,0 +1,4 @@
+LIBRARY   "sas5"   
+  EXPORTS     
+      sas5_register_cui     @2 
+	  sas5_cui_information  @1 

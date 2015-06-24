@@ -1,0 +1,4 @@
+LIBRARY   "DenSDK"   
+  EXPORTS     
+	DenSDK_register_cui     @1 
+	DenSDK_cui_information  @2 

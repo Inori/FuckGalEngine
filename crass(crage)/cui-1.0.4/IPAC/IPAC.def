@@ -1,0 +1,4 @@
+LIBRARY   "IPAC"   
+  EXPORTS     
+      IPAC_register_cui
+	  IPAC_cui_information

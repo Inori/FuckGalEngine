@@ -1,0 +1,4 @@
+LIBRARY   "GPK2"   
+  EXPORTS     
+	GPK2_register_cui
+	GPK2_cui_information

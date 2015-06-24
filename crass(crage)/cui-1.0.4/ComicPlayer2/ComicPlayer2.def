@@ -1,0 +1,4 @@
+LIBRARY   "ComicPlayer2"   
+  EXPORTS     
+      ComicPlayer2_register_cui
+	  ComicPlayer2_cui_information

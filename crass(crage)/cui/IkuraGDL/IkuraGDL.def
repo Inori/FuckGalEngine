@@ -1,0 +1,4 @@
+LIBRARY   "IkuraGDL"   
+  EXPORTS     
+      IkuraGDL_register_cui     @1 
+	  IkuraGDL_cui_information  @2

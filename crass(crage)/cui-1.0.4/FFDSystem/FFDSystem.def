@@ -1,0 +1,4 @@
+LIBRARY   "FFDSystem"   
+  EXPORTS     
+      FFDSystem_register_cui     @2 
+	  FFDSystem_cui_information  @1 

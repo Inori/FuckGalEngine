@@ -1,0 +1,4 @@
+LIBRARY   "ADVEngineMoon"   
+  EXPORTS     
+      ADVEngineMoon_register_cui     @2 
+	  ADVEngineMoon_cui_information  @1 

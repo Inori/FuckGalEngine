@@ -1,0 +1,4 @@
+LIBRARY   "Narukana"   
+  EXPORTS     
+      Narukana_register_cui     @2 
+	  Narukana_cui_information  @1 

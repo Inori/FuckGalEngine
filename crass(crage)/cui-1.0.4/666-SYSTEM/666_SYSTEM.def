@@ -1,0 +1,4 @@
+LIBRARY   "666-SYSTEM"   
+  EXPORTS     
+      _666_SYSTEM_register_cui
+	  _666_SYSTEM_cui_information

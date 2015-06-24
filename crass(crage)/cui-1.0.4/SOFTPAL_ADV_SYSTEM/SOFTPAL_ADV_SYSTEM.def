@@ -1,0 +1,4 @@
+LIBRARY   "SOFTPAL_ADV_SYSTEM"   
+  EXPORTS     
+      SOFTPAL_ADV_SYSTEM_register_cui
+	  SOFTPAL_ADV_SYSTEM_cui_information

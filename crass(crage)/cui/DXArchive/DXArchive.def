@@ -1,0 +1,4 @@
+LIBRARY   "DXArchive"   
+  EXPORTS     
+      DXArchive_register_cui     @2 
+	  DXArchive_cui_information  @1 

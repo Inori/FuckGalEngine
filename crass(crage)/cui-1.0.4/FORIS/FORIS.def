@@ -1,0 +1,4 @@
+LIBRARY   "FORIS"   
+  EXPORTS     
+      FORIS_register_cui
+	  FORIS_cui_information

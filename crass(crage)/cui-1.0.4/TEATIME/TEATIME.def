@@ -1,0 +1,4 @@
+LIBRARY   "TEATIME"   
+  EXPORTS     
+	TEATIME_register_cui
+	TEATIME_cui_information

@@ -1,0 +1,4 @@
+LIBRARY   "Lambda"   
+  EXPORTS     
+	Lambda_register_cui
+	Lambda_cui_information

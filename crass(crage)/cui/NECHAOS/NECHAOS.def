@@ -1,0 +1,4 @@
+LIBRARY   "NECHAOS"   
+  EXPORTS     
+	NECHAOS_register_cui
+	NECHAOS_cui_information

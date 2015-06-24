@@ -1,0 +1,4 @@
+LIBRARY   "Lua"   
+  EXPORTS     
+	Lua_register_cui
+	Lua_cui_information

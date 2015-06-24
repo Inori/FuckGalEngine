@@ -1,0 +1,4 @@
+LIBRARY   "taskforce"   
+  EXPORTS     
+      taskforce_register_cui
+	  taskforce_cui_information

@@ -1,0 +1,4 @@
+LIBRARY   "NekoSDK"   
+  EXPORTS     
+	NekoSDK_register_cui
+	NekoSDK_cui_information

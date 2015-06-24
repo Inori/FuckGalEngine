@@ -1,0 +1,4 @@
+LIBRARY   "gmf"   
+  EXPORTS     
+      gmf_register_cui
+	  gmf_cui_information

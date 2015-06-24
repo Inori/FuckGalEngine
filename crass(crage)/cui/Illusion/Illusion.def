@@ -1,0 +1,4 @@
+LIBRARY   "Illusion"   
+  EXPORTS     
+      Illusion_register_cui     @2 
+	  Illusion_cui_information  @1 

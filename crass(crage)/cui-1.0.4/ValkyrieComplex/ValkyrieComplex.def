@@ -1,0 +1,4 @@
+LIBRARY   "ValkyrieComplex"   
+  EXPORTS     
+      ValkyrieComplex_register_cui
+	  ValkyrieComplex_cui_information

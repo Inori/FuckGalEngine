@@ -1,0 +1,4 @@
+LIBRARY   "ADVDX"   
+  EXPORTS     
+      ADVDX_register_cui     @2 
+	  ADVDX_cui_information  @1 

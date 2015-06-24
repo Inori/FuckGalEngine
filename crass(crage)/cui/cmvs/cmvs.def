@@ -1,0 +1,4 @@
+LIBRARY   "cmvs"   
+  EXPORTS     
+	cmvs_register_cui     @1 
+	cmvs_cui_information  @2 

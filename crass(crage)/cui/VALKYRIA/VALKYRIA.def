@@ -1,0 +1,4 @@
+LIBRARY   "VALKYRIA"   
+  EXPORTS     
+      VALKYRIA_register_cui
+	  VALKYRIA_cui_information

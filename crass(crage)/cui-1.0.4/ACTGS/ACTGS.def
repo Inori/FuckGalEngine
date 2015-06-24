@@ -1,0 +1,4 @@
+LIBRARY   "ACTGS"   
+  EXPORTS     
+      ACTGS_register_cui
+	  ACTGS_cui_information

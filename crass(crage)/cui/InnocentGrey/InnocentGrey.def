@@ -1,0 +1,4 @@
+LIBRARY   "InnocentGrey"   
+  EXPORTS     
+	InnocentGrey_register_cui     @1 
+	InnocentGrey_cui_information  @2 

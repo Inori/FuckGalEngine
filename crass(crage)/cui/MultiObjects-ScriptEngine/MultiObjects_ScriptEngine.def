@@ -1,0 +1,4 @@
+LIBRARY   "MultiObjects_ScriptEngine"   
+  EXPORTS     
+      MultiObjects_ScriptEngine_register_cui
+	  MultiObjects_ScriptEngine_cui_information

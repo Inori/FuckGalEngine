@@ -1,0 +1,4 @@
+LIBRARY   "HSP"   
+  EXPORTS     
+      HSP_register_cui     @1 
+	  HSP_cui_information  @2

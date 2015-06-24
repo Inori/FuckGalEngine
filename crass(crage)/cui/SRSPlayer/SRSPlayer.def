@@ -1,0 +1,4 @@
+LIBRARY   "SRSPlayer"   
+  EXPORTS     
+      SRSPlayer_register_cui
+	  SRSPlayer_cui_information

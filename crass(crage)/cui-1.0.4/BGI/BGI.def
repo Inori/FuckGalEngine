@@ -1,0 +1,4 @@
+LIBRARY   "BGI"   
+  EXPORTS     
+      BGI_register_cui     @1 
+	  BGI_cui_information  @2 

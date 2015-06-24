@@ -1,0 +1,4 @@
+LIBRARY   "YukaScript"   
+  EXPORTS     
+      YukaScript_register_cui
+	  YukaScript_cui_information

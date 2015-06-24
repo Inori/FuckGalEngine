@@ -1,0 +1,4 @@
+LIBRARY   "ARCGameEngine"   
+  EXPORTS     
+      ARCGameEngine_register_cui
+	  ARCGameEngine_cui_information

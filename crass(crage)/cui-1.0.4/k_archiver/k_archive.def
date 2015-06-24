@@ -1,0 +1,4 @@
+LIBRARY   "k_archiver"   
+  EXPORTS     
+	k_archiver_register_cui
+	k_archiver_cui_information

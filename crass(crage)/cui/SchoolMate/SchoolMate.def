@@ -1,0 +1,4 @@
+LIBRARY   "SchoolMate"   
+  EXPORTS     
+      SchoolMate_register_cui     @2 
+	  SchoolMate_cui_information  @1 

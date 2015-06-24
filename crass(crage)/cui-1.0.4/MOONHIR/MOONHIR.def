@@ -1,0 +1,4 @@
+LIBRARY   "MOONHIR"   
+  EXPORTS     
+      MOONHIR_register_cui
+	  MOONHIR_cui_information

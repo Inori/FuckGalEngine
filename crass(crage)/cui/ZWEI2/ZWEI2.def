@@ -1,0 +1,4 @@
+LIBRARY   "ZWEI2"   
+  EXPORTS     
+	ZWEI2_register_cui
+	ZWEI2_cui_information

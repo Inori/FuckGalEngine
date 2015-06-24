@@ -1,0 +1,4 @@
+LIBRARY   "NEKOPACK"   
+  EXPORTS     
+	NEKOPACK_register_cui
+	NEKOPACK_cui_information

@@ -1,0 +1,4 @@
+LIBRARY   "DDSystem"   
+  EXPORTS     
+      DDSystem_register_cui
+	  DDSystem_cui_information

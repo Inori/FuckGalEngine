@@ -1,0 +1,4 @@
+LIBRARY   "Game Script Player"   
+  EXPORTS     
+	Game_Script_Player_register_cui
+	Game_Script_Player_cui_information

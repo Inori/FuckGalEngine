@@ -1,0 +1,4 @@
+LIBRARY   "CLS"   
+  EXPORTS     
+      CLS_register_cui
+	  CLS_cui_information

@@ -1,0 +1,4 @@
+LIBRARY   "GPLAY"   
+  EXPORTS     
+      GPLAY_register_cui
+	  GPLAY_cui_information

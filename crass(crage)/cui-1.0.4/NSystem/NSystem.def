@@ -1,0 +1,4 @@
+LIBRARY   "NSystem"   
+  EXPORTS     
+      NSystem_register_cui     @1 
+	  NSystem_cui_information  @2

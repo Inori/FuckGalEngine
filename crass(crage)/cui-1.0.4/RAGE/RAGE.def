@@ -1,0 +1,4 @@
+LIBRARY   "RAGE"   
+  EXPORTS     
+	RAGE_register_cui     @1 
+	RAGE_cui_information  @2 

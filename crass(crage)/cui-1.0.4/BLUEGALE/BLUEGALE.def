@@ -1,0 +1,4 @@
+LIBRARY   "BLUEGALE"   
+  EXPORTS     
+      BLUEGALE_register_cui     @2 
+	  BLUEGALE_cui_information  @1 

@@ -1,0 +1,4 @@
+LIBRARY   "NEJII"   
+  EXPORTS     
+      NEJII_register_cui     @2 
+	  NEJII_cui_information  @1 

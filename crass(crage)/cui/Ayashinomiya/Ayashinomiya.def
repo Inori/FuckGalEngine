@@ -1,0 +1,4 @@
+LIBRARY   "Ayashinomiya"   
+  EXPORTS     
+      Ayashinomiya_register_cui
+	  Ayashinomiya_cui_information

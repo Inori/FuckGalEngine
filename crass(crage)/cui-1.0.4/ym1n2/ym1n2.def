@@ -1,0 +1,4 @@
+LIBRARY   "ym1n2"   
+  EXPORTS     
+      ym1n2_register_cui
+	  ym1n2_cui_information

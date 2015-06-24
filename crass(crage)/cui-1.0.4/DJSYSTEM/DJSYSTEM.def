@@ -1,0 +1,4 @@
+LIBRARY   "DJSYSTEM"   
+  EXPORTS     
+      DJSYSTEM_register_cui
+	  DJSYSTEM_cui_information

@@ -1,0 +1,4 @@
+LIBRARY   "EtherVapor"   
+  EXPORTS     
+	EtherVapor_register_cui
+	EtherVapor_cui_information

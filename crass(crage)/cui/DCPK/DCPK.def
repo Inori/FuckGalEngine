@@ -1,0 +1,4 @@
+LIBRARY   "DCPK"   
+  EXPORTS     
+      DCPK_register_cui     @2 
+	  DCPK_cui_information  @1 

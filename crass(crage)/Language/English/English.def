@@ -1,0 +1,3 @@
+LIBRARY   "English"   
+  EXPORTS     
+      English_locale_configuration

@@ -1,0 +1,4 @@
+LIBRARY   "A98SYS ENGINE"   
+  EXPORTS     
+	A98SYS_ENGINE_register_cui
+	A98SYS_ENGINE_cui_information

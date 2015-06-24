@@ -1,0 +1,4 @@
+LIBRARY   "mgos"   
+  EXPORTS     
+	mgos_register_cui
+	mgos_cui_information

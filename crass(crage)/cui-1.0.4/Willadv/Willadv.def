@@ -1,0 +1,4 @@
+LIBRARY   "Willadv"   
+  EXPORTS     
+      Willadv_register_cui     @1 
+	  Willadv_cui_information	@2

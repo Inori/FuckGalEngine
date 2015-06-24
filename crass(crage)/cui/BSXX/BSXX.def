@@ -1,0 +1,4 @@
+LIBRARY   "BSXX"   
+  EXPORTS     
+      BSXX_register_cui
+	  BSXX_cui_information

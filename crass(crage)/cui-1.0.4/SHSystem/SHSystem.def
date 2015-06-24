@@ -1,0 +1,4 @@
+LIBRARY   "SHSystem"   
+  EXPORTS     
+      SHSystem_register_cui     @1 
+	  SHSystem_cui_information  @2

@@ -1,0 +1,4 @@
+LIBRARY   "AGSD"   
+  EXPORTS     
+      AGSD_register_cui
+	  AGSD_cui_information

@@ -1,0 +1,4 @@
+LIBRARY   "SCI System"   
+  EXPORTS     
+      SCI_System_register_cui
+	  SCI_System_cui_information

@@ -1,0 +1,4 @@
+LIBRARY   "TonyAlbum"   
+  EXPORTS     
+	TonyAlbum_register_cui
+	TonyAlbum_cui_information

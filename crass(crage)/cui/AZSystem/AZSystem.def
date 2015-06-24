@@ -1,0 +1,4 @@
+LIBRARY   "AZSystem"   
+  EXPORTS     
+      AZSystem_register_cui
+	  AZSystem_cui_information

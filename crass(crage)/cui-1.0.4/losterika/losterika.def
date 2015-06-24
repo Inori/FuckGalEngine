@@ -1,0 +1,4 @@
+LIBRARY   "losterika"   
+  EXPORTS     
+      losterika_register_cui
+	  losterika_cui_information

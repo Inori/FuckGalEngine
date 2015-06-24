@@ -1,0 +1,4 @@
+LIBRARY   "ExHIBIT"   
+  EXPORTS     
+      ExHIBIT_register_cui     @1 
+	  ExHIBIT_cui_information  @2

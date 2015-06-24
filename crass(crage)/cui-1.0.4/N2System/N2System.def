@@ -1,0 +1,4 @@
+LIBRARY   "N2System"   
+  EXPORTS     
+      N2System_register_cui
+	  N2System_cui_information

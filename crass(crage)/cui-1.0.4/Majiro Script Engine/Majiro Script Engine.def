@@ -1,0 +1,4 @@
+LIBRARY   "Majiro Script Engine"   
+  EXPORTS     
+      Majiro_Script_Engine_register_cui
+	  Majiro_Script_Engine_cui_information

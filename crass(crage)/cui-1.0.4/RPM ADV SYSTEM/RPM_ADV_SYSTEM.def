@@ -1,0 +1,4 @@
+LIBRARY   "RPM_ADV_SYSTEM"   
+  EXPORTS     
+      RPM_ADV_SYSTEM_register_cui
+	  RPM_ADV_SYSTEM_cui_information

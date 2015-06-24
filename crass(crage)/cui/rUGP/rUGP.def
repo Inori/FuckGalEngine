@@ -1,0 +1,4 @@
+LIBRARY   "rUGP"   
+  EXPORTS     
+	rUGP_register_cui
+	rUGP_cui_information

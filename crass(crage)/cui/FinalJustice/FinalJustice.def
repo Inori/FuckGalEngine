@@ -1,0 +1,4 @@
+LIBRARY   "FinalJustice"   
+  EXPORTS     
+      FinalJustice_register_cui
+	  FinalJustice_cui_information

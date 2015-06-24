@@ -1,0 +1,4 @@
+LIBRARY   "Hypatia"   
+  EXPORTS     
+      Hypatia_register_cui     @2 
+	  Hypatia_cui_information  @1 

@@ -1,0 +1,4 @@
+LIBRARY   "ego"   
+  EXPORTS     
+	ego_register_cui     @1 
+	ego_cui_information  @2 

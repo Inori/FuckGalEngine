@@ -1,0 +1,4 @@
+LIBRARY   "NekoBoard"   
+  EXPORTS     
+	NekoBoard_register_cui
+	NekoBoard_cui_information

@@ -1,0 +1,4 @@
+LIBRARY   "FS3D"   
+  EXPORTS     
+      FS3D_register_cui
+	  FS3D_cui_information

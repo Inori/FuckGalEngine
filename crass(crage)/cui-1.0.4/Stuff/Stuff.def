@@ -1,0 +1,4 @@
+LIBRARY   "Stuff"   
+  EXPORTS     
+      Stuff_register_cui
+	  Stuff_cui_information

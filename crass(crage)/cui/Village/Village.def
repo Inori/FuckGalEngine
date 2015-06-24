@@ -1,0 +1,4 @@
+LIBRARY   "Village"   
+  EXPORTS     
+      Village_register_cui     @2 
+	  Village_cui_information  @1 

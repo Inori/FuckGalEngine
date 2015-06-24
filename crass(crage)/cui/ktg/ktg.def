@@ -1,0 +1,4 @@
+LIBRARY   "ktg"   
+  EXPORTS     
+      ktg_register_cui     @2 
+	  ktg_cui_information  @1 

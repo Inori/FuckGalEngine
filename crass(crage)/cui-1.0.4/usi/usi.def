@@ -1,0 +1,4 @@
+LIBRARY   "usi"   
+  EXPORTS     
+      usi_register_cui
+	  usi_cui_information

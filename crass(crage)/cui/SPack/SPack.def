@@ -1,0 +1,4 @@
+LIBRARY   "SPack"   
+  EXPORTS     
+      SPack_register_cui
+	  SPack_cui_information

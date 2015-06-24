@@ -1,0 +1,4 @@
+LIBRARY   "ohgetsu"   
+  EXPORTS     
+      ohgetsu_register_cui
+	  ohgetsu_cui_information

@@ -1,0 +1,4 @@
+LIBRARY   "NeXAS"   
+  EXPORTS     
+      NeXAS_register_cui     @1 
+	  NeXAS_cui_information  @2

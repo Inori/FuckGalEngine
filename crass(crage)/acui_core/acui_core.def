@@ -1,0 +1,14 @@
+LIBRARY   "acui_core"   
+  EXPORTS  
+	cui_core_init		@1
+	cui_core_uninstall	@2
+	cui_print_information	@3
+	cui_walk_each		@4
+	cui_extension_walk_each	@5
+	aui_core_init		@6
+	aui_core_uninstall	@7
+	aui_print_information	@8
+	aui_walk_each		@9
+	aui_extension_walk_each	@10
+	aui_uninstall		@11
+	cui_uninstall		@12

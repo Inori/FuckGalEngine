@@ -1,0 +1,4 @@
+LIBRARY   "GLib2"   
+  EXPORTS     
+      GLib2_register_cui     @1 
+	  GLib2_cui_information  @2

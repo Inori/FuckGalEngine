@@ -1,0 +1,4 @@
+LIBRARY   "ARCX"   
+  EXPORTS     
+      ARCX_register_cui     @2 
+	  ARCX_cui_information  @1 

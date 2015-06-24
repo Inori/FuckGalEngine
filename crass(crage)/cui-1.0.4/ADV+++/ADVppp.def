@@ -1,0 +1,4 @@
+LIBRARY   "ADVppp"   
+  EXPORTS     
+      ADVppp_register_cui     @1 
+	  ADVppp_cui_information  @2

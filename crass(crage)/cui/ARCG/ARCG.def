@@ -1,0 +1,4 @@
+LIBRARY   "ARCG"   
+  EXPORTS     
+	ARCG_register_cui
+	ARCG_cui_information

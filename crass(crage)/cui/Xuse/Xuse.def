@@ -1,0 +1,4 @@
+LIBRARY   "Xuse"   
+  EXPORTS     
+      Xuse_register_cui
+	  Xuse_cui_information

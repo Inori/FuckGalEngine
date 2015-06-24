@@ -1,0 +1,4 @@
+LIBRARY   "AGS32i"   
+  EXPORTS     
+      AGS32i_register_cui
+	  AGS32i_cui_information

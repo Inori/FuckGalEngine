@@ -1,0 +1,4 @@
+LIBRARY   "AI5WIN"   
+  EXPORTS     
+	AI5WIN_register_cui
+	AI5WIN_cui_information

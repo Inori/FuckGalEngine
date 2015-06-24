@@ -1,0 +1,4 @@
+LIBRARY   "Seraphim"   
+  EXPORTS     
+      Seraphim_register_cui
+	  Seraphim_cui_information

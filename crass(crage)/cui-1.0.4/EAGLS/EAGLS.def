@@ -1,0 +1,4 @@
+LIBRARY   "EAGLS"   
+  EXPORTS     
+      EAGLS_register_cui
+	  EAGLS_cui_information

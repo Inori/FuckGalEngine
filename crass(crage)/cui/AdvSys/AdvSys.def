@@ -1,0 +1,4 @@
+LIBRARY   "AdvSys"   
+  EXPORTS     
+      AdvSys_register_cui
+	  AdvSys_cui_information

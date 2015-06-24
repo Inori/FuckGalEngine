@@ -1,0 +1,4 @@
+LIBRARY   "NAGS"   
+  EXPORTS     
+      NAGS_register_cui     @2 
+	  NAGS_cui_information  @1 

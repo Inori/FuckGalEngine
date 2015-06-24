@@ -1,0 +1,4 @@
+LIBRARY   "MAI"   
+  EXPORTS     
+	MAI_register_cui
+	MAI_cui_information

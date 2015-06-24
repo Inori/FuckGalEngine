@@ -1,0 +1,3 @@
+LIBRARY   "SimplifiedChinese"   
+  EXPORTS     
+      SimplifiedChinese_locale_configuration

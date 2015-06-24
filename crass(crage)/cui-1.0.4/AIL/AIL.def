@@ -1,0 +1,4 @@
+LIBRARY   "AIL"   
+  EXPORTS     
+      AIL_register_cui     @1 
+      AIL_cui_information  @2

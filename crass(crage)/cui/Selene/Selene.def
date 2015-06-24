@@ -1,0 +1,4 @@
+LIBRARY   "Selene"   
+  EXPORTS     
+      Selene_register_cui
+	  Selene_cui_information

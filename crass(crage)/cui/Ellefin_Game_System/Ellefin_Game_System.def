@@ -1,0 +1,4 @@
+LIBRARY   "Ellefin_Game_System"   
+  EXPORTS     
+      Ellefin_Game_System_register_cui
+	  Ellefin_Game_System_cui_information

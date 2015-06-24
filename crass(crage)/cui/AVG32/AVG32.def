@@ -1,0 +1,4 @@
+LIBRARY   "AVG32"   
+  EXPORTS     
+      AVG32_register_cui
+	  AVG32_cui_information

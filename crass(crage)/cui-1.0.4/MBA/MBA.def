@@ -1,0 +1,4 @@
+LIBRARY   "MBA"   
+  EXPORTS     
+      MBA_register_cui
+	  MBA_cui_information

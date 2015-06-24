@@ -1,0 +1,4 @@
+LIBRARY   "FVP"   
+  EXPORTS     
+      FVP_register_cui     @2 
+	  FVP_cui_information  @1 
