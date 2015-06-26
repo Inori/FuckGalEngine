@@ -58,7 +58,8 @@ typedef struct compress_file_header_s
 	ulong decomp_size;
 }compress_file_header_t;
 
-
+//OD查找命令：and     r32, 0x8000000F
+//一般第二个解密的循环就是
 void decrypt_1(byte* debuf,size_t desize)
 {
 	size_t key_idx = 0;
