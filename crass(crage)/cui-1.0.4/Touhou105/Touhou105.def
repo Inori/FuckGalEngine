@@ -1,4 +1,0 @@
-LIBRARY   "Touhou105"   
-  EXPORTS     
-	Touhou105_register_cui
-	Touhou105_cui_information

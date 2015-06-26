@@ -1,4 +1,0 @@
-LIBRARY   "NPS"   
-  EXPORTS     
-	NPS_register_cui
-	NPS_cui_information

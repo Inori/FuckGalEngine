@@ -1,4 +1,0 @@
-LIBRARY   "BaldrX"   
-  EXPORTS     
-      BaldrX_register_cui     @1 
-	  BaldrX_cui_information  @2

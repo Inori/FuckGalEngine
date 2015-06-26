@@ -1,4 +1,0 @@
-LIBRARY   "ScenePlayer"   
-  EXPORTS     
-      ScenePlayer_register_cui
-	  ScenePlayer_cui_information

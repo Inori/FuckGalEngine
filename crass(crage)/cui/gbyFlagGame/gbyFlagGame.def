@@ -1,4 +1,0 @@
-LIBRARY   "gbyFlagGame"   
-  EXPORTS     
-      gbyFlagGame_register_cui
-	  gbyFlagGame_cui_information

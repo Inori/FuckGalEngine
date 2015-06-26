@@ -1,4 +1,0 @@
-LIBRARY   "ANOS"   
-  EXPORTS     
-      ANOS_register_cui
-	  ANOS_cui_information

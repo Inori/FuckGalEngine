@@ -1,4 +1,0 @@
-LIBRARY   "pk"   
-  EXPORTS     
-	pk_register_cui
-	pk_cui_information

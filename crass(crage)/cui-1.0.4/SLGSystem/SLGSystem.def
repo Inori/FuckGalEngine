@@ -1,4 +1,0 @@
-LIBRARY   "SLGSystem"   
-  EXPORTS     
-	SLGSystem_register_cui     @1 
-	SLGSystem_cui_information  @2 

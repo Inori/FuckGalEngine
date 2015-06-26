@@ -1,4 +1,0 @@
-LIBRARY   "bakuretsu"   
-  EXPORTS     
-      bakuretsu_register_cui
-	  bakuretsu_cui_information

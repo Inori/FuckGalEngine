@@ -1,4 +1,0 @@
-LIBRARY   "IAGS"   
-  EXPORTS     
-      IAGS_register_cui     @2 
-	  IAGS_cui_information  @1 

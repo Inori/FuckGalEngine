@@ -1,4 +1,0 @@
-LIBRARY   "CatSystem2"   
-  EXPORTS     
-      CatSystem2_register_cui
-	  CatSystem2_cui_information

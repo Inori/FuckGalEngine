@@ -1,4 +1,0 @@
-LIBRARY   "Primel"   
-  EXPORTS     
-      Primel_register_cui
-	  Primel_cui_information

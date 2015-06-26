@@ -1,4 +1,0 @@
-LIBRARY   "GsWin"   
-  EXPORTS     
-      GsWin_register_cui
-	  GsWin_cui_information

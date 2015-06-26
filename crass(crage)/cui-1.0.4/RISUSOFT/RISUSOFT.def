@@ -1,4 +1,0 @@
-LIBRARY   "RISUSOFT"   
-  EXPORTS     
-      RISUSOFT_register_cui
-	  RISUSOFT_cui_information

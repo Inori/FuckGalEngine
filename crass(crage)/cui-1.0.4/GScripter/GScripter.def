@@ -1,4 +1,0 @@
-LIBRARY   "GScripter"   
-  EXPORTS     
-	GScripter_register_cui
-	GScripter_cui_information

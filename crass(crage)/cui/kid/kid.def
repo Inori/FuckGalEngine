@@ -1,4 +1,0 @@
-LIBRARY   "kid"   
-  EXPORTS     
-      kid_register_cui
-	  kid_cui_information

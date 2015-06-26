@@ -1,4 +1,0 @@
-LIBRARY   "MNP"   
-  EXPORTS     
-      MNP_register_cui
-	  MNP_cui_information

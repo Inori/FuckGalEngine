@@ -1,4 +1,0 @@
-LIBRARY   "AST"   
-  EXPORTS     
-      AST_register_cui     @2 
-	  AST_cui_information  @1 

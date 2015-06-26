@@ -1,4 +1,0 @@
-LIBRARY   "NScripter"   
-  EXPORTS     
-      NScripter_register_cui     @1 
-	  NScripter_cui_information  @2

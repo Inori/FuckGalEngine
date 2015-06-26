@@ -1,4 +1,0 @@
-LIBRARY   "LC_ScriptEngine"   
-  EXPORTS     
-	LC_ScriptEngine_register_cui
-	LC_ScriptEngine_cui_information

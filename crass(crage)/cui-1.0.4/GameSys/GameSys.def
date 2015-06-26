@@ -1,4 +1,0 @@
-LIBRARY   "GameSys"   
-  EXPORTS     
-      GameSys_register_cui     @2 
-	  GameSys_cui_information  @1 

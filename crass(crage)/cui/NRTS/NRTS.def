@@ -1,4 +1,0 @@
-LIBRARY   "NRTS"   
-  EXPORTS     
-      NRTS_register_cui
-	  NRTS_cui_information

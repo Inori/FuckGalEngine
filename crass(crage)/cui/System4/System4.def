@@ -1,4 +1,0 @@
-LIBRARY   "System4"   
-  EXPORTS     
-	System4_register_cui
-	System4_cui_information

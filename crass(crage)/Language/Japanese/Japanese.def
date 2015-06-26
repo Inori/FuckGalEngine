@@ -1,3 +1,0 @@
-LIBRARY   "Japanese"   
-  EXPORTS     
-      Japanese_locale_configuration

@@ -1,4 +1,0 @@
-LIBRARY   "AiSystem"   
-  EXPORTS     
-	AiSystem_register_cui
-	AiSystem_cui_information

@@ -1,4 +1,0 @@
-LIBRARY   "GXTH"   
-  EXPORTS     
-      GXTH_register_cui
-	  GXTH_cui_information

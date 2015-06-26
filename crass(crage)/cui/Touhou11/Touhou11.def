@@ -1,4 +1,0 @@
-LIBRARY   "Touhou11"   
-  EXPORTS     
-      Touhou11_register_cui
-	  Touhou11_cui_information

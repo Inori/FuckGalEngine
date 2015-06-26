@@ -1,4 +1,0 @@
-LIBRARY   "SystemAoi"   
-  EXPORTS     
-      SystemAoi_register_cui     @2 
-	  SystemAoi_cui_information  @1 

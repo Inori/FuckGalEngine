@@ -1,4 +1,0 @@
-LIBRARY   "BELLDA"   
-  EXPORTS     
-      BELLDA_register_cui
-	  BELLDA_cui_information

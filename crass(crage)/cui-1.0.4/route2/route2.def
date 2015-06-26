@@ -1,4 +1,0 @@
-LIBRARY   "route2"   
-  EXPORTS     
-	route2_register_cui
-	route2_cui_information

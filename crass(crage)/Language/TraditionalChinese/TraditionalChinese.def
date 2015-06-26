@@ -1,3 +1,0 @@
-LIBRARY   "TraditionalChinese"   
-  EXPORTS     
-      TraditionalChinese_locale_configuration

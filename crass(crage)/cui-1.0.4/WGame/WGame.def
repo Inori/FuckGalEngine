@@ -1,4 +1,0 @@
-LIBRARY   "WGame"   
-  EXPORTS     
-      WGame_register_cui
-	  WGame_cui_information

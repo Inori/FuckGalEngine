@@ -1,4 +1,0 @@
-LIBRARY   "ESCARC"   
-  EXPORTS     
-      ESCARC_register_cui
-	  ESCARC_cui_information

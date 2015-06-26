@@ -1,4 +1,0 @@
-LIBRARY   "Irrlicht_Engine"   
-  EXPORTS     
-      Irrlicht_Engine_register_cui
-	  Irrlicht_Engine_cui_information

@@ -1,4 +1,0 @@
-LIBRARY   "pokoten2"   
-  EXPORTS     
-      pokoten2_register_cui
-	  pokoten2_cui_information

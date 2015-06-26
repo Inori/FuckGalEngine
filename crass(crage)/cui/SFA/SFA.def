@@ -1,4 +1,0 @@
-LIBRARY   "SFA"   
-  EXPORTS     
-	SFA_register_cui
-	SFA_cui_information

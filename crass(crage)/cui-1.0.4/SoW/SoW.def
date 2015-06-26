@@ -1,4 +1,0 @@
-LIBRARY   "SoW"   
-  EXPORTS     
-	SoW_register_cui
-	SoW_cui_information

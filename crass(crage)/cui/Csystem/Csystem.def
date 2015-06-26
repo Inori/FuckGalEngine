@@ -1,4 +1,0 @@
-LIBRARY   "Csystem"   
-  EXPORTS     
-      Csystem_register_cui
-	  Csystem_cui_information

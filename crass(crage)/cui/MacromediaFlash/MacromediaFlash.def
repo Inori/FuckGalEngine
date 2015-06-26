@@ -1,4 +1,0 @@
-LIBRARY   "MacromediaFlash"   
-  EXPORTS     
-      MacromediaFlash_register_cui
-	  MacromediaFlash_cui_information

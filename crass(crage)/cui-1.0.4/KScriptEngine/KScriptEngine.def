@@ -1,4 +1,0 @@
-LIBRARY   "KScriptEngine"   
-  EXPORTS     
-      KScriptEngine_register_cui
-	  KScriptEngine_cui_information

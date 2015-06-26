@@ -1,4 +1,0 @@
-LIBRARY   "ags"   
-  EXPORTS     
-      ags_register_cui
-	  ags_cui_information

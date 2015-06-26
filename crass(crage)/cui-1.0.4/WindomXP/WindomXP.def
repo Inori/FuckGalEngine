@@ -1,4 +1,0 @@
-LIBRARY   "WindomXP"   
-  EXPORTS     
-      WindomXP_register_cui
-	  WindomXP_cui_information

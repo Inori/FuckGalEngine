@@ -1,4 +1,0 @@
-LIBRARY   "YELLOWPIG"   
-  EXPORTS     
-      YELLOWPIG_register_cui
-	  YELLOWPIG_cui_information
