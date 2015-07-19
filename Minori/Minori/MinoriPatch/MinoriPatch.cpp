@@ -10,6 +10,7 @@
 #include "tools.h"
 #include "translate.h"
 #include "types.h"
+#include "ImageStone.h"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ Translator *name_translator;
 TranslateEngine *name_engine;
 
 HWND hwnd;
-bool isAsyncDisplayOn = true;
+bool isAsyncDisplayOn = false;
 
 LPD3DXFONT g_pFont;
 LPDIRECT3DDEVICE9 pDevice;
@@ -89,8 +90,8 @@ HANDLE WINAPI newCreateFileA(
 		hTemplateFile);
 }
 
-PVOID pCreateFileA = (PVOID)0x0040945D;
-PVOID pCreateFileARetn = (PVOID)0x00409474;
+PVOID pCreateFileA = (PVOID)0x004097BD;
+PVOID pCreateFileARetn = (PVOID)0x004097D4;
 __declspec(naked) void _CreateFileA()
 {
 	__asm
@@ -169,9 +170,8 @@ void __stdcall d3d_drawtext()
 0041490C   .  56            push    esi
 0041490D.FFD0          call    eax;  Present(CBaseDevice *this, const struct tagRECT *, const struct tagRECT *, HWND, const struct _RGNDATA *Src)
 */
-//在D3D::Present之前DrawText\
-//查找第一个cmp     eax, 0x88760868，在上面
-void *p_drawtext = (void*)0x4148FC;
+//在D3D::Present之前DrawText
+void *p_drawtext = (void*)0x414CA5;
 __declspec(naked) void _d3d_drawtext()
 {
 	__asm
@@ -185,7 +185,7 @@ __declspec(naked) void _d3d_drawtext()
 
 
 typedef bool(__stdcall *get_glyph_func)(ulong var1, ulong var2, ulong var3, ulong var4);
-get_glyph_func get_glyph = (get_glyph_func)0x41FDE0;
+get_glyph_func get_glyph = (get_glyph_func)0x420560;
 
 bool __stdcall prefix_get_glyph(ulong var1, ulong var2, ulong var3, ulong var4)
 {
@@ -309,6 +309,7 @@ bool is_file_readable(string filename)
 #define NAME_LEN 128
 char filename[NAME_LEN];
 bool need_copy;
+bool has_effect;
 void __stdcall get_filename(char* name)
 {
 	if (!name)
@@ -317,6 +318,16 @@ void __stdcall get_filename(char* name)
 		return;
 	}
 	string png_name = name;
+	if (png_name.find("[mono]") != png_name.npos)//有的图游戏用程序会加特效，文件名有前缀，比如 [mono]
+	{
+		png_name = png_name.substr(png_name.find_last_of("]") + 1);
+		has_effect = true;
+	}
+	else
+	{
+		has_effect = false;
+	}
+
 	string bmp_name = replace_first(png_name, ".png", ".bmp");
 	if (is_file_readable(bmp_name)) //判断是否需要copy
 	{
@@ -353,44 +364,93 @@ bool read_bmp(string bmp_name, bmp_info *info)
 	{
 		SetFilePointer(hbmp, off, NULL, FILE_BEGIN);
 
-		BITMAPFILEHEADER file_header;
-		BITMAPINFOHEADER info_header;
 		ulong read_size;
-		ReadFile(hbmp, &file_header, sizeof(BITMAPFILEHEADER), &read_size, NULL);
-		if (file_header.bfType != 'MB')
-		{
-			MessageBox(NULL, "not a bmp file", "Error", MB_OK);
-			return false;
-		}
-		ReadFile(hbmp, &info_header, sizeof(BITMAPINFOHEADER), &read_size, NULL);
-		if (info_header.biBitCount != 32)
-		{
-			MessageBox(NULL, "not a 32 bit bmp file", "Error", MB_OK);
-			return false;
-		}
 
-		ulong width = info_header.biWidth;
-		ulong height = info_header.biHeight;
-		info->bit_count = info_header.biBitCount;
-		info->width = width;
-		info->height = height;
-
-		ulong data_size = width * height * 4;
-		try
+		//使用ImageStone库添加图片特效。这只是个临时的解决方案，根本上应该从程序中找到图片还没被修改时的代码，Inline Hoook之。
+		if (has_effect)
 		{
-			info->data = new byte[data_size];
+			byte *bmp_data;
+			try
+			{
+				bmp_data = new byte[len];
+			}
+			catch (const bad_alloc& e)
+			{
+				MessageBox(NULL, "not enough memory!", "Error", MB_OK);
+				return false;
+			}
+			ReadFile(hbmp, bmp_data, len, &read_size, NULL);
+			// load test image
+			FCObjImage   *img = new FCObjImage();
+			if (!img->Load(bmp_data, len, IMG_BMP))
+			{
+				MessageBox(NULL, "load failed, not a valid image file!", "Error", MB_OK);
+				return false;
+			}
+
+			FCImageEffect   * pEffect = new FCEffectColorTone(FCColor(0, 0, 0), 0);
+			img->ApplyEffect(*pEffect);
+
+			info->bit_count = img->ColorBits();
+			info->width = img->Width();
+			info->height = img->Height();
+			byte * m_pixel = img->GetMemStart();
+			ulong data_size = info->width * info->height * 4;
+			try
+			{
+				info->data = new byte[data_size];
+			}
+			catch (const bad_alloc& e)
+			{
+				MessageBox(NULL, "not enough memory!", "Error", MB_OK);
+				return false;
+			}
+			memcpy(info->data, m_pixel, data_size);
+			delete pEffect;
+			delete img;
+			delete[]bmp_data;
+			return true;
 		}
-		catch (const bad_alloc& e)
+		else
 		{
-			MessageBox(NULL, "not enough memory!", "Error", MB_OK);
-			return false;
+			BITMAPFILEHEADER file_header;
+			BITMAPINFOHEADER info_header;
+			ReadFile(hbmp, &file_header, sizeof(BITMAPFILEHEADER), &read_size, NULL);
+			if (file_header.bfType != 'MB')
+			{
+				MessageBox(NULL, "not a bmp file", "Error", MB_OK);
+				return false;
+			}
+			ReadFile(hbmp, &info_header, sizeof(BITMAPINFOHEADER), &read_size, NULL);
+			if (info_header.biBitCount != 32)
+			{
+				MessageBox(NULL, "not a 32 bit bmp file", "Error", MB_OK);
+				return false;
+			}
+
+			ulong width = info_header.biWidth;
+			ulong height = info_header.biHeight;
+			info->bit_count = info_header.biBitCount;
+			info->width = width;
+			info->height = height;
+
+			ulong data_size = width * height * 4;
+			try
+			{
+				info->data = new byte[data_size];
+			}
+			catch (const bad_alloc& e)
+			{
+				MessageBox(NULL, "not enough memory!", "Error", MB_OK);
+				return false;
+			}
+
+			SetFilePointer(hbmp, off + file_header.bfOffBits, NULL, FILE_BEGIN);
+			ReadFile(hbmp, info->data, data_size, &read_size, NULL);
+
+			CloseHandle(hbmp);
+			return true;
 		}
-
-		SetFilePointer(hbmp, off+file_header.bfOffBits, NULL, FILE_BEGIN);
-		ReadFile(hbmp, info->data, data_size, &read_size, NULL);
-
-		CloseHandle(hbmp);
-		return true;
 	}
 	else
 	{
@@ -448,8 +508,8 @@ void __stdcall copy_bmp(byte *dst, ulong width, ulong height)
 }
 
 
-//0041932E  |.  C746 14 0F00000>mov     dword ptr [esi+0x14], 0xF
-void *p_get_filename = (void*)0x41932E;
+
+void *p_get_filename = (void*)0x004196FE;
 
 __declspec(naked) void _get_filename()
 {
@@ -465,8 +525,8 @@ __declspec(naked) void _get_filename()
 
 
 //004265FE | .  8955 C8         mov[local.14], edx
-void *p_copy_bmp = (void*)0x4265FE;
-void *p_loop_end = (void*)0x426648;
+void *p_copy_bmp = (void*)0x426C9E;
+void *p_loop_end = (void*)0x426CE8;
 
 __declspec(naked) void _copy_bmp()
 {
@@ -484,7 +544,7 @@ __declspec(naked) void _copy_bmp()
 		push dword ptr[ebp - 0x3C] //width
 		push edx //dst
 		call copy_bmp
-
+		mov need_copy, 0 //清标志
 		popad
 		jmp p_loop_end
 
@@ -582,7 +642,8 @@ funcCreateWindowExA g_pOldCreateWindowExA = CreateWindowExA;
 
 HWND WINAPI newCreateWindowExA(DWORD dwExStyle,LPCTSTR lpClassName,LPCTSTR lpWindowName,DWORD dwStyle,int x,int y,int nWidth,int nHeight,HWND hWndParent,HMENU hMenu,HINSTANCE hInstance,LPVOID lpParam)
 {
-	hwnd = g_pOldCreateWindowExA(dwExStyle, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+	const char* game_name = "［永不落幕的前奏诗］";
+	hwnd = g_pOldCreateWindowExA(dwExStyle, lpClassName, (LPCTSTR)game_name, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
 	
 	DWORD nThreadid = GetCurrentThreadId();
 	g_hKeyBoardHook = SetWindowsHookExA(WH_KEYBOARD, KeyboardProc, (HINSTANCE)GetModuleHandle(NULL), nThreadid);
@@ -598,7 +659,7 @@ HWND WINAPI newCreateWindowExA(DWORD dwExStyle,LPCTSTR lpClassName,LPCTSTR lpWin
 void SetHook()
 {
 
-	SetNopCode((PBYTE)0x0040945D, 23);
+	SetNopCode((PBYTE)0x004097BD, 23);
 
 	DetourTransactionBegin();
 	g_pOldCreateFontIndirectA = DetourFindFunction("GDI32.dll", "CreateFontIndirectA");
@@ -613,7 +674,7 @@ void SetHook()
 	DetourTransactionBegin();
 	DetourAttach(&pCreateFileA, _CreateFileA);
 	DetourTransactionCommit();
-
+	
 	DetourTransactionBegin();
 	DetourAttach((void**)&get_glyph, prefix_get_glyph);
 	DetourTransactionCommit();
@@ -625,8 +686,8 @@ void SetHook()
 	DetourTransactionBegin();
 	DetourAttach((void**)&p_copy_bmp, _copy_bmp);
 	DetourTransactionCommit();
-
-
+	
+	
 	HMODULE lib = LoadLibrary("d3d9.dll");
 	pDirect3DCreate9 = (fnDirect3DCreate9)GetProcAddress(lib, "Direct3DCreate9");
 
@@ -634,7 +695,7 @@ void SetHook()
 	DetourUpdateThread(GetCurrentThread());
 	DetourAttach((void**)&pDirect3DCreate9, newDirect3DCreate9);
 	DetourTransactionCommit();
-
+	
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 	DetourAttach((void**)&g_pOldCreateWindowExA, newCreateWindowExA);
@@ -643,6 +704,7 @@ void SetHook()
 	DetourTransactionBegin();
 	DetourAttach((void**)&p_drawtext, _d3d_drawtext);
 	DetourTransactionCommit();
+	
 }
 
 void InitProc()
@@ -651,7 +713,7 @@ void InitProc()
 	translator = new Translator(*parser);
 	engine = new TranslateEngine(*translator);
 
-	name_parser = new AcrParser("Name.acr");
+	name_parser = new AcrParser("name.acr");
 	name_translator = new Translator(*name_parser);
 	name_engine = new TranslateEngine(*name_translator);
 

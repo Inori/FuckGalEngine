@@ -87,6 +87,7 @@
   <ItemGroup>
     <ClInclude Include="detours.h" />
     <ClInclude Include="detver.h" />
+    <ClInclude Include="ImageStone.h" />
     <ClInclude Include="scriptparser.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tools.h" />
