@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExecDecrypt", "ExecDecrypt\ExecDecrypt.vcxproj", "{FFA135E2-B9AE-40D2-8FA6-884E303856DC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExecEncrypt", "ExecEncrypt\ExecEncrypt.vcxproj", "{299732FD-66B4-44AD-8AB0-5DDEE00DDE6D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModifyEXE", "ModifyEXE\ModifyEXE.vcxproj", "{8537EDAA-E0FA-49AB-B7CE-6444E1A65BBD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AppendExec", "AppendExec\AppendExec.vcxproj", "{EC2F080C-DB1C-481C-9913-A876FA4AF577}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FFA135E2-B9AE-40D2-8FA6-884E303856DC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FFA135E2-B9AE-40D2-8FA6-884E303856DC}.Debug|Win32.Build.0 = Debug|Win32
+		{FFA135E2-B9AE-40D2-8FA6-884E303856DC}.Release|Win32.ActiveCfg = Release|Win32
+		{FFA135E2-B9AE-40D2-8FA6-884E303856DC}.Release|Win32.Build.0 = Release|Win32
+		{299732FD-66B4-44AD-8AB0-5DDEE00DDE6D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{299732FD-66B4-44AD-8AB0-5DDEE00DDE6D}.Debug|Win32.Build.0 = Debug|Win32
+		{299732FD-66B4-44AD-8AB0-5DDEE00DDE6D}.Release|Win32.ActiveCfg = Release|Win32
+		{299732FD-66B4-44AD-8AB0-5DDEE00DDE6D}.Release|Win32.Build.0 = Release|Win32
+		{8537EDAA-E0FA-49AB-B7CE-6444E1A65BBD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8537EDAA-E0FA-49AB-B7CE-6444E1A65BBD}.Debug|Win32.Build.0 = Debug|Win32
+		{8537EDAA-E0FA-49AB-B7CE-6444E1A65BBD}.Release|Win32.ActiveCfg = Release|Win32
+		{8537EDAA-E0FA-49AB-B7CE-6444E1A65BBD}.Release|Win32.Build.0 = Release|Win32
+		{EC2F080C-DB1C-481C-9913-A876FA4AF577}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EC2F080C-DB1C-481C-9913-A876FA4AF577}.Debug|Win32.Build.0 = Debug|Win32
+		{EC2F080C-DB1C-481C-9913-A876FA4AF577}.Release|Win32.ActiveCfg = Release|Win32
+		{EC2F080C-DB1C-481C-9913-A876FA4AF577}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
