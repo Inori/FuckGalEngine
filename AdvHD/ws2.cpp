@@ -57,7 +57,7 @@ int wmain(int argc, wchar_t** argv)
 
     for (char* anc = buf + 5; anc < buf + len; ++anc)
     {
-        if (memcmp(anc - 3, "%LC", 3) == 0)
+        if (memcmp(anc - 3, "%LC", 3) == 0 || memcmp(anc - 3, "%LF", 3) == 0)
         {
             strcpy(CharStr, anc);
             CharOff = anc - buf;
