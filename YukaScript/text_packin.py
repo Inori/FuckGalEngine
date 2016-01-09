@@ -117,7 +117,6 @@ for f in fn:
                 for i in range(0, zeros):
                     dst.write(struct.pack('B', 0))
             print(f)
-
         
 
         
