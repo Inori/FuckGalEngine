@@ -70,6 +70,13 @@ private:
 	bool write_rc8(rc8_header_t *hrc8, BYTE *alp);
 	bool write_rct(rct_header_t *hrct, BYTE *rgb);
 
+	static uLong hash_table[256];
+	static uLong hash_table2[256];
+	static void init_hash(void);
+	static uLong do_hash(uLong seed, byte* name, uLong name_len);
+	static void init_hash2(byte* name, uLong name_len);
+	void decrypt(byte* buff, uLong len);
+
 	int read_png_file(string filepath, pic_data *out);
 	int write_png_file(string file_name, pic_data *graph);
 
@@ -87,5 +94,8 @@ private:
 
 	//png–≈œ¢
 	pic_data png_info;
+
+	bool is_encrypt;
+	bool is_ts01;
 };
 #endif

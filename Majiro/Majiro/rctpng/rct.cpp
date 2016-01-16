@@ -344,6 +344,18 @@ bool RCT::dump_rct(rct_header_t *rct, BYTE *&ret_rgb)
 
 	compr = (BYTE *)(rct + 1);
 	comprLen = rct->data_length;
+
+	if (is_ts01)
+	{
+		unsigned short fn_len = *(unsigned short*)compr;
+		compr += sizeof(unsigned short);
+		compr += fn_len;
+	}
+	if (is_encrypt)
+	{
+		decrypt(compr, comprLen);
+	}
+
 	actLen = rct_decompress(uncompr, uncomprLen, compr, comprLen, rct->width);
 	if (actLen != uncomprLen) 
 	{
@@ -369,6 +381,76 @@ bool RCT::write_rct(rct_header_t *hrct, BYTE *rgb)
 
 	fclose(frct);
 	return true;
+}
+
+uLong RCT::hash_table[256] = { 0 };
+uLong RCT::hash_table2[256] = { 0 };
+
+void RCT::init_hash(void)
+{
+	unsigned int i, k;
+
+	for (k = 0; k < 256; k++) {
+		uLong flag = k;
+		for (i = 0; i < 8; i++) {
+			if (flag & 1)
+				flag = (flag >> 1) ^ 0xEDB88320;
+			else
+				flag >>= 1;
+		}
+		hash_table[k] = flag;
+	}
+}
+
+uLong RCT::do_hash(uLong seed, byte* name, uLong name_len)
+{
+	for (unsigned int i = 0; i < name_len; i++)
+		seed = hash_table[name[i] ^ (seed & 0xff)] ^ (seed >> 8);
+	return ~seed;
+}
+
+void RCT::init_hash2(byte* name, uLong name_len)
+{
+	uLong hash;
+
+	hash = do_hash(-1, name, name_len);
+	for (unsigned int i = 0; i < 256; i++)
+		hash_table2[i] = hash ^ hash_table[(i + (BYTE)hash) % 256];
+}
+
+void RCT::decrypt(byte* buff, uLong len)
+{
+	//Sanarara R
+	//sjis编码的：  "―春の花が賑やかに咲き始める４月。"
+	byte key[] = { 0x81, 0x5C, 0x8F, 0x74, 0x82, 0xCC, 0x89, 0xD4, 0x82, 0xAA, 0x93, 0xF6, 0x82, 0xE2, 0x82, 0xA9,
+				   0x82, 0xC9, 0x8D, 0xE7, 0x82, 0xAB, 0x8E, 0x6E, 0x82, 0xDF, 0x82, 0xE9, 0x82, 0x53, 0x8C, 0x8E,
+				   0x81, 0x42 };
+	uLong key_len = sizeof(key);
+	init_hash();
+	init_hash2(key, key_len);
+	byte* enc_buff = buff;
+	uLong pad_len = len;
+	if (len >= 1024)
+	{
+		uLong count = len / 1024;
+		pad_len = len - count * 1024;
+		for (uLong i = 0; i != count; i++)
+		{
+			for (uLong j = 0; j != 1024 / 4; j++)
+			{
+				*(uLong*)enc_buff ^= hash_table2[j];
+				enc_buff += 4;
+			}
+		}
+	}
+	if (pad_len > 0)
+	{
+		byte* key_table = (byte*)hash_table2;
+		for (uLong i = 0; i != pad_len; i++)
+		{
+			enc_buff[i] ^= key_table[i];
+		}
+	}
 }
 
 bool RCT::write_rc8(rc8_header_t *hrc8, BYTE *alp)
@@ -614,7 +696,7 @@ int RCT::write_png_file(string file_name, pic_data *graph)
 	return 0;
 }
 
-RCT::RCT() :h_rct(NULL), h_rc8(NULL), p_rct(NULL), p_rc8(NULL), have_alpha(false)
+RCT::RCT() :h_rct(NULL), h_rc8(NULL), p_rct(NULL), p_rc8(NULL), have_alpha(false), is_encrypt(false), is_ts01(false)
 {
 }
 
@@ -641,10 +723,25 @@ bool RCT::LoadRCT(string fname)
 	fread(p_rct, size_rct, 1, f_rct);
 	//判断文件头是否匹配
 	h_rct = (rct_header_t*)p_rct;
-	if (memcmp(h_rct->magic, "\x98\x5A\x92\x9ATC00", 8))
+	if (!memcmp(h_rct->magic, "\x98\x5A\x92\x9ATC00", 8))
 	{
 		//方便在批处理脚本中发现错误，采用MessageBox而不是printf
-		MessageBoxA(NULL, "RCT header not match!", "RCT Error", MB_OK);
+		//MessageBoxA(NULL, "RCT header not match!", "RCT Error", MB_OK);
+		//return false;
+		is_encrypt = false;
+	}
+	else if(!memcmp(h_rct->magic, "\x98\x5A\x92\x9ATS00", 8))
+	{
+		is_encrypt = true;
+	}
+	else if (!memcmp(h_rct->magic, "\x98\x5A\x92\x9ATS01", 8))
+	{
+		is_encrypt = true;
+		is_ts01 = true;
+	}
+	else
+	{
+		MessageBoxA(NULL, "This RCT format is not support!", "RCT Error", MB_OK);
 		return false;
 	}
 
