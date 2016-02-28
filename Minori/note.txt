@@ -14,16 +14,181 @@ Blowfish_Decrypt入口sig:
 Generate_Key:
 每次调用call eax返回Blowfish key的一个字节，32次即为完整的key
 
-00475448   .  56            push    esi
-00475449   .  FFD0          call    eax
-0047544B   .  0FB6C8        movzx   ecx, al                                  ;  al = key
-0047544E   .  C1E7 08       shl     edi, 0x8
-00475451   .  0BF9          or      edi, ecx
-00475453   .  B9 01000000   mov     ecx, 0x1
-00475458   .  03F1          add     esi, ecx
-0047545A   .  3B75 F4       cmp     esi, dword ptr [ebp-0xC]
+0047FD00   > /8B4D 0C       mov     ecx, dword ptr [ebp+0xC]
+0047FD03   . |8B11          mov     edx, dword ptr [ecx]
+0047FD05   . |8B42 0C       mov     eax, dword ptr [edx+0xC]
+0047FD08   . |56            push    esi
+0047FD09   . |FFD0          call    eax
+0047FD0B   . |0FB6C8        movzx   ecx, al                                           ;  al = key
+0047FD0E   . |C1E7 08       shl     edi, 0x8
+0047FD11   . |0BF9          or      edi, ecx
+0047FD13   . |B9 01000000   mov     ecx, 0x1
+0047FD18   . |03F1          add     esi, ecx
+0047FD1A   . |3B75 F4       cmp     esi, dword ptr [ebp-0xC]
+0047FD1D   . |7C 02         jl      short 0047FD21
+0047FD1F   . |33F6          xor     esi, esi
+0047FD21   > |294D 08       sub     dword ptr [ebp+0x8], ecx
+0047FD24   .^\75 DA         jnz     short 0047FD00
+0047FD26   .  8B45 FC       mov     eax, dword ptr [ebp-0x4]                          ;  edi为key的4个字节
+0047FD29   .  8B55 F0       mov     edx, dword ptr [ebp-0x10]
+0047FD2C   .  8B1402        mov     edx, dword ptr [edx+eax]
+0047FD2F   .  33D7          xor     edx, edi
+0047FD31   .  8910          mov     dword ptr [eax], edx
 
 
+
+
+找解密crud：
+
+00427F04   .  8BC3          mov     eax, ebx
+00427F06   .  8D50 01       lea     edx, dword ptr [eax+0x1]
+00427F09   .  8DA424 000000>lea     esp, dword ptr [esp]
+00427F10   >  8A08          mov     cl, byte ptr [eax]                                ;  strlen(seed) !!!!
+00427F12   .  40            inc     eax
+00427F13   .  84C9          test    cl, cl
+00427F15   .^ 75 F9         jnz     short 00427F10
+00427F17   .  2BC2          sub     eax, edx
+00427F19   .  8BD0          mov     edx, eax
+00427F1B   .  83C8 FF       or      eax, 0xFFFFFFFF
+00427F1E   .  33C9          xor     ecx, ecx
+00427F20   >  3BCA          cmp     ecx, edx
+00427F22   .  73 19         jnb     short 00427F3D
+00427F24   .  0FBE3419      movsx   esi, byte ptr [ecx+ebx]
+00427F28   .  33F0          xor     esi, eax
+00427F2A   .  81E6 FF000000 and     esi, 0xFF
+00427F30   .  C1E8 08       shr     eax, 0x8
+00427F33   .  3304B5 C86F51>xor     eax, dword ptr [esi*4+0x516FC8]
+00427F3A   .  41            inc     ecx
+00427F3B   .^ EB E3         jmp     short 00427F20
+00427F3D   >  F7D0          not     eax
+00427F3F   .  C1E8 0C       shr     eax, 0xC
+00427F42   .  25 FF000000   and     eax, 0xFF
+00427F47   .  8945 D0       mov     dword ptr [ebp-0x30], eax
+00427F4A   .  33FF          xor     edi, edi
+00427F4C   .  8D6424 00     lea     esp, dword ptr [esp]
+00427F50   >  3B7D D0       cmp     edi, dword ptr [ebp-0x30]
+00427F53   .  73 52         jnb     short 00427FA7
+00427F55   .  8B85 9CFEFFFF mov     eax, dword ptr [ebp-0x164]
+00427F5B   .  8B8D A0FEFFFF mov     ecx, dword ptr [ebp-0x160]
+00427F61   .  40            inc     eax
+00427F62   .  25 FF000000   and     eax, 0xFF
+00427F67   .  0FB69405 A4FE>movzx   edx, byte ptr [ebp+eax-0x15C]
+00427F6F   .  8DB405 A4FEFF>lea     esi, dword ptr [ebp+eax-0x15C]
+00427F76   .  03CA          add     ecx, edx
+00427F78   .  81E1 FF000000 and     ecx, 0xFF
+00427F7E   .  0FB69C0D A4FE>movzx   ebx, byte ptr [ebp+ecx-0x15C]
+
+
+
+decrypt_index：
+
+004099A0 > $  55            push    ebp                                               ;  j_decrypt_index
+004099A1   .  8BEC          mov     ebp, esp
+004099A3   .  83E4 F8       and     esp, 0xFFFFFFF8
+004099A6   .  6A FF         push    -0x1
+004099A8   .  68 0C8B4F00   push    004F8B0C                                          ;  SE 处理程序安装
+004099AD   .  64:A1 0000000>mov     eax, dword ptr fs:[0]
+004099B3   .  50            push    eax
+004099B4   .  64:8925 00000>mov     dword ptr fs:[0], esp
+004099BB   .  81EC 00020000 sub     esp, 0x200
+004099C1   .  53            push    ebx
+004099C2   .  56            push    esi
+004099C3   .  33DB          xor     ebx, ebx
+004099C5   .  8BC2          mov     eax, edx
+004099C7   .  57            push    edi
+004099C8   .  C74424 40 0F0>mov     dword ptr [esp+0x40], 0xF
+004099D0   .  895C24 3C     mov     dword ptr [esp+0x3C], ebx
+004099D4   .  885C24 2C     mov     byte ptr [esp+0x2C], bl
+004099D8   .  8D70 01       lea     esi, dword ptr [eax+0x1]
+004099DB   .  EB 03         jmp     short 004099E0
+004099DD      8D49 00       lea     ecx, dword ptr [ecx]
+004099E0   >  8A08          mov     cl, byte ptr [eax]
+004099E2   .  40            inc     eax
+004099E3   .  84C9          test    cl, cl
+004099E5   .^ 75 F9         jnz     short 004099E0
+004099E7   .  2BC6          sub     eax, esi
+004099E9   .  52            push    edx
+004099EA   .  8BF8          mov     edi, eax
+004099EC   .  8D7424 30     lea     esi, dword ptr [esp+0x30]
+004099F0   .  E8 1BC2FFFF   call    00405C10
+004099F5   .  6A 04         push    0x4
+004099F7   .  68 A84C5000   push    00504CA8                                          ;  ASCII ".paz"
+004099FC   .  8BC6          mov     eax, esi
+004099FE   .  899C24 1C0200>mov     dword ptr [esp+0x21C], ebx
+00409A05   .  E8 96B0FFFF   call    00404AA0
+00409A0A   .  8B4424 2C     mov     eax, dword ptr [esp+0x2C]
+00409A0E   .  BE 10000000   mov     esi, 0x10
+00409A13   .  397424 40     cmp     dword ptr [esp+0x40], esi
+00409A17   .  73 04         jnb     short 00409A1D
+00409A19   .  8D4424 2C     lea     eax, dword ptr [esp+0x2C]
+00409A1D   >  53            push    ebx                                               ; /hTemplateFile
+00409A1E   .  68 80000000   push    0x80                                              ; |Attributes = NORMAL
+00409A23   .  6A 03         push    0x3                                               ; |Mode = OPEN_EXISTING
+00409A25   .  53            push    ebx                                               ; |pSecurity
+00409A26   .  6A 01         push    0x1                                               ; |ShareMode = FILE_SHARE_READ
+00409A28   .  68 00000080   push    0x80000000                                        ; |Access = GENERIC_READ
+00409A2D   .  50            push    eax                                               ; |FileName
+00409A2E   .  FF15 6C095800 call    dword ptr [0x58096C]                              ; \CreateFileA
+
+
+
+decrypt_item：
+
+0040A320 >/.  55            push    ebp                                               ;  j_decrypt_item
+0040A321  |.  8BEC          mov     ebp, esp
+0040A323  |.  83E4 F8       and     esp, 0xFFFFFFF8
+0040A326  |.  6A FF         push    -0x1
+0040A328  |.  68 F4834F00   push    004F83F4                                          ;  SE 处理程序安装
+0040A32D  |.  64:A1 0000000>mov     eax, dword ptr fs:[0]
+0040A333  |.  50            push    eax
+0040A334  |.  64:8925 00000>mov     dword ptr fs:[0], esp
+0040A33B  |.  81EC 58020000 sub     esp, 0x258
+0040A341  |.  53            push    ebx
+0040A342  |.  56            push    esi
+0040A343  |.  57            push    edi
+0040A344  |.  8BD9          mov     ebx, ecx
+0040A346  |.  8DB3 B4010000 lea     esi, dword ptr [ebx+0x1B4]
+0040A34C  |.  68 D84B5000   push    00504BD8
+0040A351  |.  33FF          xor     edi, edi
+0040A353  |.  895C24 18     mov     dword ptr [esp+0x18], ebx
+0040A357  |.  E8 B4B8FFFF   call    00405C10
+0040A35C  |.  8B4D 08       mov     ecx, [arg.1]
+0040A35F  |.  8A01          mov     al, byte ptr [ecx]
+0040A361  |.  884424 0C     mov     byte ptr [esp+0xC], al
+0040A365  |.  8D79 01       lea     edi, dword ptr [ecx+0x1]
+0040A368  |.  84C0          test    al, al
+0040A36A  |.  74 54         je      short 0040A3C0
+0040A36C  |.  8D6424 00     lea     esp, dword ptr [esp]
+0040A370  |>  3C 81         /cmp     al, 0x81
+0040A372  |.  72 04         |jb      short 0040A378
+0040A374  |.  3C 9F         |cmp     al, 0x9F
+0040A376  |.  76 08         |jbe     short 0040A380
+0040A378  |>  8D48 20       |lea     ecx, dword ptr [eax+0x20]
+0040A37B  |.  80F9 0F       |cmp     cl, 0xF
+0040A37E  |.  77 1D         |ja      short 0040A39D
+0040A380  |>  8B5424 0C     |mov     edx, dword ptr [esp+0xC]
+0040A384  |.  52            |push    edx
+0040A385  |.  E8 267CFFFF   |call    00401FB0
+0040A38A  |.  8A07          |mov     al, byte ptr [edi]
+0040A38C  |.  884424 10     |mov     byte ptr [esp+0x10], al
+0040A390  |.  8B4C24 10     |mov     ecx, dword ptr [esp+0x10]
+0040A394  |.  51            |push    ecx
+0040A395  |.  E8 167CFFFF   |call    00401FB0
+0040A39A  |.  47            |inc     edi
+0040A39B  |.  EB 18         |jmp     short 0040A3B5
+0040A39D  |>  8D50 BF       |lea     edx, dword ptr [eax-0x41]
+0040A3A0  |.  80FA 19       |cmp     dl, 0x19
+0040A3A3  |.  77 06         |ja      short 0040A3AB
+0040A3A5  |.  04 20         |add     al, 0x20
+0040A3A7  |.  884424 0C     |mov     byte ptr [esp+0xC], al
+0040A3AB  |>  8B4424 0C     |mov     eax, dword ptr [esp+0xC]
+0040A3AF  |.  50            |push    eax
+0040A3B0  |.  E8 FB7BFFFF   |call    00401FB0
+0040A3B5  |>  8A07          |mov     al, byte ptr [edi]
+0040A3B7  |.  47            |inc     edi
+0040A3B8  |.  884424 0C     |mov     byte ptr [esp+0xC], al
+0040A3BC  |.  84C0          |test    al, al
+0040A3BE  |.^ 75 B0         \jnz     short 0040A370
 
 
 
