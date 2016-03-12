@@ -51,7 +51,7 @@ def FormatString(src, offset, flagoffset, count):
         res += "○%08x○\n"%(length)
         res += "◇%08x◇\n"%(startoffset)
         res += "☆%08x☆\n"%(endoffset)
-        res += "★%08d★\n%s\n\n"%(count, string)
+        res += "★%08d★%s\n\n"%(count, string)
         flag = True
     else:
         res = ''

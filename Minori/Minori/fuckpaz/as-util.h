@@ -54,10 +54,15 @@ namespace as
 
 	string get_file_prefix(string filename, bool cut_dot)
 	{
+		int start = filename.find_last_of("\\") + 1;
+		int len = 0;
+		string name = filename.substr(start);
 		if (cut_dot)
-			return filename.substr(0, filename.find_last_of("."));
+			len = name.find_last_of(".");
 		else
-			return filename.substr(0, filename.find_last_of(".")+1);
+			len = name.find_last_of(".") + 1;
+		
+		return name.substr(0, len);
 	}
 
 	//考虑难度，这里只写出符号本次使用的代码
