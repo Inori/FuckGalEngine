@@ -12,9 +12,6 @@
 
 // preparing - global var
 
-//int calledCount = 1;
-//FILE* fo = NULL;
-//wchar_t output[5000];
 
 // Hooking MultiByteToWideChar
 static int (WINAPI *OldMultiByteToWideChar)(
@@ -36,16 +33,28 @@ int WINAPI NewMultiByteToWideChar(
     _In_ int cchWideChar
     )
 {
+    __asm
+    {
+        pushad
+    } // save all general registers, for massive memory modification
+
+    int ret = 0;
+
+    //-- Todo Begin --//
+        
     CodePage = 932;
-    int ret = OldMultiByteToWideChar(CodePage, dwFlags, lpMultiByteStr, cbMultiByte, lpWideCharStr, cchWideChar);
+    ret = OldMultiByteToWideChar(CodePage, dwFlags, lpMultiByteStr, cbMultiByte, lpWideCharStr, cchWideChar);
 
-    //if (lpWideCharStr)
-    //{
-    //    StringCchPrintfW(output, 5000, L"<%06d>%s\n", calledCount++, lpWideCharStr);
-    //    fwrite(output, 2, wcslen(output), fo);
-    //}
+    goto exiting;
 
-    return ret;
+    //-- Todo End   --//
+
+exiting:
+    __asm
+    {
+        popad
+    }
+    return ret; // mov eax, ret_
 }
 
 // Hooking WideCharToMultiByte
@@ -167,20 +176,19 @@ BOOL APIENTRY DllMain(
     switch (fdwReason)
     {
     case DLL_PROCESS_ATTACH:
-        DisableThreadLibraryCalls(hInstance);
         DetourRestoreAfterWith();
 
+        create_lib(); // call this before setting hooks, or the constructor may fail
+       
         detour_init();
         set_hook();
         detour_end();
-
-        create_lib();
         break;
     case DLL_PROCESS_DETACH:
         detour_init();
         take_hook();
         detour_end();
-
+        
         destroy_lib();
         break;
     case DLL_THREAD_ATTACH:
@@ -193,7 +201,7 @@ BOOL APIENTRY DllMain(
 
 // export a symbol
 
-__declspec(dllexport) void WINAPI dummy()
+__declspec(dllexport) void WINAPI DetourFinishHelperProcess()
 {
     // just for Detour use. doing nothing
 }
