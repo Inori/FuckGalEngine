@@ -21,19 +21,15 @@ def byte2int(byte):
 def makestr(lines):
     sum_list = []
     for index,line in enumerate(lines):
-        if '●' in line:
+        if '☆' in line:
             offset_str = re.search('([0-9A-Fa-f]+)', line).group()
             offset = int(offset_str, 16)
             continue
-        if '◎' in line:
-            if '★' in line:
-                name = line[10:-2]
-                continue
-            else:
-                name = ''
-                continue
-        if '◆' in line:
-            string = line[10:-2]
+        if '★' in line:
+            name = line[10:-1]
+            continue
+        if '●' in line:
+            string = line[10:-1]
             sum_list.append([offset, name, string])
             continue
             
@@ -41,7 +37,8 @@ def makestr(lines):
 
 
 index = open('scenario.dat', 'rb+')
-dst = open('script.bin', 'rb+')
+dst = open('textdata.bin', 'rb+')
+# 这里跳过textdata.bin的头部，它包含了文本的章节信息。同时你需要手动在最后添加原有textdata.bin文件的尾部信息
 dst.seek(0x20, 0)
 
 namedic={}
