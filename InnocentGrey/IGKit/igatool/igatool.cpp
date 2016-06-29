@@ -16,15 +16,11 @@
 // If the iga file is large, such as bgimage.iga, please compile 64bit version.
 
 #include <iostream>
-#include <fstream>
-#include <cstdlib>
 #include <string>
 #include <cstring>
 #include <fcntl.h>
 #include <direct.h>
-#include <stdlib.h>
 #include <io.h>
-#include <cctype>
 #include <algorithm>
 #include <vector>
 using namespace std;
@@ -242,7 +238,7 @@ int main(int argc, char** argv)
 
 		// create new folder which has the same name as the iga file and put the file in it
 		string out_folder = in_filename.substr(0, in_filename.length() - 4);
-		int ret = _mkdir(out_folder.c_str());
+		_mkdir(out_folder.c_str());
 			
 		for (auto i = entries.begin(); i != entries.end(); ++i)
 		{
