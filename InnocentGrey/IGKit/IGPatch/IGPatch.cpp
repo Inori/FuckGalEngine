@@ -35,25 +35,54 @@ wstring replace_all(wstring dststr, wstring oldstr, wstring newstr)
 	return ret;
 }
 
-
 PVOID g_pOldCreateFontIndirectW = CreateFontIndirectW;
 typedef HFONT (WINAPI *PfuncCreateFontIndirectW)(LOGFONTW *lplf);
 HFONT WINAPI NewCreateFontIndirectW(LOGFONTW *lplf)
 {
 	lplf->lfCharSet = ANSI_CHARSET;
 
-	if (!wcscmp(lplf->lfFaceName, L"@�ͣ� ����"))
+	if (!wcscmp(lplf->lfFaceName, L"@ＭＳ 明朝"))
 	{
-		wcscpy(lplf->lfFaceName, L"@����");
+		wcscpy(lplf->lfFaceName, L"@黑体");
 	}
-	else
+	else if (!wcscmp(lplf->lfFaceName, L"ＭＳ 明朝"))
 	{
-		wcscpy(lplf->lfFaceName, L"����");
+		wcscpy(lplf->lfFaceName, L"黑体");
+	}
+	else if (!wcscmp(lplf->lfFaceName, L"ＭＳ ゴシック"))
+	{
+		wcscpy(lplf->lfFaceName, L"黑体");
 	}
 
 	return ((PfuncCreateFontIndirectW)g_pOldCreateFontIndirectW)(lplf);
 }
 
+// for windows10 redstone
+PVOID g_pOldCreateFontW = CreateFontW;
+typedef HFONT(WINAPI *PfuncCreateFontW)(int cHeight, int cWidth, int cEscapement, int cOrientation, int cWeight, DWORD bItalic,
+	DWORD bUnderline, DWORD bStrikeOut, DWORD iCharSet, DWORD iOutPrecision, DWORD iClipPrecision,
+	DWORD iQuality, DWORD iPitchAndFamily, LPCWSTR pszFaceName);
+HFONT WINAPI NewCreateFontW(int cHeight, int cWidth, int cEscapement, int cOrientation, int cWeight, DWORD bItalic,
+	DWORD bUnderline, DWORD bStrikeOut, DWORD iCharSet, DWORD iOutPrecision, DWORD iClipPrecision,
+	DWORD iQuality, DWORD iPitchAndFamily, LPCWSTR pszFaceName)
+{
+	iCharSet = ANSI_CHARSET;
+
+	if (!wcscmp(pszFaceName, L"@ＭＳ 明朝"))
+	{
+		pszFaceName = L"@黑体";
+	}
+	else if (!wcscmp(pszFaceName, L"ＭＳ 明朝"))
+	{
+		pszFaceName = L"黑体";
+	}
+	else if (!wcscmp(pszFaceName, L"ＭＳ ゴシック"))
+	{
+		pszFaceName = L"黑体";
+	}
+	return ((PfuncCreateFontW)g_pOldCreateFontW)(cHeight, cWidth, cEscapement, cOrientation, cWeight, bItalic, bUnderline, bStrikeOut, iCharSet, iOutPrecision, iClipPrecision,
+		iQuality, iPitchAndFamily, pszFaceName);
+}
 
 //Script.dll:
 //06E0E645    6A 01            push    0x1
@@ -94,6 +123,7 @@ fnLoadLibraryExW pLoadLibraryExW = LoadLibraryExW;
 
 void PatchScrDll(DWORD baseoffset)
 {
+	// This offset is not a fixed offset.
 	g_p_localstring = (void*)(baseoffset + 0x350D);
 
 	DetourTransactionBegin();
@@ -103,6 +133,7 @@ void PatchScrDll(DWORD baseoffset)
 
 void PatchHimDll(DWORD baseoffset)
 {
+	// It seems that this offset is fixed among the IG games.
 	g_popen_stream = (open_stream_func)(baseoffset + 0xADD0);
 
 	DetourTransactionBegin();
@@ -153,11 +184,15 @@ __declspec(dllexport) void Dummy()
 {
 }
 
-//��װHook 
+//安装Hook 
 void SetHook()
 {
 	DetourTransactionBegin();
 	DetourAttach(&g_pOldCreateFontIndirectW, NewCreateFontIndirectW);
+	DetourTransactionCommit();
+	
+	DetourTransactionBegin();
+	DetourAttach(&(PVOID&)g_pOldCreateFontW, NewCreateFontW);
 	DetourTransactionCommit();
 
 	DetourTransactionBegin();
