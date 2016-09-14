@@ -29,21 +29,37 @@ LPD3DXFONT g_pFont;
 LPDIRECT3DDEVICE9 pDevice;
 ID3DXSprite* g_pTextSprite = NULL;
 
-////////////ÖĞÎÄ×Ö·û¼¯////////////////////////////////////////////////////////
+////////////ä¸­æ–‡å­—ç¬¦é›†////////////////////////////////////////////////////////
 
 
-PVOID g_pOldCreateFontIndirectA = NULL;
+PVOID g_pOldCreateFontIndirectA = CreateFontIndirectA;
 typedef int (WINAPI *PfuncCreateFontIndirectA)(LOGFONTA *lplf);
 int WINAPI NewCreateFontIndirectA(LOGFONTA *lplf)
 {
 	lplf->lfCharSet = ANSI_CHARSET;
 	//lplf->lfCharSet = GB2312_CHARSET;
-	//strcpy(lplf->lfFaceName, "ºÚÌå");
+	//strcpy(lplf->lfFaceName, "é»‘ä½“");
 
 	return ((PfuncCreateFontIndirectA)g_pOldCreateFontIndirectA)(lplf);
 }
 
-PVOID g_pOldEnumFontFamiliesExA = NULL;
+// for windows10 redstone
+PVOID g_pOldCreateFontA = CreateFontA;
+typedef int (WINAPI *PfuncCreateFontA)(int cHeight, int cWidth, int cEscapement, int cOrientation, int cWeight, DWORD bItalic,
+	DWORD bUnderline, DWORD bStrikeOut, DWORD iCharSet, DWORD iOutPrecision, DWORD iClipPrecision,
+	DWORD iQuality, DWORD iPitchAndFamily, LPCSTR pszFaceName);
+int WINAPI NewCreateFontA(int cHeight, int cWidth, int cEscapement, int cOrientation, int cWeight, DWORD bItalic,
+	DWORD bUnderline, DWORD bStrikeOut, DWORD iCharSet, DWORD iOutPrecision, DWORD iClipPrecision,
+	DWORD iQuality, DWORD iPitchAndFamily, LPCSTR pszFaceName)
+{
+	iCharSet = ANSI_CHARSET;
+
+	return ((PfuncCreateFontA)g_pOldCreateFontA)(cHeight, cWidth, cEscapement, cOrientation, cWeight, bItalic,
+		bUnderline, bStrikeOut, iCharSet, iOutPrecision, iClipPrecision,
+		iQuality, iPitchAndFamily, pszFaceName);
+}
+
+PVOID g_pOldEnumFontFamiliesExA = EnumFontFamiliesExA;
 typedef int (WINAPI *PfuncEnumFontFamiliesExA)(HDC hdc, LPLOGFONT lpLogfont, FONTENUMPROC lpEnumFontFamExProc, LPARAM lParam, DWORD dwFlags);
 int WINAPI NewEnumFontFamiliesExA(HDC hdc, LPLOGFONT lpLogfont, FONTENUMPROC lpEnumFontFamExProc, LPARAM lParam, DWORD dwFlags)
 {
@@ -124,7 +140,7 @@ void D3DDrawText(wchar_t *str)
 	g_pTextSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
 
 
-	//Ãè±ß
+	//æè¾¹
 	rect.left += 2;
 	g_pFont->DrawTextW(g_pTextSprite, wstr.c_str(), -1, &rect, DT_LEFT | DT_NOCLIP, D3DCOLOR_ARGB(255, 255, 255, 255));
 
@@ -139,7 +155,7 @@ void D3DDrawText(wchar_t *str)
 	rect.top += 2;
 	g_pFont->DrawTextW(g_pTextSprite, wstr.c_str(), -1, &rect, DT_LEFT | DT_NOCLIP, D3DCOLOR_ARGB(255, 255, 255, 255));
 
-	//ÊµÌå
+	//å®ä½“
 	rect.top -= 2;
 	g_pFont->DrawTextW(g_pTextSprite, wstr.c_str(), -1, &rect, DT_LEFT | DT_NOCLIP, D3DCOLOR_ARGB(255, 0, 0, 0));
 	g_pTextSprite->End();
@@ -170,7 +186,7 @@ void __stdcall d3d_drawtext()
 0041490C   .  56            push    esi
 0041490D.FFD0          call    eax;  Present(CBaseDevice *this, const struct tagRECT *, const struct tagRECT *, HWND, const struct _RGNDATA *Src)
 */
-//ÔÚD3D::PresentÖ®Ç°DrawText
+//åœ¨D3D::Presentä¹‹å‰DrawText
 void *p_drawtext = (void*)0x414CA5;
 __declspec(naked) void _d3d_drawtext()
 {
@@ -291,7 +307,7 @@ void FillNameDic()
 	}
 	else
 	{
-		MessageBoxA(NULL, "¶ÁÈ¡cnbg.pazÊ§°Ü!", "Error", MB_OK);
+		MessageBoxA(NULL, "è¯»å–cnbg.pazå¤±è´¥!", "Error", MB_OK);
 	}
 	CloseHandle(hfile);
 }
@@ -318,7 +334,7 @@ void __stdcall get_filename(char* name)
 		return;
 	}
 	string png_name = name;
-	if (png_name.find("[mono]") != png_name.npos)//ÓĞµÄÍ¼ÓÎÏ·ÓÃ³ÌĞò»á¼ÓÌØĞ§£¬ÎÄ¼şÃûÓĞÇ°×º£¬±ÈÈç [mono]
+	if (png_name.find("[mono]") != png_name.npos)//æœ‰çš„å›¾æ¸¸æˆç”¨ç¨‹åºä¼šåŠ ç‰¹æ•ˆï¼Œæ–‡ä»¶åæœ‰å‰ç¼€ï¼Œæ¯”å¦‚ [mono]
 	{
 		png_name = png_name.substr(png_name.find_last_of("]") + 1);
 		has_effect = true;
@@ -329,7 +345,7 @@ void __stdcall get_filename(char* name)
 	}
 
 	string bmp_name = replace_first(png_name, ".png", ".bmp");
-	if (is_file_readable(bmp_name)) //ÅĞ¶ÏÊÇ·ñĞèÒªcopy
+	if (is_file_readable(bmp_name)) //åˆ¤æ–­æ˜¯å¦éœ€è¦copy
 	{
 		need_copy = true; 
 		strcpy(filename, bmp_name.c_str());
@@ -366,7 +382,7 @@ bool read_bmp(string bmp_name, bmp_info *info)
 
 		ulong read_size;
 
-		//Ê¹ÓÃImageStone¿âÌí¼ÓÍ¼Æ¬ÌØĞ§¡£ÕâÖ»ÊÇ¸öÁÙÊ±µÄ½â¾ö·½°¸£¬¸ù±¾ÉÏÓ¦¸Ã´Ó³ÌĞòÖĞÕÒµ½Í¼Æ¬»¹Ã»±»ĞŞ¸ÄÊ±µÄ´úÂë£¬Inline HoookÖ®¡£
+		//ä½¿ç”¨ImageStoneåº“æ·»åŠ å›¾ç‰‡ç‰¹æ•ˆã€‚è¿™åªæ˜¯ä¸ªä¸´æ—¶çš„è§£å†³æ–¹æ¡ˆï¼Œæ ¹æœ¬ä¸Šåº”è¯¥ä»ç¨‹åºä¸­æ‰¾åˆ°å›¾ç‰‡è¿˜æ²¡è¢«ä¿®æ”¹æ—¶çš„ä»£ç ï¼ŒInline Hoookä¹‹ã€‚
 		if (has_effect)
 		{
 			byte *bmp_data;
@@ -544,7 +560,7 @@ __declspec(naked) void _copy_bmp()
 		push dword ptr[ebp - 0x3C] //width
 		push edx //dst
 		call copy_bmp
-		mov need_copy, 0 //Çå±êÖ¾
+		mov need_copy, 0 //æ¸…æ ‡å¿—
 		popad
 		jmp p_loop_end
 
@@ -577,7 +593,7 @@ HRESULT WINAPI newCreateDevice(
 
 		D3DXCreateFontW(pDevice, -28, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
 			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-			L"ºÚÌå", &g_pFont);
+			L"é»‘ä½“", &g_pFont);
 
 		D3DXCreateSprite(pDevice, &g_pTextSprite);
 
@@ -620,7 +636,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		//MessageBox(NULL, "Thread hook", "keyboard", MB_OK);
 	}
 		
-	return 0; //ÕâÀï±ØĞë·µ»Ø0
+	return 0; //è¿™é‡Œå¿…é¡»è¿”å›0
 }
 
 
@@ -642,7 +658,7 @@ funcCreateWindowExA g_pOldCreateWindowExA = CreateWindowExA;
 
 HWND WINAPI newCreateWindowExA(DWORD dwExStyle,LPCTSTR lpClassName,LPCTSTR lpWindowName,DWORD dwStyle,int x,int y,int nWidth,int nHeight,HWND hWndParent,HMENU hMenu,HINSTANCE hInstance,LPVOID lpParam)
 {
-	const char* game_name = "£ÛÓÀ²»ÂäÄ»µÄÇ°×àÊ«£İ";
+	const char* game_name = "ï¼»æ°¸ä¸è½å¹•çš„å‰å¥è¯—ï¼½";
 	hwnd = g_pOldCreateWindowExA(dwExStyle, lpClassName, (LPCTSTR)game_name, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
 	
 	DWORD nThreadid = GetCurrentThreadId();
@@ -655,19 +671,23 @@ HWND WINAPI newCreateWindowExA(DWORD dwExStyle,LPCTSTR lpClassName,LPCTSTR lpWin
 	return hwnd;
 }
 
-//°²×°Hook 
+//å®‰è£…Hook 
 void SetHook()
 {
 
 	SetNopCode((PBYTE)0x004097BD, 23);
 
 	DetourTransactionBegin();
-	g_pOldCreateFontIndirectA = DetourFindFunction("GDI32.dll", "CreateFontIndirectA");
+	//g_pOldCreateFontIndirectA = DetourFindFunction("GDI32.dll", "CreateFontIndirectA");
 	DetourAttach(&g_pOldCreateFontIndirectA, NewCreateFontIndirectA);
 	DetourTransactionCommit();
 
 	DetourTransactionBegin();
-	g_pOldEnumFontFamiliesExA = DetourFindFunction("GDI32.dll", "EnumFontFamiliesExA");
+	DetourAttach(&g_pOldCreateFontA, NewCreateFontA);
+	DetourTransactionCommit();
+
+	DetourTransactionBegin();
+	//g_pOldEnumFontFamiliesExA = DetourFindFunction("GDI32.dll", "EnumFontFamiliesExA");
 	DetourAttach(&g_pOldEnumFontFamiliesExA, NewEnumFontFamiliesExA);
 	DetourTransactionCommit();
 
