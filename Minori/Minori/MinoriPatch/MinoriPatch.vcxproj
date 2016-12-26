@@ -72,6 +72,8 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/D "_CRT_SECURE_NO_WARNINGS" %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>F:\Kan\FuckGalEngine\Minori\Minori\MinoriPatch\dxsdk\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <StringPooling>
+      </StringPooling>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -82,12 +84,14 @@
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <AdditionalLibraryDirectories>F:\Kan\FuckGalEngine\Minori\Minori\MinoriPatch\dxsdk\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3dx9.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\..\..\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="detours.h" />
     <ClInclude Include="detver.h" />
-    <ClInclude Include="ImageStone.h" />
+    <ClInclude Include="png.h" />
+    <ClInclude Include="pngconf.h" />
     <ClInclude Include="scriptparser.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tools.h" />
@@ -103,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="detours.lib" />
+    <Library Include="libpng.lib" />
     <Library Include="zlib.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

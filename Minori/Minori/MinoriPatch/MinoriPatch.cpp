@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <io.h>
 #include <d3d9.h>
 #include <d3dx9core.h>
@@ -10,7 +10,9 @@
 #include "tools.h"
 #include "translate.h"
 #include "types.h"
-#include "ImageStone.h"
+//#include "ImageStone.h"
+#include "png.h"
+
 
 using namespace std;
 
@@ -20,7 +22,7 @@ TranslateEngine *engine;
 
 AcrParser *name_parser;
 Translator *name_translator;
-TranslateEngine *name_engine;
+TranslateEngine *pNameEngine;
 
 HWND hwnd;
 bool isAsyncDisplayOn = false;
@@ -29,52 +31,104 @@ LPD3DXFONT g_pFont;
 LPDIRECT3DDEVICE9 pDevice;
 ID3DXSprite* g_pTextSprite = NULL;
 
-////////////‰∏≠ÊñáÂ≠óÁ¨¶ÈõÜ////////////////////////////////////////////////////////
+////////////÷–Œƒ◊÷∑˚ºØ////////////////////////////////////////////////////////
 
+#define GBK_CODE_PAGE 932
 
 PVOID g_pOldCreateFontIndirectA = CreateFontIndirectA;
 typedef int (WINAPI *PfuncCreateFontIndirectA)(LOGFONTA *lplf);
 int WINAPI NewCreateFontIndirectA(LOGFONTA *lplf)
 {
 	lplf->lfCharSet = ANSI_CHARSET;
-	//lplf->lfCharSet = GB2312_CHARSET;
-	//strcpy(lplf->lfFaceName, "Èªë‰Ωì");
-
 	return ((PfuncCreateFontIndirectA)g_pOldCreateFontIndirectA)(lplf);
 }
 
-// for windows10 redstone
-PVOID g_pOldCreateFontA = CreateFontA;
-typedef int (WINAPI *PfuncCreateFontA)(int cHeight, int cWidth, int cEscapement, int cOrientation, int cWeight, DWORD bItalic,
-	DWORD bUnderline, DWORD bStrikeOut, DWORD iCharSet, DWORD iOutPrecision, DWORD iClipPrecision,
-	DWORD iQuality, DWORD iPitchAndFamily, LPCSTR pszFaceName);
-int WINAPI NewCreateFontA(int cHeight, int cWidth, int cEscapement, int cOrientation, int cWeight, DWORD bItalic,
-	DWORD bUnderline, DWORD bStrikeOut, DWORD iCharSet, DWORD iOutPrecision, DWORD iClipPrecision,
-	DWORD iQuality, DWORD iPitchAndFamily, LPCSTR pszFaceName)
-{
-	iCharSet = ANSI_CHARSET;
 
-	return ((PfuncCreateFontA)g_pOldCreateFontA)(cHeight, cWidth, cEscapement, cOrientation, cWeight, bItalic,
-		bUnderline, bStrikeOut, iCharSet, iOutPrecision, iClipPrecision,
-		iQuality, iPitchAndFamily, pszFaceName);
+//√≤À∆Win10÷– CreateFontA ≤ª‘ŸÕ®π˝CreateFontIndirectA µœ÷£¨À˘“‘µ•∂¿Hook
+PVOID g_pOldCreateFontA = CreateFontA;
+typedef int (WINAPI *PfuncCreateFontA)(int nHeight, 
+	int nWidth, 
+	int nEscapement, 
+	int nOrientation, 
+	int fnWeight, 
+	DWORD fdwltalic, 
+	DWORD fdwUnderline, 
+	DWORD fdwStrikeOut, 
+	DWORD fdwCharSet, 
+	DWORD fdwOutputPrecision, 
+	DWORD fdwClipPrecision, 
+	DWORD fdwQuality, 
+	DWORD fdwPitchAndFamily, 
+	LPCTSTR lpszFace);
+int WINAPI NewCreateFontA(int nHeight,
+	int nWidth,
+	int nEscapement,
+	int nOrientation,
+	int fnWeight,
+	DWORD fdwltalic,
+	DWORD fdwUnderline,
+	DWORD fdwStrikeOut,
+	DWORD fdwCharSet,
+	DWORD fdwOutputPrecision,
+	DWORD fdwClipPrecision,
+	DWORD fdwQuality,
+	DWORD fdwPitchAndFamily,
+	LPCTSTR lpszFace)
+{
+	fdwCharSet = ANSI_CHARSET;
+	return ((PfuncCreateFontA)g_pOldCreateFontA)(nHeight,
+		nWidth,
+		nEscapement,
+		nOrientation,
+		fnWeight,
+		fdwltalic,
+		fdwUnderline,
+		fdwStrikeOut,
+		fdwCharSet,
+		fdwOutputPrecision,
+		fdwClipPrecision,
+		fdwQuality,
+		fdwPitchAndFamily,
+		lpszFace);
 }
 
 PVOID g_pOldEnumFontFamiliesExA = EnumFontFamiliesExA;
 typedef int (WINAPI *PfuncEnumFontFamiliesExA)(HDC hdc, LPLOGFONT lpLogfont, FONTENUMPROC lpEnumFontFamExProc, LPARAM lParam, DWORD dwFlags);
 int WINAPI NewEnumFontFamiliesExA(HDC hdc, LPLOGFONT lpLogfont, FONTENUMPROC lpEnumFontFamExProc, LPARAM lParam, DWORD dwFlags)
 {
-	//lpLogfont->lfCharSet = ANSI_CHARSET;
-	//lpLogfont->lfPitchAndFamily = FF_SWISS | FIXED_PITCH;
 	lpLogfont->lfCharSet = GB2312_CHARSET;
-	strcpy(lpLogfont->lfFaceName, "");
-
+	lpLogfont->lfFaceName[0] = '\0';
 	return ((PfuncEnumFontFamiliesExA)g_pOldEnumFontFamiliesExA)(hdc, lpLogfont, lpEnumFontFamExProc, lParam, dwFlags);
 }
 
+//ø™∆Ùµ»øÌ◊÷ÃÂ
+
+//00405E29 | > \6A 3C               push    0x3C
+//00405E2B | .  8D45 C0             lea     eax, [local.16]
+//00405E2E | .  6A 00               push    0x0
+//00405E30 | .  50                  push    eax
+//00405E31      C605 F82A5800 00    mov     byte ptr[0x582AF8], 0x0;  ’‚¿Ô∏ƒ≥…0£¨µ»øÌ◊÷ÃÂ
+//00405E38 | .E8 03E70C00         call    004D4540
+//00405E3D | .  8B15 04045800       mov     edx, dword ptr[0x580404]
+//00405E43 | .  83C4 0C             add     esp, 0xC
+//00405E46 | .  6A 00               push    0x0; / Flags = 0x0
+//00405E48 | .  68 F82A5800         push    00582AF8; | lParam = 0x582AF8
+//00405E4D | .  68 205D4000         push    <EnumFontFamExProc>; | Callback = <rendezvo.EnumFontFamExProc>
+//00405E52 | .  8D4D C0             lea     ecx, [local.16]; |
+//00405E55 | .  51                  push    ecx; | pLogfont
+//00405E56 | .  52                  push    edx; | / hWnd = > 001B0E04('£€◊Ô÷Æπ‚ -|- Rendezvous£›', class = 'Rendezvous - minori')
+//00405E57 | .C645 D7 80          mov     byte ptr[ebp - 0x29], 0x80; ||
+//00405E5B | .  66:C745 DB 0000     mov     word ptr[ebp - 0x25], 0x0; ||
+//00405E61 | .FF15 68225000       call    dword ptr[<&USER32.GetDC>]; | \GetDC
+//00405E67 | .  50                  push    eax; | hDC
+//00405E68 | .FF15 20205000       call    dword ptr[<&GDI32.EnumFontFamiliesExA>]; \EnumFontFamiliesExA
 
 
 
-HANDLE WINAPI newCreateFileA(
+
+//////////////////////////////////////////////////////////////////////////
+
+HANDLE WINAPI NewCreateFileA(
 	LPCSTR lpFileName,
 	DWORD dwDesiredAccess,
 	DWORD dwShareMode,
@@ -83,21 +137,25 @@ HANDLE WINAPI newCreateFileA(
 	DWORD dwFlagsAndAttributes,
 	HANDLE hTemplateFile)
 {
-	string fullname(lpFileName);
-	string pazname = fullname.substr(fullname.find_last_of("\\") + 1);
-	if (pazname == "scr.paz")
+	string strOldName(lpFileName);
+	string strDirName = strOldName.substr(0, strOldName.find_last_of("\\") + 1);
+	string strPazName = strOldName.substr(strOldName.find_last_of("\\") + 1);
+	string strNewName;
+
+	if (strPazName == "scr.paz")
 	{
-		string new_pazname = fullname.substr(0, fullname.find_last_of("\\") + 1) + "cnscr.paz";
-		//MessageBoxA(NULL, new_pazname.c_str(), "TEST", MB_OK);
-		strcpy((char*)(LPCTSTR)lpFileName, new_pazname.c_str());
+		strNewName = strDirName + "cnscr.paz";
 	}
-	else if (pazname == "sys.paz")
+	else if (strPazName == "sys.paz")
 	{
-		string new_pazname = fullname.substr(0, fullname.find_last_of("\\") + 1) + "cnsys.paz";
-		strcpy((char*)(LPCTSTR)lpFileName, new_pazname.c_str());
+		strNewName = strDirName + "cnsys.paz";
+	}
+	else
+	{
+		strNewName = strOldName;
 	}
 	return CreateFileA(
-		lpFileName,
+		strNewName.c_str(),
 		dwDesiredAccess,
 		dwShareMode,
 		lpSecurityAttributes,
@@ -106,24 +164,19 @@ HANDLE WINAPI newCreateFileA(
 		hTemplateFile);
 }
 
-PVOID pCreateFileA = (PVOID)0x004097BD;
-PVOID pCreateFileARetn = (PVOID)0x004097D4;
+//À—À˜ .paz ,µ⁄∂˛∏ˆœ¬√ÊµƒCreateFileA
+PVOID pCreateFileA = (PVOID)0x00409A2E;
+PVOID pCreateFileARetn = (PVOID)0x00409A34;
 __declspec(naked) void _CreateFileA()
 {
 	__asm
 	{
-		push    ebx			// hTemplateFile
-			push    0x80		// Attributes = NORMAL
-			push    0x3			// Mode = OPEN_EXISTING
-			push    ebx			// pSecurity
-			push    0x1			// ShareMode = FILE_SHARE_READ
-			push    0x80000000	// Access = GENERIC_READ
-			push    eax			// FileName
-			call newCreateFileA
-			jmp pCreateFileARetn
+		call NewCreateFileA
+		jmp pCreateFileARetn
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////
 void D3DDrawText(wchar_t *str)
 {
 	if (*str == L'\0') return;
@@ -140,7 +193,7 @@ void D3DDrawText(wchar_t *str)
 	g_pTextSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
 
 
-	//ÊèèËæπ
+	//√Ë±ﬂ
 	rect.left += 2;
 	g_pFont->DrawTextW(g_pTextSprite, wstr.c_str(), -1, &rect, DT_LEFT | DT_NOCLIP, D3DCOLOR_ARGB(255, 255, 255, 255));
 
@@ -155,7 +208,7 @@ void D3DDrawText(wchar_t *str)
 	rect.top += 2;
 	g_pFont->DrawTextW(g_pTextSprite, wstr.c_str(), -1, &rect, DT_LEFT | DT_NOCLIP, D3DCOLOR_ARGB(255, 255, 255, 255));
 
-	//ÂÆû‰Ωì
+	// µÃÂ
 	rect.top -= 2;
 	g_pFont->DrawTextW(g_pTextSprite, wstr.c_str(), -1, &rect, DT_LEFT | DT_NOCLIP, D3DCOLOR_ARGB(255, 0, 0, 0));
 	g_pTextSprite->End();
@@ -164,13 +217,15 @@ void D3DDrawText(wchar_t *str)
 	//pDevice->Present(&rect, &rect, 0, 0);
 }
 
-#define STRING_LEN 512
-wchar_t AsyncString[STRING_LEN];
+#define ASYNC_STRING_LEN 1024
+wchar_t g_szAsyncString[ASYNC_STRING_LEN];
 
-void __stdcall d3d_drawtext()
+void __stdcall _D3DDrawText()
 {
 	if (isAsyncDisplayOn)
-		D3DDrawText(AsyncString);
+	{
+		D3DDrawText(g_szAsyncString);
+	}
 }
 
 /*
@@ -186,56 +241,154 @@ void __stdcall d3d_drawtext()
 0041490C   .  56            push    esi
 0041490D.FFD0          call    eax;  Present(CBaseDevice *this, const struct tagRECT *, const struct tagRECT *, HWND, const struct _RGNDATA *Src)
 */
-//Âú®D3D::Present‰πãÂâçDrawText
-void *p_drawtext = (void*)0x414CA5;
-__declspec(naked) void _d3d_drawtext()
+//‘⁄D3D::Present÷Æ«∞DrawText
+void *pBeforePresent = (void*)0x00416035;
+
+__declspec(naked) void DrawAsyncText()
 {
 	__asm
 	{
 		pushad
-		call d3d_drawtext
+		call _D3DDrawText
 		popad
-		jmp p_drawtext
+		jmp pBeforePresent
 	}
 }
 
 
-typedef bool(__stdcall *get_glyph_func)(ulong var1, ulong var2, ulong var3, ulong var4);
-get_glyph_func get_glyph = (get_glyph_func)0x420560;
+//À—À˜ cmp     ecx, 0x81
+//µ⁄“ª∏ˆ’“µΩµƒÀ˘‘⁄∫Ø ˝
+typedef bool(__stdcall *pfuncGetTextGlyph)(ulong var1, ulong var2, ulong var3, ulong var4);
+pfuncGetTextGlyph GetTextGlyph = (pfuncGetTextGlyph)0x00421DA0;
 
-bool __stdcall prefix_get_glyph(ulong var1, ulong var2, ulong var3, ulong var4)
+bool __stdcall NewGetTextGlyph(ulong var1, ulong var2, ulong var3, ulong var4)
 {
 	__asm pushad
-	char **pp_text = NULL;
-	__asm mov pp_text, ecx
-	__asm add pp_text, 0x28
+	char **ppText = NULL;
+	__asm mov ppText, ecx
+	__asm add ppText, 0x28
 
-	char *disp_text = *pp_text;
-	if (disp_text != NULL)
+	char *szDisplayText = *ppText;
+	if (szDisplayText != NULL)
 	{
-		ulong len = strlen(disp_text);
+		ulong ulTextLen = strlen(szDisplayText);
 
-		if (name_engine->Inject(disp_text, len))
+		if (pNameEngine->Inject(szDisplayText, ulTextLen))
+		{
 			goto End;
-
+		}
+			
 		if (isAsyncDisplayOn)
 		{
-			memstr mstr = engine->MatchString(disp_text, len);
+			memstr mstr = engine->MatchString(szDisplayText, ulTextLen);
 			if (mstr.str != NULL)
 			{
-				static char view_text[512];
-				memcpy(view_text, mstr.str, mstr.strlen);
-				memset(view_text + mstr.strlen, 0, 1);
-				wchar_t * wstr = AnsiToUnicode(view_text, 932);
-				wcscpy(AsyncString, wstr);
+				static char szViewText[ASYNC_STRING_LEN];
+				memcpy(szViewText, mstr.str, mstr.strlen);
+				memset(szViewText + mstr.strlen, 0, 1);
+				wchar_t * wstr = AnsiToUnicode(szViewText, GBK_CODE_PAGE);
+				wcscpy(g_szAsyncString, wstr);
 			}
 		}
 	}
 End:
 	__asm popad
-	return get_glyph(var1, var2, var3, var4);
+	return GetTextGlyph(var1, var2, var3, var4);
 }
 
+
+typedef HRESULT(WINAPI * fnCreateDevice)(
+	LPDIRECT3D9 pDx9, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DDevice9** ppReturnedDeviceInterface
+	);
+fnCreateDevice pCreateDevice;
+HRESULT WINAPI newCreateDevice(
+	LPDIRECT3D9 pDx9,
+	UINT Adapter,
+	D3DDEVTYPE DeviceType,
+	HWND hFocusWindow,
+	DWORD BehaviorFlags,
+	D3DPRESENT_PARAMETERS* pPresentationParameters,
+	IDirect3DDevice9** ppReturnedDeviceInterface
+)
+{//D3D_OK
+	HRESULT status = pCreateDevice(pDx9, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
+	if (status == D3D_OK)
+	{
+		pDevice = *ppReturnedDeviceInterface;
+
+		D3DXCreateFontW(pDevice, -28, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+			L"∫⁄ÃÂ", &g_pFont);
+
+		D3DXCreateSprite(pDevice, &g_pTextSprite);
+		//pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+	}
+	return status;
+}
+
+
+IDirect3D9 * funcAPI;
+typedef IDirect3D9 * (WINAPI* fnDirect3DCreate9)(UINT SDKVersion);
+fnDirect3DCreate9 pDirect3DCreate9;
+bool done = false;
+IDirect3D9 * WINAPI newDirect3DCreate9(UINT SDKVersion)
+{
+	funcAPI = pDirect3DCreate9(SDKVersion);
+	if (funcAPI && !done)
+	{
+		done = true;
+		pCreateDevice = (fnCreateDevice)*(DWORD*)(*(DWORD*)funcAPI + 0x40);
+		DetourTransactionBegin();
+		DetourUpdateThread(GetCurrentThread());
+		DetourAttach((void**)&pCreateDevice, newCreateDevice);
+		DetourTransactionCommit();
+	}
+	return funcAPI;
+}
+
+HHOOK g_hKeyBoardHook;
+
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	if ((nCode == HC_NOREMOVE) && (wParam == VK_TAB) && (lParam & 0x40000000) && (lParam & 0x80000000))
+	{
+		isAsyncDisplayOn = !isAsyncDisplayOn;
+	}
+
+	return 0; //’‚¿Ô±ÿ–Î∑µªÿ0
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+typedef HWND(WINAPI *funcCreateWindowExA)(
+	DWORD dwExStyle,
+	LPCTSTR lpClassName,
+	LPCTSTR lpWindowName,
+	DWORD dwStyle,
+	int x,
+	int y,
+	int nWidth,
+	int nHeight,
+	HWND hWndParent,
+	HMENU hMenu,
+	HINSTANCE hInstance,
+	LPVOID lpParam);
+funcCreateWindowExA g_pOldCreateWindowExA = CreateWindowExA;
+
+HWND WINAPI NewCreateWindowExA(DWORD dwExStyle, LPCTSTR lpClassName, LPCTSTR lpWindowName, DWORD dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
+{
+	const char* szWndName = "£€◊Ô÷Æπ‚ -|- Rendezvous£›";
+	hwnd = g_pOldCreateWindowExA(dwExStyle, lpClassName, (LPCTSTR)szWndName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+
+	DWORD dwThreadid = GetCurrentThreadId();
+	g_hKeyBoardHook = SetWindowsHookExA(WH_KEYBOARD, KeyboardProc, (HINSTANCE)GetModuleHandle(NULL), dwThreadid);
+	if (g_hKeyBoardHook == NULL)
+	{
+		MessageBox(NULL, "Thread hook", "keyboard", MB_OK);
+	}
+
+	return hwnd;
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma pack (1)
@@ -268,461 +421,237 @@ typedef struct {
 
 #pragma pack ()
 
-typedef map<string, info_t> NameMap;
-NameMap NameDic;
+typedef unordered_map<string, info_t> BgMap;
+BgMap g_BGDic;
 
-
-void FillNameDic()
+#define CN_BG_PAZ_NAME "cnbg.paz"
+void FillCnBgDic()
 {
-	HANDLE hfile = CreateFileA("cnbg.paz", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_ARCHIVE, NULL);
-	if (hfile)
+	HANDLE hFile = CreateFileA(CN_BG_PAZ_NAME, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_ARCHIVE, NULL);
+	if (hFile != INVALID_HANDLE_VALUE)
 	{
 		header_t header;
-		DWORD len = 0;
-		ReadFile(hfile, (LPVOID)&header, sizeof(header_t), &len, NULL);
+		DWORD dwReadLen = 0;
+		ReadFile(hFile, (LPVOID)&header, sizeof(header_t), &dwReadLen, NULL);
 
-		SetFilePointer(hfile, header.index_offset, NULL, FILE_BEGIN);
+		SetFilePointer(hFile, header.index_offset, NULL, FILE_BEGIN);
 
 		ulong entry_count = header.index_length / sizeof(entry_t);
-		entry_t *entries = new entry_t[entry_count];
+		entry_t *pEntries = new entry_t[entry_count];
 
-		ReadFile(hfile, (LPVOID)entries, header.index_length, &len, NULL);
+		ReadFile(hFile, (LPVOID)pEntries, header.index_length, &dwReadLen, NULL);
 
-		my_entry_t * my_entry = new my_entry_t[entry_count];
+		my_entry_t * pMyEntry = new my_entry_t[entry_count];
 		for (int i = 0; i < entry_count; i++)
 		{
-			SetFilePointer(hfile, entries[i].name_offset, NULL, FILE_BEGIN);
-			ReadFile(hfile, (LPVOID)my_entry[i].name, entries[i].name_length, &len, NULL);
+			SetFilePointer(hFile, pEntries[i].name_offset, NULL, FILE_BEGIN);
+			ReadFile(hFile, (LPVOID)pMyEntry[i].name, pEntries[i].name_length, &dwReadLen, NULL);
 
-			my_entry[i].info.offset = entries[i].offset;
-			my_entry[i].info.length = entries[i].length;
-			my_entry[i].info.org_length = entries[i].org_length;
+			pMyEntry[i].info.offset = pEntries[i].offset;
+			pMyEntry[i].info.length = pEntries[i].length;
+			pMyEntry[i].info.org_length = pEntries[i].org_length;
 
-			NameDic.insert(NameMap::value_type(my_entry[i].name, my_entry[i].info));
+			g_BGDic.insert(BgMap::value_type(pMyEntry[i].name, pMyEntry[i].info));
 		}
 
-
-		delete[]my_entry;
-		delete entries;
+		delete[]pMyEntry;
+		delete pEntries;
+		CloseHandle(hFile);
 	}
 	else
 	{
-		MessageBoxA(NULL, "ËØªÂèñcnbg.pazÂ§±Ë¥•!", "Error", MB_OK);
+		//MessageBoxA(NULL, "∂¡»°cnbg.paz ß∞‹!", "Error", MB_OK);
 	}
-	CloseHandle(hfile);
 }
 
+char g_szPngName[MAX_PATH] = { 0 };
 
-bool is_file_readable(string filename)
+void __stdcall SavePngName(char* szPngName)
 {
-	NameMap::iterator it = NameDic.find(filename);
-	if (it == NameDic.end())
-		return false;
-	else
-		return true;
-}
-
-#define NAME_LEN 128
-char filename[NAME_LEN];
-bool need_copy;
-bool has_effect;
-void __stdcall get_filename(char* name)
-{
-	if (!name)
+	if (!szPngName || !*szPngName)
 	{
-		need_copy = false;
 		return;
 	}
-	string png_name = name;
-	if (png_name.find("[mono]") != png_name.npos)//ÊúâÁöÑÂõæÊ∏∏ÊàèÁî®Á®ãÂ∫è‰ºöÂä†ÁâπÊïàÔºåÊñá‰ª∂ÂêçÊúâÂâçÁºÄÔºåÊØîÂ¶Ç [mono]
-	{
-		png_name = png_name.substr(png_name.find_last_of("]") + 1);
-		has_effect = true;
-	}
-	else
-	{
-		has_effect = false;
-	}
-
-	string bmp_name = replace_first(png_name, ".png", ".bmp");
-	if (is_file_readable(bmp_name)) //Âà§Êñ≠ÊòØÂê¶ÈúÄË¶Åcopy
-	{
-		need_copy = true; 
-		strcpy(filename, bmp_name.c_str());
-	}
-	else
-	{
-		need_copy = false;
-		memset(filename, 0, NAME_LEN);
-	}
+	strcpy(g_szPngName, szPngName);
 }
 
-typedef struct _bmp_imfo
+//004686AB | .  8845 08       mov     byte ptr[ebp + 0x8], al
+//004686AE | .  8B43 08       mov     eax, dword ptr[ebx + 0x8]
+//004686B1 | .  83C0 74       add     eax, 0x74
+//004686B4 | .  8378 14 10    cmp     dword ptr[eax + 0x14], 0x10
+//004686B8 | .  72 02         jb      short 004686BC
+//004686BA | .  8B00          mov     eax, dword ptr[eax]
+//004686BC | > 8B75 08       mov     esi, [arg.1];  eax = filename
+//004686BF | .  8B93 D81B0000 mov     edx, dword ptr[ebx + 0x1BD8]
+//004686C5 | .  8B8B F01B0000 mov     ecx, dword ptr[ebx + 0x1BF0]
+//004686CB | .  6A 02         push    0x2
+//004686CD | .  56            push    esi
+//004686CE | .  52            push    edx
+//004686CF | .  8B93 D41B0000 mov     edx, dword ptr[ebx + 0x1BD4]
+//004686D5 | .  52            push    edx
+//004686D6 | .E8 D52BFDFF   call    0043B2B0
+
+void *pSavePngName  = (void*)0x004686BC;
+
+__declspec(naked) void _SavePngName()
 {
-	ulong width;
-	ulong height;
-	ushort bit_count;
-	byte *data;
-} bmp_info;
-
-bool read_bmp(string bmp_name, bmp_info *info)
-{
-	NameMap::iterator iter;
-	iter = NameDic.find(bmp_name);
-	info_t file_info = iter->second;
-
-	DWORD off = file_info.offset;
-	DWORD len = file_info.length;
-	DWORD orglen = file_info.org_length;
-
-	HANDLE hbmp = CreateFileA("cnbg.paz", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_ARCHIVE, NULL);
-	if (hbmp != INVALID_HANDLE_VALUE)
-	{
-		SetFilePointer(hbmp, off, NULL, FILE_BEGIN);
-
-		ulong read_size;
-
-		//‰ΩøÁî®ImageStoneÂ∫ìÊ∑ªÂä†ÂõæÁâáÁâπÊïà„ÄÇËøôÂè™ÊòØ‰∏™‰∏¥Êó∂ÁöÑËß£ÂÜ≥ÊñπÊ°àÔºåÊ†πÊú¨‰∏äÂ∫îËØ•‰ªéÁ®ãÂ∫è‰∏≠ÊâæÂà∞ÂõæÁâáËøòÊ≤°Ë¢´‰øÆÊîπÊó∂ÁöÑ‰ª£Á†ÅÔºåInline Hoook‰πã„ÄÇ
-		if (has_effect)
-		{
-			byte *bmp_data;
-			try
-			{
-				bmp_data = new byte[len];
-			}
-			catch (const bad_alloc& e)
-			{
-				MessageBox(NULL, "not enough memory!", "Error", MB_OK);
-				return false;
-			}
-			ReadFile(hbmp, bmp_data, len, &read_size, NULL);
-			// load test image
-			FCObjImage   *img = new FCObjImage();
-			if (!img->Load(bmp_data, len, IMG_BMP))
-			{
-				MessageBox(NULL, "load failed, not a valid image file!", "Error", MB_OK);
-				return false;
-			}
-
-			FCImageEffect   * pEffect = new FCEffectColorTone(FCColor(0, 0, 0), 0);
-			img->ApplyEffect(*pEffect);
-
-			info->bit_count = img->ColorBits();
-			info->width = img->Width();
-			info->height = img->Height();
-			byte * m_pixel = img->GetMemStart();
-			ulong data_size = info->width * info->height * 4;
-			try
-			{
-				info->data = new byte[data_size];
-			}
-			catch (const bad_alloc& e)
-			{
-				MessageBox(NULL, "not enough memory!", "Error", MB_OK);
-				return false;
-			}
-			memcpy(info->data, m_pixel, data_size);
-			delete pEffect;
-			delete img;
-			delete[]bmp_data;
-			return true;
-		}
-		else
-		{
-			BITMAPFILEHEADER file_header;
-			BITMAPINFOHEADER info_header;
-			ReadFile(hbmp, &file_header, sizeof(BITMAPFILEHEADER), &read_size, NULL);
-			if (file_header.bfType != 'MB')
-			{
-				MessageBox(NULL, "not a bmp file", "Error", MB_OK);
-				return false;
-			}
-			ReadFile(hbmp, &info_header, sizeof(BITMAPINFOHEADER), &read_size, NULL);
-			if (info_header.biBitCount != 32)
-			{
-				MessageBox(NULL, "not a 32 bit bmp file", "Error", MB_OK);
-				return false;
-			}
-
-			ulong width = info_header.biWidth;
-			ulong height = info_header.biHeight;
-			info->bit_count = info_header.biBitCount;
-			info->width = width;
-			info->height = height;
-
-			ulong data_size = width * height * 4;
-			try
-			{
-				info->data = new byte[data_size];
-			}
-			catch (const bad_alloc& e)
-			{
-				MessageBox(NULL, "not enough memory!", "Error", MB_OK);
-				return false;
-			}
-
-			SetFilePointer(hbmp, off + file_header.bfOffBits, NULL, FILE_BEGIN);
-			ReadFile(hbmp, info->data, data_size, &read_size, NULL);
-
-			CloseHandle(hbmp);
-			return true;
-		}
-	}
-	else
-	{
-		MessageBox(NULL, "CreateFile Error!", "Error", MB_OK);
-	}
-	
-	return false;
-}
-
-void flip_bmp(byte *&src, ulong width, ulong height)
-{
-	byte *dst = NULL;
-	try
-	{
-		dst = new byte[width * height * 4];
-	}
-	catch (const bad_alloc& e)
-	{
-		MessageBox(NULL, "not enough memory!", "Error", MB_OK);
-		return;
-	}
-	ulong line_size = width * 4;
-	for (int y = height - 1; y >= 0; y--)
-	{
-		byte *src_line = &src[y * line_size];
-		byte *dst_line = &dst[(height - y - 1) * line_size];
-		memcpy(dst_line, src_line, line_size);
-	}
-	delete[] src;
-	src = dst;
-}
-
-void __stdcall copy_bmp(byte *dst, ulong width, ulong height)
-{
-	bmp_info info;
-	if (read_bmp(filename, &info))
-	{
-		if (info.height != height || info.width != width)
-		{
-			MessageBox(NULL, "bmp size not match!", "Error", MB_OK);
-			return;
-		}
-
-		ulong data_size = height * width * 4;
-		flip_bmp(info.data, width, height);
-		memcpy(dst, info.data, data_size);
-		delete[] info.data;
-		//memset(dst, 75, data_size);
-	}
-	else
-	{
-		MessageBox(NULL, "read bmp failed!", "Error", MB_OK);
-		return;
-	}
-}
-
-
-
-void *p_get_filename = (void*)0x004196FE;
-
-__declspec(naked) void _get_filename()
-{
-	__asm
+	__asm 
 	{
 		pushad
 		push eax
-		call get_filename
+		call SavePngName
 		popad
-		jmp p_get_filename
+		jmp pSavePngName
 	}
 }
 
 
-//004265FE | .  8955 C8         mov[local.14], edx
-void *p_copy_bmp = (void*)0x426C9E;
-void *p_loop_end = (void*)0x426CE8;
+void ClearPngName()
+{
+	memset(g_szPngName, 0, 1);
+}
 
-__declspec(naked) void _copy_bmp()
+typedef struct PNG_STREAM_INFO_S
+{
+	png_bytep pData;
+	png_size_t nCurPos;
+} PNG_STREAM_INFO;
+
+
+void png_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
+{
+	PNG_STREAM_INFO* pStreamInfo = (PNG_STREAM_INFO*)png_get_io_ptr(png_ptr);
+	if (!pStreamInfo)
+	{
+		return;
+	}
+
+	voidp pSrcData = pStreamInfo->pData + pStreamInfo->nCurPos;
+	memcpy(data, pSrcData, length);
+
+	pStreamInfo->nCurPos += length;
+}
+
+bool ReadFileData(const info_t& oInfo, vector<byte>& vtData)
+{
+	DWORD dwOffset = oInfo.offset;
+	DWORD dwDataLen = oInfo.length;
+
+	vtData.resize(dwDataLen);
+
+	HANDLE hFile = CreateFileA(CN_BG_PAZ_NAME, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_ARCHIVE, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		return false;
+	}
+
+	SetFilePointer(hFile, dwOffset, NULL, FILE_BEGIN);
+	
+	DWORD dwReadSize = 0;
+	ReadFile(hFile, &vtData[0], dwDataLen, &dwReadSize, NULL);
+
+	CloseHandle(hFile);
+	return true;
+}
+
+bool ReplacePngReadFn(const info_t& oInfo, png_structp png_ptr)
+{
+	if (!png_ptr)
+	{
+		return false;
+	}
+
+	static vector<byte> vtData;
+
+	vtData.clear();
+	if (!ReadFileData(oInfo, vtData))
+	{
+		return false;
+	}
+
+	png_set_sig_bytes(png_ptr, 0);  //!!
+
+	static PNG_STREAM_INFO stInfo = { 0 };
+	stInfo.pData = &vtData[0];
+	stInfo.nCurPos = 0;
+	png_set_read_fn(png_ptr, (png_voidp)&stInfo, png_read_data);
+
+	return true;
+}
+
+
+void* p_old_png_read_data = (void*)0x00427A90;
+
+void __stdcall png_read_info_wrapper(png_structp png_ptr, png_infop info_ptr)
+{
+	do
+	{
+		string strPngName(g_szPngName);
+
+		if (strPngName.empty())
+		{
+			break;
+		}
+
+		BgMap::const_iterator c_iter = g_BGDic.find(strPngName);
+		if (c_iter == g_BGDic.cend())
+		{
+			break;
+		}
+
+		ReplacePngReadFn(c_iter->second, png_ptr);
+
+	} while (false);
+
+
+	ClearPngName();
+}
+
+
+//’‚¡Ω∏ˆ◊÷∑˚¥ÆÀ˘‘⁄µƒ∫Ø ˝
+//004BC87C | .B8 ACE15200   mov     eax, 0052E1AC;  ASCII "Not a PNG file"
+//004BC881 | .E8 5A520000   call    004C1AE0
+//004BC886 | > 56            push    esi
+//004BC887 | .B8 BCE15200   mov     eax, 0052E1BC;  ASCII "PNG file corrupted by ASCII conversion"
+
+
+void* p_old_png_read_info = (void*)0x004BC800;
+__declspec(naked) void new_png_read_info()
 {
 	__asm
 	{
 		pushad
-		cmp need_copy, 1
-		jne not_need
-
-		mov eax, dword ptr[ebp - 0x3C]
-		shl eax, 2
-		sub edx, eax
-		add edx, 4
-		push dword ptr[ebp - 0x40] //height
-		push dword ptr[ebp - 0x3C] //width
-		push edx //dst
-		call copy_bmp
-		mov need_copy, 0 //Ê∏ÖÊ†áÂøó
+		push [esp + 0x24]
+		push eax
+		call png_read_info_wrapper
 		popad
-		jmp p_loop_end
-
-not_need:
-		popad
-		jmp p_copy_bmp
+		jmp p_old_png_read_info
 	}
 }
 
 
-
-typedef HRESULT(WINAPI * fnCreateDevice)(
-	LPDIRECT3D9 pDx9, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS* pPresentationParameters, IDirect3DDevice9** ppReturnedDeviceInterface
-	);
-fnCreateDevice pCreateDevice;
-HRESULT WINAPI newCreateDevice(
-	LPDIRECT3D9 pDx9,
-	UINT Adapter,
-	D3DDEVTYPE DeviceType,
-	HWND hFocusWindow,
-	DWORD BehaviorFlags,
-	D3DPRESENT_PARAMETERS* pPresentationParameters,
-	IDirect3DDevice9** ppReturnedDeviceInterface
-	)
-{//D3D_OK
-	HRESULT status = pCreateDevice(pDx9, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
-	if (status == D3D_OK)
-	{
-		pDevice = *ppReturnedDeviceInterface;
-
-		D3DXCreateFontW(pDevice, -28, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-			L"Èªë‰Ωì", &g_pFont);
-
-		D3DXCreateSprite(pDevice, &g_pTextSprite);
-
-		//pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-
-		//MessageBoxA(NULL, "CreateDevice done", "Hit", MB_OK);
-
-	}
-	return status;
-}
-
-
-IDirect3D9 * funcAPI;
-typedef IDirect3D9 * (WINAPI* fnDirect3DCreate9)(UINT SDKVersion);
-fnDirect3DCreate9 pDirect3DCreate9;
-bool done = false;
-IDirect3D9 * WINAPI newDirect3DCreate9(UINT SDKVersion)
-{
-	funcAPI = pDirect3DCreate9(SDKVersion);
-	if (funcAPI && !done)
-	{
-		done = true;
-		pCreateDevice = (fnCreateDevice)*(DWORD*)(*(DWORD*)funcAPI + 0x40);
-		DetourTransactionBegin();
-		DetourUpdateThread(GetCurrentThread());
-		DetourAttach((void**)&pCreateDevice, newCreateDevice);
-		DetourTransactionCommit();
-	}
-	return funcAPI;
-}
-
-HHOOK g_hKeyBoardHook;
-
-LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
-	if ((nCode == HC_NOREMOVE) && (wParam == VK_TAB) && (lParam & 0x40000000) && (lParam & 0x80000000))
-	{
-		isAsyncDisplayOn = !isAsyncDisplayOn;
-
-		//MessageBox(NULL, "Thread hook", "keyboard", MB_OK);
-	}
-		
-	return 0; //ËøôÈáåÂøÖÈ°ªËøîÂõû0
-}
-
-
-
-typedef HWND (WINAPI *funcCreateWindowExA)(
-	DWORD dwExStyle,
-	LPCTSTR lpClassName,
-	LPCTSTR lpWindowName,
-	DWORD dwStyle,
-	int x,
-	int y,
-	int nWidth,
-	int nHeight,
-	HWND hWndParent,
-	HMENU hMenu,
-	HINSTANCE hInstance,
-	LPVOID lpParam);
-funcCreateWindowExA g_pOldCreateWindowExA = CreateWindowExA;
-
-HWND WINAPI newCreateWindowExA(DWORD dwExStyle,LPCTSTR lpClassName,LPCTSTR lpWindowName,DWORD dwStyle,int x,int y,int nWidth,int nHeight,HWND hWndParent,HMENU hMenu,HINSTANCE hInstance,LPVOID lpParam)
-{
-	const char* game_name = "ÔºªÊ∞∏‰∏çËêΩÂπïÁöÑÂâçÂ•èËØóÔºΩ";
-	hwnd = g_pOldCreateWindowExA(dwExStyle, lpClassName, (LPCTSTR)game_name, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
-	
-	DWORD nThreadid = GetCurrentThreadId();
-	g_hKeyBoardHook = SetWindowsHookExA(WH_KEYBOARD, KeyboardProc, (HINSTANCE)GetModuleHandle(NULL), nThreadid);
-	if (g_hKeyBoardHook == NULL)
-	{
-		MessageBox(NULL, "Thread hook", "keyboard", MB_OK);
-	}
-
-	return hwnd;
-}
-
-//ÂÆâË£ÖHook 
+//∞≤◊∞Hook 
 void SetHook()
 {
-
-	SetNopCode((PBYTE)0x004097BD, 23);
-
 	DetourTransactionBegin();
-	//g_pOldCreateFontIndirectA = DetourFindFunction("GDI32.dll", "CreateFontIndirectA");
+
 	DetourAttach(&g_pOldCreateFontIndirectA, NewCreateFontIndirectA);
-	DetourTransactionCommit();
-
-	DetourTransactionBegin();
 	DetourAttach(&g_pOldCreateFontA, NewCreateFontA);
-	DetourTransactionCommit();
-
-	DetourTransactionBegin();
-	//g_pOldEnumFontFamiliesExA = DetourFindFunction("GDI32.dll", "EnumFontFamiliesExA");
 	DetourAttach(&g_pOldEnumFontFamiliesExA, NewEnumFontFamiliesExA);
-	DetourTransactionCommit();
-
-	DetourTransactionBegin();
 	DetourAttach(&pCreateFileA, _CreateFileA);
+	DetourAttach((void**)&pSavePngName, _SavePngName);
+	DetourAttach((void**)&p_old_png_read_info, new_png_read_info);
 	DetourTransactionCommit();
 	
-	DetourTransactionBegin();
-	DetourAttach((void**)&get_glyph, prefix_get_glyph);
-	DetourTransactionCommit();
-	
-	DetourTransactionBegin();
-	DetourAttach((void**)&p_get_filename, _get_filename);
-	DetourTransactionCommit();
-	
-	DetourTransactionBegin();
-	DetourAttach((void**)&p_copy_bmp, _copy_bmp);
-	DetourTransactionCommit();
-	
-	
+	//
 	HMODULE lib = LoadLibrary("d3d9.dll");
 	pDirect3DCreate9 = (fnDirect3DCreate9)GetProcAddress(lib, "Direct3DCreate9");
 
 	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
 	DetourAttach((void**)&pDirect3DCreate9, newDirect3DCreate9);
-	DetourTransactionCommit();
-	
-	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
-	DetourAttach((void**)&g_pOldCreateWindowExA, newCreateWindowExA);
-	DetourTransactionCommit();
-	
-	DetourTransactionBegin();
-	DetourAttach((void**)&p_drawtext, _d3d_drawtext);
+	DetourAttach((void**)&g_pOldCreateWindowExA, NewCreateWindowExA);
+	DetourAttach((void**)&GetTextGlyph, NewGetTextGlyph);
+	DetourAttach((void**)&pBeforePresent, DrawAsyncText);
 	DetourTransactionCommit();
 	
 }
@@ -733,11 +662,11 @@ void InitProc()
 	translator = new Translator(*parser);
 	engine = new TranslateEngine(*translator);
 
-	name_parser = new AcrParser("name.acr");
+	name_parser = new AcrParser("cnname.acr");
 	name_translator = new Translator(*name_parser);
-	name_engine = new TranslateEngine(*name_translator);
+	pNameEngine = new TranslateEngine(*name_translator);
 
-	FillNameDic();
+	FillCnBgDic();
 	SetHook();
 }
 
@@ -749,7 +678,7 @@ void UnProc()
 
 	delete name_parser;
 	delete name_translator;
-	delete name_engine;
+	delete pNameEngine;
 
 	UnhookWindowsHookEx(g_hKeyBoardHook);
 }

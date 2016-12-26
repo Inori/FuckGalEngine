@@ -39,7 +39,10 @@
     <ClInclude Include="zlib.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ImageStone.h">
+    <ClInclude Include="png.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pngconf.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -62,6 +65,9 @@
       <Filter>资源文件</Filter>
     </Library>
     <Library Include="zlib.lib">
+      <Filter>资源文件</Filter>
+    </Library>
+    <Library Include="libpng.lib">
       <Filter>资源文件</Filter>
     </Library>
   </ItemGroup>
