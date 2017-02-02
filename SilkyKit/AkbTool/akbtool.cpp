@@ -4,6 +4,7 @@
 	email: yuanhong742604720 [at] gmail.com
 	github: https://github.com/Neroldy
 	parse and create the *.AKB files extracted from Layer.arc used by Silky
+	for more details please see the akb_image_decoder.cc in arc_unpacker
 	Tested Games:
 		根雪の幻影 -白花荘の人々-
 		シンソウノイズ ～受信探偵の事件簿～

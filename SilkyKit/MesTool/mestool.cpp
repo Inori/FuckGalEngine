@@ -309,13 +309,15 @@ int main(int argc, char *argv[])
 	in_mes.read((char*)in_script, in_script_size);
 	if (has_choice)
 		choice_num = read_u32_be(in_script, choice_offset_in + 1);
-	if (argv[1][0] == 'd')
+	// parse mode
+	if (argv[1][0] == 'p')
 	{
 		ofstream out_txt(argv[3], ios::binary);
 		parse_script(in_script, in_script_size, out_txt);
 		out_txt.close();
 	}
-	else if (argv[1][0] == 'e')
+	// create mode
+	else if (argv[1][0] == 'c')
 	{
 		ifstream in_txt(argv[3], ios::binary);
 		ofstream out_mes(argv[4], ios::binary);
@@ -327,10 +329,12 @@ int main(int argc, char *argv[])
 		rebuild_entry(out_script_vec, entry_table);
 		out_mes.write((char*)&entry_size, sizeof(entry_size));
 		out_mes.write((char*)&has_choice, sizeof(has_choice));
+		// fix entry_table
 		for (int i = 0; i < entry_size; ++i)
 		{
 			out_mes.write((char*)&entry_table[i], sizeof(int));
 		}
+		// fix choice_offset after the entry_table
 		if (has_choice)
 		{
 			u32 choice_offset_out = 0;
