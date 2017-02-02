@@ -284,8 +284,8 @@ int main(int argc, char *argv[])
 	if (argc != 4 && argc != 5)
 	{
 		printf("Usage:\n");
-		printf("decode mode: %s p in.akb out.png\n", argv[0]);
-		printf("encode mode: %s c in.akb in.png out.akb\n", argv[0]);
+		printf("parse mode: %s p in.akb out.png\n", argv[0]);
+		printf("create mode: %s c in.akb in.png out.akb\n", argv[0]);
 		return -1;
 	}
 	FILE *infile = fopen(argv[2], "rb");

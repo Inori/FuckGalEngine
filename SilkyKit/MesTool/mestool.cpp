@@ -288,8 +288,8 @@ int main(int argc, char *argv[])
 	if (argc != 4 && argc != 5)
 	{
 		printf("Usage:\n");
-		printf("decode mode: %s d in.mes out.txt\n", argv[0]);
-		printf("encode mode: %s e in.mes in.txt out.mes\n", argv[0]);
+		printf("parse mode: %s p in.mes out.txt\n", argv[0]);
+		printf("create mode: %s c in.mes in.txt out.mes\n", argv[0]);
 		return -1;
 	}
 	ifstream in_mes(argv[2], ios::binary);
