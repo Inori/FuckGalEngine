@@ -1,5 +1,5 @@
 /*
-	MesTool.cpp v1.0 2017/02/02
+	MesTool.cpp v1.1 2017/02/03
 	by Neroldy
 	email: yuanhong742604720 [at] gmail.com
 	github: https://github.com/Neroldy
