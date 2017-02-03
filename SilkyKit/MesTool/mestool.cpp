@@ -35,7 +35,7 @@ typedef unsigned short     u16;
 typedef unsigned int       u32;
 typedef unsigned long long u64;
 
-int get_file_size(string file_name)
+u32 get_file_size(string file_name)
 {
 	struct _stat buf;
 	_stat(file_name.c_str(), &buf);
@@ -63,7 +63,7 @@ string get_decrypt_text(u8 *in_script, u32& index)
 		x = in_script[index++];
 	}
 	vector<u8> decrypt_text_vec;
-	for (int i = 0; i < encrypt_text_vec.size(); ++i)
+	for (u32 i = 0; i < encrypt_text_vec.size(); ++i)
 	{
 		if (encrypt_text_vec[i] < 0x81)
 		{
@@ -89,7 +89,7 @@ string get_decrypt_text(u8 *in_script, u32& index)
 	string decrypt_text = ss.str();
 	return decrypt_text;
 }
-u32 read_u32_be(u8* in_script, int index)
+u32 read_u32_be(u8* in_script, u32 index)
 {
 	u32 ret = 0;
 	ret = (in_script[index] << 24)
@@ -98,14 +98,14 @@ u32 read_u32_be(u8* in_script, int index)
 		+ (in_script[index + 3]);
 	return ret;
 }
-void write_u32_be(u8* out_script, int index, u32 val)
+void write_u32_be(u8* out_script, u32 index, u32 val)
 {
 	out_script[index] = (val >> 24) & 0xff;
 	out_script[index+ 1] = (val >> 16) & 0xff;
 	out_script[index + 2] = (val >> 8) & 0xff;
 	out_script[index + 3] = (val & 0xff);
 }
-u8 read_script(u8* in_script, int in_script_size, u32& index)
+u8 read_script(u8* in_script, u32 in_script_size, u32& index)
 {
 	u8 opcode;
 	opcode = in_script[index++];
@@ -113,8 +113,10 @@ u8 read_script(u8* in_script, int in_script_size, u32& index)
 	switch (opcode)
 	{
 		case 0x1C:
+		{
 			index += 1;
 			break;
+		}
 		case 0x14:
 		case 0x15:
 		case 0x16:
@@ -122,14 +124,20 @@ u8 read_script(u8* in_script, int in_script_size, u32& index)
 		case 0x1A:
 		case 0x1B:
 		case 0x32:
+		{
 			index += 4;
 			break;
+		}
 		case 0x0A:
+		{
 			text = get_decrypt_text(in_script, index);
 			break;
+		}
 		case 0x33:
+		{
 			text = get_raw_text(in_script, index);
 			break;
+		}
 		default:
 			break;
 	}
@@ -143,12 +151,15 @@ void parse_script(u8* in_script, u32 in_script_size, ofstream &out_txt)
 	while (index < in_script_size)
 	{
 		opcode = in_script[index++];
+		//printf("opcode %x pos %x\n", opcode, index - 1);
 		string text;
 		switch (opcode)
 		{
 			case 0x1C:
+			{
 				index += 1;
-				break;
+				break; 
+			}
 			case 0x14:
 			case 0x15:
 			case 0x16:
@@ -156,16 +167,26 @@ void parse_script(u8* in_script, u32 in_script_size, ofstream &out_txt)
 			case 0x1A:
 			case 0x1B:
 			case 0x32:
+			{
 				index += 4;
 				break;
+			}
 			case 0x0A:
+			{
 				text = get_decrypt_text(in_script, index);
 				out_txt << text << endl;
 				break;
+			}
 			case 0x33:
+			{
+				u8 last_opcode = in_script[index - 2];
 				text = get_raw_text(in_script, index);
-				out_txt << text << endl;
+				if (last_opcode == 0x0E)
+				{
+					out_txt << text << endl;
+				}
 				break;
+			}
 			default:
 				break;
 		}
@@ -196,7 +217,7 @@ vector<u8> create_script(u8 *in_script, u32 in_script_size, ifstream &in_txt)
 			case 0x1B:
 			case 0x32:
 			{
-				for (int i = 0; i < 4; ++i)
+				for (u32 i = 0; i < 4; ++i)
 					out_script_vec.push_back(in_script[index++]);
 				break;
 			}
@@ -205,23 +226,41 @@ vector<u8> create_script(u8 *in_script, u32 in_script_size, ifstream &in_txt)
 				string jpn_text = get_decrypt_text(in_script, index);
 				string chs_text;
 				getline(in_txt, chs_text);
-				for (int i = 0; i < chs_text.length(); ++i)
+				for (u32 i = 0; i < chs_text.length(); ++i)
 				{
 					out_script_vec.push_back(chs_text[i]);
 				}
+				// end of text
 				out_script_vec.push_back(0x00);
 				break;
 			}
 			case 0x33:
 			{
+				u8 last_opcode = in_script[index - 2];
+				
 				string jpn_text = get_raw_text(in_script, index);
-				string chs_text;
-				getline(in_txt, chs_text);
-				for (int i = 0; i < chs_text.length(); ++i)
+				// 0E 33 + text
+				if (last_opcode == 0x0E)
 				{
-					out_script_vec.push_back(chs_text[i]);
+					string chs_text;
+					getline(in_txt, chs_text);
+					for (u32 i = 0; i < chs_text.length(); ++i)
+					{
+						out_script_vec.push_back(chs_text[i]);
+					}
+					// end of text
+					out_script_vec.push_back(0x00);
 				}
-				out_script_vec.push_back(0x00);
+				// copy from jpn file
+				else
+				{
+					for (u32 i = 0; i < jpn_text.length(); ++i)
+					{
+						out_script_vec.push_back(jpn_text[i]);
+					}
+					// end of text
+					out_script_vec.push_back(0x00);
+				}
 				break;
 			}
 			default:
@@ -293,7 +332,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	ifstream in_mes(argv[2], ios::binary);
-	int in_mes_file_size = get_file_size(argv[2]);
+	u32 in_mes_file_size = get_file_size(argv[2]);
 	u32 entry_size = 0;
 	u32 has_choice = 0;
 	u32 choice_offset_in = 0;
@@ -304,7 +343,7 @@ int main(int argc, char *argv[])
 	in_mes.seekg(entry_size * 4, ios_base::cur);
 	if (has_choice)
 		in_mes.read((char*)&choice_offset_in, sizeof(choice_offset_in));
-	int in_script_size = in_mes_file_size - in_mes.tellg();
+	u32 in_script_size = in_mes_file_size - in_mes.tellg();
 	u8 *in_script = new u8[in_script_size];
 	in_mes.read((char*)in_script, in_script_size);
 	if (has_choice)
@@ -330,9 +369,9 @@ int main(int argc, char *argv[])
 		out_mes.write((char*)&entry_size, sizeof(entry_size));
 		out_mes.write((char*)&has_choice, sizeof(has_choice));
 		// fix entry_table
-		for (int i = 0; i < entry_size; ++i)
+		for (u32 i = 0; i < entry_size; ++i)
 		{
-			out_mes.write((char*)&entry_table[i], sizeof(int));
+			out_mes.write((char*)&entry_table[i], sizeof(u32));
 		}
 		// fix choice_offset after the entry_table
 		if (has_choice)
@@ -354,9 +393,9 @@ int main(int argc, char *argv[])
 					break;
 				}
 			}
-			out_mes.write((char*)&choice_offset_out, sizeof(int));
+			out_mes.write((char*)&choice_offset_out, sizeof(u32));
 		}
-		for (int i = 0; i < out_script_vec.size(); ++i)
+		for (u32 i = 0; i < out_script_vec.size(); ++i)
 		{
 			out_mes << out_script[i];
 		}
