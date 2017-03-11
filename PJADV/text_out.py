@@ -57,10 +57,10 @@ dst_path = script_path + 'textdata.bin'
 index = open(index_path, 'rb')
 src = open(dst_path, 'rb')
 
-src.seek(0, 2)
+index.seek(0, 2)
 startoffset = 0x20
-endoffset = src.tell()
-src.seek(0)
+endoffset = index.tell()
+index.seek(0)
 
 indexoffsetlist = []
 scriptoffsetlist = []
@@ -109,14 +109,14 @@ for j in range(0, 0xffffffff):
         break
 
 # 导出文本
-    size = len(indexoffsetlist)
-    fullname = script_path + 'script.txt'
-    dst = open(fullname, encoding='utf16', mode='w')
-    
-    for k in range(0, size):
-        string = scriptout(src, indexoffsetlist[k], nameoffsetlist[k], scriptoffsetlist[k], k)
-        dst.write(string)
-    dst.close()
+size = len(indexoffsetlist)
+fullname = script_path + 'script.txt'
+dst = open(fullname, encoding='utf16', mode='w')
+
+for k in range(0, size):
+    string = scriptout(src, indexoffsetlist[k], nameoffsetlist[k], scriptoffsetlist[k], k)
+    dst.write(string)
+dst.close()
 
 #     del indexoffsetlist[:]
 #     del scriptoffsetlist[:]
