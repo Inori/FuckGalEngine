@@ -1,11 +1,11 @@
-exeÎÄ¼şÑéÖ¤£º
-µÚ¶ş¸öGetModuleFileNameA£º
+ï»¿exeæ–‡ä»¶éªŒè¯ï¼š
+ç¬¬äºŒä¸ªGetModuleFileNameAï¼š
 004C335B  |.  68 04010000   push 0x104                               ; /BufSize = 104 (260.)
 004C3360  |.  8D85 F8FEFFFF lea eax,[local.66]                       ; |
 004C3366  |.  50            push eax                                 ; |PathBuffer = 00000026
 004C3367  |.  56            push esi                                 ; |hModule = NULL
 004C3368  |.  FF15 A8404F00 call dword ptr ds:[<&KERNEL32.GetModuleF>; \GetModuleFileNameA
-004C336E  |.  85C0          test eax,eax                             ;  »ñÈ¡exeÎÄ¼şÃû
+004C336E  |.  85C0          test eax,eax                             ;  è·å–exeæ–‡ä»¶å
 004C3370  |.  75 11         jnz short trinolin.004C3383
 004C3372  |.  32C0          xor al,al
 004C3374  |.  5E            pop esi                                  ;  0019FAF4
@@ -34,7 +34,7 @@ exeÎÄ¼şÑéÖ¤£º
 004C33B7  |.  6A 00         push 0x0                                 ; /pFileSizeHigh = NULL
 004C33B9  |.  53            push ebx                                 ; |hFile = 00286000
 004C33BA  |.  FF15 D0414F00 call dword ptr ds:[<&KERNEL32.GetFileSiz>; \GetFileSize
-004C33C0  |.  8BF8          mov edi,eax                              ;  eaxÊÇÎÄ¼ş´óĞ¡
+004C33C0  |.  8BF8          mov edi,eax                              ;  eaxæ˜¯æ–‡ä»¶å¤§å°
 004C33C2  |.  83FF FF       cmp edi,-0x1
 004C33C5  |.  75 13         jnz short trinolin.004C33DA
 004C33C7  |.  5F            pop edi                                  ;  0019FAF4
@@ -68,37 +68,37 @@ exeÎÄ¼şÑéÖ¤£º
 004C3417  |.  51            push ecx                                 ; /Arg2 = 0019FAF4 ASCII "D:\trinoline_tr\trinoline_tr_crack.exe"
 004C3418  |.  52            push edx                                 ; |Arg1 = 00000000
 004C3419  |.  8BCF          mov ecx,edi                              ; |trinolin.00562578
-004C341B  |.  8BC6          mov eax,esi                              ; |exeÎÄ¼şbuffer
+004C341B  |.  8BC6          mov eax,esi                              ; |exeæ–‡ä»¶buffer
 004C341D  |.  E8 7E000000   call <trinolin.exe_verify>               ; \trinolin.00B734A0
 
-·µ»Øºó£º
+è¿”å›åï¼š
 00486814   .  E8 07CB0300      call trinolin.004C3320                               ; \trinolin.00B73320
 00486819   .  83C4 04          add esp,0x4
 0048681C   .  0FB6C8           movzx ecx,al
 0048681F   .  85C9             test ecx,ecx
 00486821   .  75 05            jnz short trinolin.00486828
-00486823   >- E9 FBFFFFFF      jmp trinolin.00486823                                ;  exeÎÄ¼şÑéÖ¤Ê§°ÜËÀÑ­»·
-00486828   >  E8 83B6FFFF      call trinolin.00481EB0                               ;  exeÑéÖ¤³É¹¦µ½´ï´¦
+00486823   >- E9 FBFFFFFF      jmp trinolin.00486823                                ;  exeæ–‡ä»¶éªŒè¯å¤±è´¥æ­»å¾ªç¯
+00486828   >  E8 83B6FFFF      call trinolin.00481EB0                               ;  exeéªŒè¯æˆåŠŸåˆ°è¾¾å¤„
 
-Ìø¹ıÑéÖ¤
+è·³è¿‡éªŒè¯
 75 05 --> 74 05
-Í¬Ê±nopµôÏÂÒ»¾äjmpËÀÑ­»·
+åŒæ—¶nopæ‰ä¸‹ä¸€å¥jmpæ­»å¾ªç¯
 
-·´µ÷ÊÔ£º
-µÚ¶ş¸öGetTickCount£º
+åè°ƒè¯•ï¼š
+ç¬¬äºŒä¸ªGetTickCountï¼š
 00F23690   .  8B3D A8A0F700 mov     edi, dword ptr [<&KERNEL32.GetTickCount>]    ;  KERNEL32.GetTickCount
-ÏÂÃæ
+ä¸‹é¢
 cmp     ecx, 0xBB8 --> cmp ecx, ecx
 
 
 
-Blowfish_DecryptÈë¿Úsig:
+Blowfish_Decryptå…¥å£sig:
 
 004756F3  |.  83E4 F8       and     esp, 0xFFFFFFF8
 004756F6  |.  B8 54100000   mov     eax, 0x1054
 
 Generate_Key:
-Ã¿´Îµ÷ÓÃcall eax·µ»ØBlowfish keyµÄÒ»¸ö×Ö½Ú£¬32´Î¼´ÎªÍêÕûµÄkey
+æ¯æ¬¡è°ƒç”¨call eaxè¿”å›Blowfish keyçš„ä¸€ä¸ªå­—èŠ‚ï¼Œ32æ¬¡å³ä¸ºå®Œæ•´çš„key
 
 0047FD00   > /8B4D 0C       mov     ecx, dword ptr [ebp+0xC]
 0047FD03   . |8B11          mov     edx, dword ptr [ecx]
@@ -115,7 +115,7 @@ Generate_Key:
 0047FD1F   . |33F6          xor     esi, esi
 0047FD21   > |294D 08       sub     dword ptr [ebp+0x8], ecx
 0047FD24   .^\75 DA         jnz     short 0047FD00
-0047FD26   .  8B45 FC       mov     eax, dword ptr [ebp-0x4]                          ;  ediÎªkeyµÄ4¸ö×Ö½Ú
+0047FD26   .  8B45 FC       mov     eax, dword ptr [ebp-0x4]                          ;  ediä¸ºkeyçš„4ä¸ªå­—èŠ‚
 0047FD29   .  8B55 F0       mov     edx, dword ptr [ebp-0x10]
 0047FD2C   .  8B1402        mov     edx, dword ptr [edx+eax]
 0047FD2F   .  33D7          xor     edx, edi
@@ -124,7 +124,7 @@ Generate_Key:
 
 
 
-ÕÒ½âÃÜcrud£º
+æ‰¾è§£å¯†crudï¼š
 
 00427F04   .  8BC3          mov     eax, ebx
 00427F06   .  8D50 01       lea     edx, dword ptr [eax+0x1]
@@ -166,13 +166,13 @@ Generate_Key:
 
 
 
-decrypt_index£º
+decrypt_indexï¼š
 
 004099A0 > $  55            push    ebp                                               ;  j_decrypt_index
 004099A1   .  8BEC          mov     ebp, esp
 004099A3   .  83E4 F8       and     esp, 0xFFFFFFF8
 004099A6   .  6A FF         push    -0x1
-004099A8   .  68 0C8B4F00   push    004F8B0C                                          ;  SE ´¦Àí³ÌĞò°²×°
+004099A8   .  68 0C8B4F00   push    004F8B0C                                          ;  SE å¤„ç†ç¨‹åºå®‰è£…
 004099AD   .  64:A1 0000000>mov     eax, dword ptr fs:[0]
 004099B3   .  50            push    eax
 004099B4   .  64:8925 00000>mov     dword ptr fs:[0], esp
@@ -218,13 +218,13 @@ decrypt_index£º
 
 
 
-decrypt_item£º
+decrypt_itemï¼š
 
 0040A320 >/.  55            push    ebp                                               ;  j_decrypt_item
 0040A321  |.  8BEC          mov     ebp, esp
 0040A323  |.  83E4 F8       and     esp, 0xFFFFFFF8
 0040A326  |.  6A FF         push    -0x1
-0040A328  |.  68 F4834F00   push    004F83F4                                          ;  SE ´¦Àí³ÌĞò°²×°
+0040A328  |.  68 F4834F00   push    004F83F4                                          ;  SE å¤„ç†ç¨‹åºå®‰è£…
 0040A32D  |.  64:A1 0000000>mov     eax, dword ptr fs:[0]
 0040A333  |.  50            push    eax
 0040A334  |.  64:8925 00000>mov     dword ptr fs:[0], esp
