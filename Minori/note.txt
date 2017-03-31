@@ -1,3 +1,89 @@
+exe文件验证：
+第二个GetModuleFileNameA：
+004C335B  |.  68 04010000   push 0x104                               ; /BufSize = 104 (260.)
+004C3360  |.  8D85 F8FEFFFF lea eax,[local.66]                       ; |
+004C3366  |.  50            push eax                                 ; |PathBuffer = 00000026
+004C3367  |.  56            push esi                                 ; |hModule = NULL
+004C3368  |.  FF15 A8404F00 call dword ptr ds:[<&KERNEL32.GetModuleF>; \GetModuleFileNameA
+004C336E  |.  85C0          test eax,eax                             ;  获取exe文件名
+004C3370  |.  75 11         jnz short trinolin.004C3383
+004C3372  |.  32C0          xor al,al
+004C3374  |.  5E            pop esi                                  ;  0019FAF4
+004C3375  |.  8B4D FC       mov ecx,[local.1]
+004C3378  |.  33CD          xor ecx,ebp
+004C337A  |.  E8 F92A0000   call trinolin.004C5E78
+004C337F  |.  8BE5          mov esp,ebp
+004C3381  |.  5D            pop ebp                                  ;  0019FAF4
+004C3382  |.  C3            retn
+004C3383  |>  53            push ebx
+004C3384  |.  6A 00         push 0x0                                 ; /hTemplateFile = NULL
+004C3386  |.  68 80000000   push 0x80                                ; |Attributes = NORMAL
+004C338B  |.  6A 03         push 0x3                                 ; |Mode = OPEN_EXISTING
+004C338D  |.  6A 00         push 0x0                                 ; |pSecurity = NULL
+004C338F  |.  6A 01         push 0x1                                 ; |ShareMode = FILE_SHARE_READ
+004C3391  |.  68 00000080   push 0x80000000                          ; |Access = GENERIC_READ
+004C3396  |.  8D8D F8FEFFFF lea ecx,[local.66]                       ; |
+004C339C  |.  51            push ecx                                 ; |FileName = "D:\trinoline_tr\trinoline_tr_crack.exe"
+004C339D  |.  FF15 28424F00 call dword ptr ds:[<&KERNEL32.CreateFile>; \CreateFileA
+004C33A3  |.  8BD8          mov ebx,eax
+004C33A5  |.  85DB          test ebx,ebx
+004C33A7  |.  0F84 D3000000 je trinolin.004C3480
+004C33AD  |.  83FB FF       cmp ebx,-0x1
+004C33B0  |.  0F84 CA000000 je trinolin.004C3480
+004C33B6  |.  57            push edi                                 ;  trinolin.00562578
+004C33B7  |.  6A 00         push 0x0                                 ; /pFileSizeHigh = NULL
+004C33B9  |.  53            push ebx                                 ; |hFile = 00286000
+004C33BA  |.  FF15 D0414F00 call dword ptr ds:[<&KERNEL32.GetFileSiz>; \GetFileSize
+004C33C0  |.  8BF8          mov edi,eax                              ;  eax是文件大小
+004C33C2  |.  83FF FF       cmp edi,-0x1
+004C33C5  |.  75 13         jnz short trinolin.004C33DA
+004C33C7  |.  5F            pop edi                                  ;  0019FAF4
+004C33C8  |.  5B            pop ebx                                  ;  0019FAF4
+004C33C9  |.  32C0          xor al,al
+004C33CB  |.  5E            pop esi                                  ;  0019FAF4
+004C33CC  |.  8B4D FC       mov ecx,[local.1]
+004C33CF  |.  33CD          xor ecx,ebp
+004C33D1  |.  E8 A22A0000   call trinolin.004C5E78
+004C33D6  |.  8BE5          mov esp,ebp
+004C33D8  |.  5D            pop ebp                                  ;  0019FAF4
+004C33D9  |.  C3            retn
+004C33DA  |>  57            push edi                                 ;  trinolin.00562578
+004C33DB  |.  E8 C2060000   call <trinolin.allocate_buffer>
+004C33E0  |.  83C4 04       add esp,0x4
+004C33E3  |.  6A 00         push 0x0                                 ; /pOverlapped = NULL
+004C33E5  |.  8D95 E8FEFFFF lea edx,[local.70]                       ; |
+004C33EB  |.  52            push edx                                 ; |pBytesRead = NULL
+004C33EC  |.  57            push edi                                 ; |BytesToRead = 562578 (5645688.)
+004C33ED  |.  8BF0          mov esi,eax                              ; |
+004C33EF  |.  56            push esi                                 ; |Buffer = NULL
+004C33F0  |.  53            push ebx                                 ; |hFile = 00286000
+004C33F1  |.  C785 E8FEFFFF>mov [local.70],0x0                       ; |
+004C33FB  |.  C685 F7FEFFFF>mov byte ptr ss:[ebp-0x109],0x0          ; |
+004C3402  |.  FF15 DC414F00 call dword ptr ds:[<&KERNEL32.ReadFile>] ; \ReadFile
+004C3408  |.  85C0          test eax,eax
+004C340A  |.  74 4D         je short trinolin.004C3459
+004C340C  |.  8B85 F0FEFFFF mov eax,[local.68]                       ;  trinolin.0052D0F8
+004C3412  |.  8B48 08       mov ecx,dword ptr ds:[eax+0x8]
+004C3415  |.  8B10          mov edx,dword ptr ds:[eax]
+004C3417  |.  51            push ecx                                 ; /Arg2 = 0019FAF4 ASCII "D:\trinoline_tr\trinoline_tr_crack.exe"
+004C3418  |.  52            push edx                                 ; |Arg1 = 00000000
+004C3419  |.  8BCF          mov ecx,edi                              ; |trinolin.00562578
+004C341B  |.  8BC6          mov eax,esi                              ; |exe文件buffer
+004C341D  |.  E8 7E000000   call <trinolin.exe_verify>               ; \trinolin.00B734A0
+
+返回后：
+00486814   .  E8 07CB0300      call trinolin.004C3320                               ; \trinolin.00B73320
+00486819   .  83C4 04          add esp,0x4
+0048681C   .  0FB6C8           movzx ecx,al
+0048681F   .  85C9             test ecx,ecx
+00486821   .  75 05            jnz short trinolin.00486828
+00486823   >- E9 FBFFFFFF      jmp trinolin.00486823                                ;  exe文件验证失败死循环
+00486828   >  E8 83B6FFFF      call trinolin.00481EB0                               ;  exe验证成功到达处
+
+跳过验证
+75 05 --> 74 05
+同时nop掉下一句jmp死循环
+
 反调试：
 第二个GetTickCount：
 00F23690   .  8B3D A8A0F700 mov     edi, dword ptr [<&KERNEL32.GetTickCount>]    ;  KERNEL32.GetTickCount
