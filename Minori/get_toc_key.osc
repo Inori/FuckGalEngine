@@ -1,0 +1,60 @@
+var addr_CreateFileW
+var addr_filename
+var addr_key_byte
+var str_key
+var n_i;
+var n_key_len
+
+
+Init:
+lclr
+bphwcall
+mov n_key_len, 20
+
+gpa "CreateFileW", "kernel32.dll"
+mov addr_CreateFileW, $RESULT
+bp addr_CreateFileW
+
+findcmd 401000, "mov r32, dword ptr [r32+0xC];mov r32, dword ptr [r32];mov r32, dword ptr [r32+0xC];push r32;call r32;movzx r32, r8;"
+cmp $RESULT, 0
+je label_error
+mov addr_key_byte, $RESULT + b
+
+
+label_continue:
+esto
+
+mov addr_filename, [esp+4]
+find addr_filename, #700061007A00??00#
+cmp $RESULT, 0
+je label_continue
+
+log addr_filename
+
+mov str_key, ""
+mov n_i, 0
+bp addr_key_byte
+
+
+
+label_get_key:
+esto
+cmp eip, addr_CreateFileW
+je label_continue
+
+
+log al
+
+add n_i, 1
+cmp n_i, n_key_len
+je label_one_key_done
+jmp label_get_key
+
+label_one_key_done:
+bc addr_key_byte
+
+jmp label_continue
+
+
+label_error:
+ret

@@ -1,0 +1,21 @@
+var n_i;
+var n_key_len
+
+lclr
+mov n_i, 1
+
+
+log al
+
+label_continue:
+esto
+cmp n_i, 20
+je label_ret
+inc n_i
+log al
+jmp label_continue
+
+
+label_ret:
+
+ret

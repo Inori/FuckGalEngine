@@ -1,0 +1,223 @@
+bypass protect:
+
+First, modify the exe to remove ASLR
+set PE header Characteristics bit (COFF header signature) from 0 to 1
+
+
+
+1. 
+
+search 
+mov     byte ptr [esi+0x31], 0x0
+mov     esi, dword ptr [ebp-0x10]
+cmp     byte ptr [esi+0x31], 0x0
+
+
+00484183   .  8846 31       mov     byte ptr [esi+0x31], al
+00484186   .  84C0          test    al, al
+00484188   .  74 28         je      short 004841B2
+0048418A   .  807E 33 00    cmp     byte ptr [esi+0x33], 0x0
+0048418E   .  75 1E         jnz     short 004841AE
+00484190   .  807E 34 00    cmp     byte ptr [esi+0x34], 0x0
+00484194   .  74 18         je      short 004841AE
+00484196   .  837D E4 3C    cmp     dword ptr [ebp-0x1C], 0x3C
+0048419A   .  75 12         jnz     short 004841AE
+0048419C   .  8B45 E8       mov     eax, dword ptr [ebp-0x18]
+0048419F   .  83F8 01       cmp     eax, 0x1
+004841A2   .  7C 0A         jl      short 004841AE
+004841A4   .  8B75 F0       mov     esi, dword ptr [ebp-0x10]
+004841A7   .  3D 30750000   cmp     eax, 0x7530
+004841AC   .  7E 07         jle     short 004841B5
+004841AE   >  C646 31 00    mov     byte ptr [esi+0x31], 0x0
+004841B2   >  8B75 F0       mov     esi, dword ptr [ebp-0x10]
+004841B5   >  807E 31 00    cmp     byte ptr [esi+0x31], 0x0
+004841B9   .  74 5C         je      short 00484217                  ;  nop
+004841BB   .  833D 000C5800>cmp     dword ptr [0x580C00], 0x0
+004841C2   .  75 40         jnz     short 00484204
+004841C4   .  68 280E0000   push    0xE28
+004841C9   .  E8 F4C50400   call    004D07C2
+004841CE   .  83C4 04       add     esp, 0x4
+004841D1   .  8945 E8       mov     dword ptr [ebp-0x18], eax
+004841D4   .  C745 FC 00000>mov     dword ptr [ebp-0x4], 0x0
+004841DB   .  85C0          test    eax, eax
+004841DD   .  74 1E         je      short 004841FD
+
+
+2.
+
+search:
+GetTimeZoneInformation
+
+0048FCCB   .  83C4 0C       add     esp, 0xC
+0048FCCE   .  8D95 68FEFFFF lea     edx, dword ptr [ebp-0x198]
+0048FCD4   .  52            push    edx                              ; /pTimeZoneInfo
+0048FCD5   .  FF15 A0205000 call    dword ptr [<&KERNEL32.GetTimeZon>; \GetTimeZoneInformation
+0048FCDB   .  81BD 68FEFFFF>cmp     dword ptr [ebp-0x198], -0x21C
+0048FCE5   .  74 2C         je      short 0048FD13					;  jmp
+0048FCE7   .  6A 10         push    0x10
+
+3.
+
+search:
+movzx   r32, r8
+test    r32, r32
+jnz     const
+movzx   r32, byte ptr [const]
+test    r32, r32
+
+
+0048FF14   > \EB 05         jmp     short 0048FF1B
+0048FF16   .^ E9 BBFEFFFF   jmp     0048FDD6
+0048FF1B   >  8D8D CCFDFFFF lea     ecx, dword ptr [ebp-0x234]
+0048FF21   .  E8 CA09FFFF   call    004808F0
+0048FF26   .  8D8D C0FDFFFF lea     ecx, dword ptr [ebp-0x240]
+0048FF2C   .  E8 BF09FFFF   call    004808F0
+0048FF31   .  8D8D E8FDFFFF lea     ecx, dword ptr [ebp-0x218]
+0048FF37   .  E8 B409FFFF   call    004808F0
+0048FF3C   .  0FB685 67FEFF>movzx   eax, byte ptr [ebp-0x199]
+0048FF43   .  85C0          test    eax, eax
+0048FF45   .  75 2C         jnz     short 0048FF73                   ;  jmp
+0048FF47   .  6A 10         push    0x10
+0048FF49   .  B9 7D000000   mov     ecx, 0x7D
+0048FF4E   .  E8 8D06FFFF   call    004805E0
+0048FF53   .  83C4 04       add     esp, 0x4
+0048FF56   .  C785 B0F8FFFF>mov     dword ptr [ebp-0x750], 0x1
+0048FF60   .  8D4D B8       lea     ecx, dword ptr [ebp-0x48]
+0048FF63   .  E8 6831F7FF   call    004030D0
+0048FF68   .  8B85 B0F8FFFF mov     eax, dword ptr [ebp-0x750]
+0048FF6E   .  E9 C10B0000   jmp     00490B34
+0048FF73   >  E8 980CFFFF   call    00480C10
+0048FF78   .  0FB6C8        movzx   ecx, al
+0048FF7B   .  85C9          test    ecx, ecx
+0048FF7D   .  75 37         jnz     short 0048FFB6
+0048FF7F   .  0FB615 EF0B58>movzx   edx, byte ptr [0x580BEF]
+0048FF86   .  85D2          test    edx, edx
+0048FF88   .  75 2C         jnz     short 0048FFB6                   ;  jmp
+0048FF8A   .  6A 10         push    0x10
+0048FF8C   .  B9 7E000000   mov     ecx, 0x7E
+0048FF91   .  E8 4A06FFFF   call    004805E0
+0048FF96   .  83C4 04       add     esp, 0x4
+0048FF99   .  C785 ACF8FFFF>mov     dword ptr [ebp-0x754], 0x1
+0048FFA3   .  8D4D B8       lea     ecx, dword ptr [ebp-0x48]
+0048FFA6   .  E8 2531F7FF   call    004030D0
+0048FFAB   .  8B85 ACF8FFFF mov     eax, dword ptr [ebp-0x754]
+0048FFB1   .  E9 7E0B0000   jmp     00490B34
+0048FFB6   >  B1 01         mov     cl, 0x1
+0048FFB8   .  B8 60D75400   mov     eax, 0054D760
+0048FFBD   .  E8 3E2A0000   call    00492A00
+0048FFC2   .  B1 01         mov     cl, 0x1
+0048FFC4   .  B8 60D75400   mov     eax, 0054D760
+0048FFC9   .  E8 222A0000   call    004929F0
+0048FFCE   .  68 E4B95200   push    0052B9E4                         ;  ASCII "system.dat"
+0048FFD3   .  B8 0CDD5400   mov     eax, 0054DD0C
+
+
+4.
+
+search:
+ShellExecuteA
+
+00490803   > \6A 01         push    0x1                              ; /IsShown = 0x1
+00490805   .  6A 00         push    0x0                              ; |DefDir = NULL
+00490807   .  6A 00         push    0x0                              ; |Parameters = NULL
+00490809   .  68 2CBA5200   push    0052BA2C                         ; |FileName = "SndVol32.exe"
+0049080E   .  6A 00         push    0x0                              ; |Operation = NULL
+00490810   .  A1 04045800   mov     eax, dword ptr [0x580404]        ; |
+00490815   .  50            push    eax                              ; |hWnd => NULL
+00490816   .  FF15 48225000 call    dword ptr [<&SHELL32.ShellExecut>; \ShellExecuteA
+0049081C   .  83F8 20       cmp     eax, 0x20
+0049081F   .  7E 16         jle     short 00490837
+00490821   .  C745 F8 00000>mov     dword ptr [ebp-0x8], 0x0
+00490828   .  8B4D F8       mov     ecx, dword ptr [ebp-0x8]
+0049082B   .  B8 405F5800   mov     eax, 00585F40
+00490830   .  E8 9BE3FFFF   call    0048EBD0
+00490835   .  EB 20         jmp     short 00490857
+00490837   >  68 18FCFFFF   push    -0x3E8
+0049083C   .  8B0D 145E5800 mov     ecx, dword ptr [0x585E14]
+00490842   .  8B11          mov     edx, dword ptr [ecx]
+00490844   .  A1 145E5800   mov     eax, dword ptr [0x585E14]
+00490849   .  50            push    eax
+0049084A   .  8B4A 3C       mov     ecx, dword ptr [edx+0x3C]
+0049084D   .  FFD1          call    ecx
+0049084F   .  33D2          xor     edx, edx
+00490851   .^ 0F85 77FFFFFF jnz     004907CE
+00490857   >  8B45 F8       mov     eax, dword ptr [ebp-0x8]
+0049085A   .  50            push    eax
+0049085B   .  68 40605800   push    00586040
+00490860   .  E8 AB78FAFF   call    00438110
+00490865   .  C785 CCF8FFFF>mov     dword ptr [ebp-0x734], 0x0
+0049086F   .  68 C0A25400   push    0054A2C0
+00490874   .  33D2          xor     edx, edx
+00490876   .  8D8D CCF8FFFF lea     ecx, dword ptr [ebp-0x734]
+0049087C   .  E8 BFF70300   call    004D0040
+00490881   .  83C4 04       add     esp, 0x4
+00490884   .  0FB6C8        movzx   ecx, al
+00490887   .  85C9          test    ecx, ecx
+00490889   .  75 05         jnz     short 00490890                   ;  jmp
+0049088B   >- E9 FBFFFFFF   jmp     0049088B
+00490890   >  E8 EBFEFEFF   call    00480780
+00490895   .  0FB6D0        movzx   edx, al
+00490898   .  85D2          test    edx, edx
+
+
+
+5.
+search:
+GetTickCount
+
+004AA67C   .  68 E8030000   push    0x3E8                            ; /Timeout = 1000. ms
+004AA681   .  50            push    eax                              ; |hObject => NULL
+004AA682   .  FFD6          call    esi                              ; \WaitForSingleObject
+004AA684   .  3D 02010000   cmp     eax, 0x102
+004AA689   .  0F85 8C000000 jnz     004AA71B
+004AA68F   .  57            push    edi
+004AA690   .  8B3D B4205000 mov     edi, dword ptr [<&KERNEL32.GetTi>;  kernel32.GetTickCount
+004AA696   >  FFD7          call    edi
+004AA698   .  803D 510C5800>cmp     byte ptr [0x580C51], 0x0
+004AA69F   .  74 10         je      short 004AA6B1
+004AA6A1   .  8BC8          mov     ecx, eax
+004AA6A3   .  2B0D 4C0C5800 sub     ecx, dword ptr [0x580C4C]
+004AA6A9   .  81F9 B80B0000 cmp     ecx, 0xBB8                       ;  cmp     ecx, ecx
+004AA6AF   .  77 2B         ja      short 004AA6DC
+004AA6B1   >  8B15 480C5800 mov     edx, dword ptr [0x580C48]
+004AA6B7   .  68 E8030000   push    0x3E8
+004AA6BC   .  52            push    edx
+
+
+6.
+
+search:
+or      r32, 0xFFFFFFFF           
+xor     r32, r32              
+test    r32, r32
+je      const
+push    r32
+
+The second.
+
+This is a hash function to calculate the exe file hash, then compare with original hash value.
+Set a breakpoint on function return, record the correct hash value then modifiy the function head like:
+
+mov eax, hash
+ret
+
+
+004D0010  /$  83C8 FF       or      eax, 0xFFFFFFFF                  ;  mov eax, hash
+004D0013  |.  33C9          xor     ecx, ecx                         ;  ret
+004D0015  |.  85D2          test    edx, edx
+004D0017  |.  74 23         je      short 004D003C
+004D0019  |.  57            push    edi
+004D001A  |.  8D9B 00000000 lea     ebx, dword ptr [ebx]
+004D0020  |>  0FBE3C31      /movsx   edi, byte ptr [ecx+esi]
+004D0024  |.  33F8          |xor     edi, eax
+004D0026  |.  81E7 FF000000 |and     edi, 0xFF
+004D002C  |.  C1E8 08       |shr     eax, 0x8
+004D002F  |.  3304BD 204E50>|xor     eax, dword ptr [edi*4+0x504E20]
+004D0036  |.  41            |inc     ecx
+004D0037  |.  3BCA          |cmp     ecx, edx
+004D0039  |.^ 72 E5         \jb      short 004D0020
+004D003B  |.  5F            pop     edi
+004D003C  |>  F7D0          not     eax
+004D003E  \.  C3            retn
+
+
