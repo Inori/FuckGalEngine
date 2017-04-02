@@ -384,6 +384,39 @@ generate_bmp:
 
 
 
+过注册表：
+搜索cmp dword ptr ds:[edi+0x21C],0x0
+这段通过注册表得到一开始文件解密的simple_key，我们可以直接通过资源文件的hdr.toc_len >> 24得到。
+然后将下面的指令
+83 BF 1C 02 00 00 00 74 41 8B 97 1C 02 00 00
+改为
+BA ?? ?? ?? ?? EB 08 90 90 90 90 90 90 90 90
+其中??为simple_key，比如trinoline的simple_key = E1，那就是：
+BA E1 E1 E1 E1 EB 08 90 90 90 90 90 90 90 90
+
+004098BD  |.^\74 E4               je short trinolin.004098A3
+004098BF      83BF 1C020000 00    cmp dword ptr ds:[edi+0x21C],0x0
+004098C6      74 41               je short trinolin.00409909
+004098C8      8B97 1C020000       mov edx,dword ptr ds:[edi+0x21C]
+004098CE  |.  8975 F8             mov [local.2],esi                        ;  trinolin.<ModuleEntryPoint>
+004098D1  |.  8955 FC             mov [local.1],edx                        ;  trinolin.<ModuleEntryPoint>
+004098D4  |.  8B7D F8             mov edi,[local.2]                        ;  kernel32.BaseThreadInitThunk
+004098D7  |.  8B4D 08             mov ecx,[arg.1]
+004098DA  |.  8B55 FC             mov edx,[local.1]
+004098DD  |.  0BC9                or ecx,ecx                               ;  trinolin.<ModuleEntryPoint>
+004098DF  |.  74 28               je short trinolin.00409909
+004098E1  |.  0BD2                or edx,edx                               ;  trinolin.<ModuleEntryPoint>
+004098E3  |.  74 24               je short trinolin.00409909
+004098E5  |.  51                  push ecx                                 ;  trinolin.<ModuleEntryPoint>
+004098E6  |.  BB 04000000         mov ebx,0x4
+004098EB  |.  C1E9 02             shr ecx,0x2
+004098EE  |.  74 0A               je short trinolin.004098FA
+004098F0  |>  8B07                /mov eax,dword ptr ds:[edi]
+004098F2  |.  33C2                |xor eax,edx                             ;  trinolin.<ModuleEntryPoint>
+004098F4  |.  8907                |mov dword ptr ds:[edi],eax
+004098F6  |.  03FB                |add edi,ebx
+004098F8  |.^ E2 F6               \loopd short trinolin.004098F0
+004098FA  |>  59                  pop ecx                                  ;  kernel32.743B62C4
 
 
 
