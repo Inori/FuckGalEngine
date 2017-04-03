@@ -81,6 +81,29 @@ movzx   r32, r8
 
 
 找解密crud：
+方法一（trinoline）：
+搜索：
+lea r32,[r32-const]
+mov [const],r32
+lea r32,[r32-const]
+mov [const],r32
+lea r32,[r32-const]
+mov [const],r32
+lea r32,[r32-const]
+mov [const],r32
+
+004953C9   .  8D95 7CF9FFFF lea edx,dword ptr ss:[ebp-0x684]
+004953CF   .  8915 70215800 mov dword ptr ds:[0x582170],edx                    ;  scr_crud
+004953D5   .  8D85 88F9FFFF lea eax,dword ptr ss:[ebp-0x678]
+004953DB   .  A3 74215800   mov dword ptr ds:[0x582174],eax                    ;  ogg_crud
+004953E0   .  8D8D 60F9FFFF lea ecx,dword ptr ss:[ebp-0x6A0]
+004953E6   .  890D 78215800 mov dword ptr ds:[0x582178],ecx                    ;  png_crud
+004953EC   .  8D95 6CF9FFFF lea edx,dword ptr ss:[ebp-0x694]
+004953F2   .  8915 7C215800 mov dword ptr ds:[0x58217C],edx                    ;  avi_curd
+
+
+
+方法二：
 movsx   esi, byte ptr [ecx+ebx]
 xor     esi, eax
 and     esi, 0xFF
