@@ -3,6 +3,102 @@ Blowfish_Decrypt入口sig:
 004756F3  |.  83E4 F8       and     esp, 0xFFFFFFF8
 004756F6  |.  B8 54100000   mov     eax, 0x1054
 
+找crud+读封包+生成key：
+搜索
+mov eax,dword ptr ds:[eax+0x10]
+mov ecx,dword ptr ds:[ecx+0x10]
+mov edi,dword ptr ds:[esi+0x10]
+
+然后返回到上一级：
+004953C6   .  83C4 04                  add esp,0x4                              ;  crud信息
+004953C9   .  8D95 7CF9FFFF            lea edx,dword ptr ss:[ebp-0x684]
+004953CF   .  8915 70215800            mov dword ptr ds:[0x582170],edx          ;  scr_crud
+004953D5   .  8D85 88F9FFFF            lea eax,dword ptr ss:[ebp-0x678]
+004953DB   .  A3 74215800              mov dword ptr ds:[0x582174],eax          ;  ogg_crud
+004953E0   .  8D8D 60F9FFFF            lea ecx,dword ptr ss:[ebp-0x6A0]
+004953E6   .  890D 78215800            mov dword ptr ds:[0x582178],ecx          ;  png_crud
+004953EC   .  8D95 6CF9FFFF            lea edx,dword ptr ss:[ebp-0x694]
+004953F2   .  8915 7C215800            mov dword ptr ds:[0x58217C],edx          ;  avi_curd
+004953F8   .  E8 73270000              call trinolin.00497B70
+004953FD   .  C785 5CF9FFFF 00000000   mov dword ptr ss:[ebp-0x6A4],0x0
+00495407   .  EB 0F                    jmp short trinolin.00495418
+00495409   >  8B85 5CF9FFFF            mov eax,dword ptr ss:[ebp-0x6A4]
+0049540F   .  83C0 01                  add eax,0x1
+00495412   .  8985 5CF9FFFF            mov dword ptr ss:[ebp-0x6A4],eax
+00495418   >  83BD 5CF9FFFF 0C         cmp dword ptr ss:[ebp-0x6A4],0xC
+0049541F   .  0F8D E1010000            jge trinolin.00495606
+00495425   .  8B8D 5CF9FFFF            mov ecx,dword ptr ss:[ebp-0x6A4]
+0049542B   .  8B148D A0C75400          mov edx,dword ptr ds:[ecx*4+0x54C7A0]    ;  trinolin.0051F394
+00495432   .  8D85 20F9FFFF            lea eax,dword ptr ss:[ebp-0x6E0]
+00495438   .  E8 2307F7FF              call trinolin.00405B60
+0049543D   .  8D95 20F9FFFF            lea edx,dword ptr ss:[ebp-0x6E0]         ;  文件封包
+00495443   .  52                       push edx                                 ; /Arg3 = 0019F810 ASCII "scr"
+00495444   .  68 08F25400              push trinolin.0054F208                   ; |Arg2 = 0054F208
+00495449   .  8D85 40F9FFFF            lea eax,dword ptr ss:[ebp-0x6C0]         ; |
+0049544F   .  50                       push eax                                 ; |Arg1 = 0019F830
+00495450   .  E8 2BE1F8FF              call trinolin.00423580                   ; \＊返回的位置＊
+00495455   .  83C4 0C                  add esp,0xC                              ;  从这里开始向下的第二个函数call就可以获取blowfish的key
+00495458   .  8B8D 5CF9FFFF            mov ecx,dword ptr ss:[ebp-0x6A4]
+0049545E   .  898D 3CF9FFFF            mov dword ptr ss:[ebp-0x6C4],ecx
+00495464   .  8B95 5CF9FFFF            mov edx,dword ptr ss:[ebp-0x6A4]
+0049546A   .  8995 2CF7FFFF            mov dword ptr ss:[ebp-0x8D4],edx
+00495470   .  8B85 2CF7FFFF            mov eax,dword ptr ss:[ebp-0x8D4]
+00495476   .  83E8 02                  sub eax,0x2
+00495479   .  8985 2CF7FFFF            mov dword ptr ss:[ebp-0x8D4],eax
+0049547F   .  83BD 2CF7FFFF 08         cmp dword ptr ss:[ebp-0x8D4],0x8
+00495486   .  77 41                    ja short trinolin.004954C9
+00495488   .  8B8D 2CF7FFFF            mov ecx,dword ptr ss:[ebp-0x8D4]
+0049548E   .  0FB691 085E4900          movzx edx,byte ptr ds:[ecx+0x495E08]
+00495495   .  FF2495 F85D4900          jmp dword ptr ds:[edx*4+0x495DF8]
+0049549C   >  8B85 3CF9FFFF            mov eax,dword ptr ss:[ebp-0x6C4]
+004954A2   .  83E8 01                  sub eax,0x1
+004954A5   .  8985 3CF9FFFF            mov dword ptr ss:[ebp-0x6C4],eax
+004954AB   >  8B8D 3CF9FFFF            mov ecx,dword ptr ss:[ebp-0x6C4]
+004954B1   .  83E9 01                  sub ecx,0x1
+004954B4   .  898D 3CF9FFFF            mov dword ptr ss:[ebp-0x6C4],ecx
+004954BA   >  8B95 3CF9FFFF            mov edx,dword ptr ss:[ebp-0x6C4]
+004954C0   .  83EA 01                  sub edx,0x1
+004954C3   .  8995 3CF9FFFF            mov dword ptr ss:[ebp-0x6C4],edx
+004954C9   >  6A 20                    push 0x20                                ; /Arg2 = 00000020
+004954CB   .  8B85 3CF9FFFF            mov eax,dword ptr ss:[ebp-0x6C4]         ; |
+004954D1   .  C1E0 05                  shl eax,0x5                              ; |
+004954D4   .  05 C0C35400              add eax,trinolin.0054C3C0                ; |
+004954D9   .  50                       push eax                                 ; |Arg1 = 0019F830
+004954DA   .  8B8D 5CF9FFFF            mov ecx,dword ptr ss:[ebp-0x6A4]         ; |
+004954E0   .  6BC9 0C                  imul ecx,ecx,0xC                         ; |
+004954E3   .  81C1 F07A5800            add ecx,trinolin.00587AF0                ; |
+004954E9   .  E8 72D1FEFF              call trinolin.00482660                   ; \trinolin.00482660
+004954EE   .  6A 20                    push 0x20                                ; /Arg2 = 00000020
+004954F0   .  8B8D 3CF9FFFF            mov ecx,dword ptr ss:[ebp-0x6C4]         ; |
+004954F6   .  C1E1 05                  shl ecx,0x5                              ; |
+004954F9   .  81C1 C0C55400            add ecx,trinolin.0054C5C0                ; |
+004954FF   .  51                       push ecx                                 ; |Arg1 = 00000000
+00495500   .  8B8D 5CF9FFFF            mov ecx,dword ptr ss:[ebp-0x6A4]         ; |
+00495506   .  6BC9 0C                  imul ecx,ecx,0xC                         ; |
+00495509   .  81C1 107C5800            add ecx,trinolin.00587C10                ; |blowfish key
+0049550F   .  E8 4CD1FEFF              call trinolin.00482660                   ; \call之前的eax是toc_key，call之后的是dat_key
+00495514   .  8B8D 5CF9FFFF            mov ecx,dword ptr ss:[ebp-0x6A4]
+0049551A   .  6BC9 0C                  imul ecx,ecx,0xC
+0049551D   .  81C1 F07A5800            add ecx,trinolin.00587AF0
+00495523   .  8B85 5CF9FFFF            mov eax,dword ptr ss:[ebp-0x6A4]
+
+其中crud的地方，在トリノライン及其体验版是计算的方式，所以类似于：
+004953C9   .  8D95 7CF9FFFF            lea edx,dword ptr ss:[ebp-0x684]
+004953CF   .  8915 70215800            mov dword ptr ds:[0x582170],edx          ;  scr_crud
+004953D5   .  8D85 88F9FFFF            lea eax,dword ptr ss:[ebp-0x678]
+004953DB   .  A3 74215800              mov dword ptr ds:[0x582174],eax          ;  ogg_crud
+004953E0   .  8D8D 60F9FFFF            lea ecx,dword ptr ss:[ebp-0x6A0]
+004953E6   .  890D 78215800            mov dword ptr ds:[0x582178],ecx          ;  png_crud
+004953EC   .  8D95 6CF9FFFF            lea edx,dword ptr ss:[ebp-0x694]
+004953F2   .  8915 7C215800            mov dword ptr ds:[0x58217C],edx          ;  avi_curd
+在トリノライン以前的crud是静态读取的，所以类似于：
+00482821   .  C705 48CE5500>mov dword ptr ds:[0x55CE48],yorino_b.0050C3EC     ;  ASCII "uTyeJyh2" scr_crud
+0048282B   .  C705 4CCE5500>mov dword ptr ds:[0x55CE4C],yorino_b.0050C3D4     ;  ASCII "UjFM8FxA" ogg_crud
+00482835   .  C705 50CE5500>mov dword ptr ds:[0x55CE50],yorino_b.0050C3E0     ;  ASCII "i2Toka1x" png_crud
+0048283F   .  C705 54CE5500>mov dword ptr ds:[0x55CE54],yorino_b.0050C3C8     ;  ASCII "gbVBKdy3" avi_curd
+00482849   .  E8 02250000   call yorino_b.00484D50
+（已经在トリノライン及其体验版，ソレヨリノ前奏诗及其アペンドH上测试通过）
+
 
 读封包的CreateFileA:
 00409975   .  6A 04         push    0x4
