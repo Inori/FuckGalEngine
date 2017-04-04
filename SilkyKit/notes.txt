@@ -1,4 +1,4 @@
 1. For unpacker, because arc_unpacker can extract *.arc file prefectly, this tool do *not* contain extract arc tool, please use arc_unpacker instead.
 2. For packer, please direct add your modified files to the exe root folder, do *not* need packer.
-3. For AkbTool src, Please extract libau.rar. For convenience, I add the whole arc_unpacker project in my project.
+3. For AkbTool src, Please extract _public_libs/libau.7z.
 4. For more infomation, see https://bbs.sumisora.org/read.php?tid=11075832
