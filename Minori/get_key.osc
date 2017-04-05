@@ -1,0 +1,110 @@
+var addr_pkgname
+var addr_key_func
+var n_i;
+
+
+
+Init:
+lclr
+bc
+
+
+
+findcmd 401000, "mov r32, dword ptr [ebp+0x10];push -0x1;push 0x0;push r32;call const;"
+cmp $RESULT, 0
+je label_error
+mov addr_pkgname, $RESULT + 3
+
+;TODO:
+;this is a ODbgScript bug of "findcmd" function, this function can not find command combination like "imul    r32, r32, 0xC; xxxx; xxxx"
+;so search the following cmds in OD manually,then you get the KeyFunction call address
+;
+;push    r32
+;mov     r32, dword ptr [ebp-const]
+;imul    r32, r32, 0xC
+;add     r32, const
+;call    const 			;KeyFunction
+;mov     r32, dword ptr [ebp-const]
+
+ask "Look at the comment in this scripot, then enter key function address:"
+mov addr_key_func, $RESULT
+;mov addr_key_func, 49550F  ;-->trinoline
+cmp addr_key_func, 0
+je label_error
+
+
+bp addr_pkgname
+bp addr_key_func
+
+
+label_run:
+esto
+
+cmp eip, addr_pkgname
+je label_log_pkg
+cmp eip, addr_key_func
+je label_log_key
+jmp label_run
+
+
+label_log_pkg:
+gstr eax
+log $RESULT
+jmp label_run
+
+label_log_key:
+log "TOC Key:"
+push eax
+Call Func_DumpKey
+estep
+log "DAT Key:"
+push eax
+Call Func_DumpKey
+jmp label_run
+
+
+
+Func_DumpKey:
+
+	var buffer_key
+	var addr_key
+	pop addr_key
+
+	alloc 20
+	mov buffer_key, $RESULT
+	memcpy buffer_key, addr_key, 20
+
+	push buffer_key
+	Call Func_LogKeyBytes
+
+	free buffer_key
+
+Ret
+
+
+Func_LogKeyBytes:
+	var i
+	var key_byte
+	var addr_key
+	pop addr_key
+
+	mov i, 0
+label_fix:
+	mov key_byte, [addr_key + i], 1
+	not key_byte
+	inc key_byte
+	and key_byte, ff
+
+	;TODO: don't known how to format the output :(
+	log key_byte
+
+	inc i
+	cmp i, 20
+	jne label_fix
+
+Ret
+
+
+label_error:
+msg "Someing went wrong."
+ret
