@@ -8,10 +8,10 @@ var n_key_len
 
 Init:
 lclr
-bphwcall
+bc
 mov n_key_len, 20
 
-gpa "CreateFileW", "kernel32.dll"
+gpa "CreateFileW", "kernelbase.dll"
 mov addr_CreateFileW, $RESULT
 bp addr_CreateFileW
 
