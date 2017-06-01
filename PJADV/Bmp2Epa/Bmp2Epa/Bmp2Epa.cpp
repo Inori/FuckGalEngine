@@ -77,26 +77,37 @@ void RecoverData(BYTE* dst, BYTE* src, bmp_header_t bmp_header)
 {
 	unsigned int width = bmp_header.width;
 	unsigned int height = bmp_header.height;
-	int pixel_bytes = bmp_header.bit_type/8;
+	unsigned int pixel_bytes = bmp_header.bit_type / 8;
 
 	BYTE *tmp = new BYTE[bmp_header.datasize];
 	unsigned int line_len = width * pixel_bytes;
 	unsigned int i = 0;
 
-	for (unsigned int p = 0; p < pixel_bytes; p++)
+	for (unsigned int p = 0; p < pixel_bytes; ++p)
 	{
-		for (unsigned int y = 0; y < height; y++)
+		for (unsigned int y = 0; y < height; ++y)
 		{
 			BYTE *line = &src[y * line_len];
-			for (unsigned int x = 0; x < width; x++)
+			for (unsigned int x = 0; x < width; ++x)
 			{
 				BYTE *pixel = &line[x * pixel_bytes];
 				tmp[i++] = pixel[p];
 			}
 		}
 	}
-
-	memcpy(dst,tmp,bmp_header.datasize);
+	// 调整bmp像素存储顺序
+	for (unsigned int p = 0; p < pixel_bytes; ++p)
+	{
+		BYTE *plane = &tmp[p * width * height];
+		for (unsigned int y = 0; y < height / 2; ++y)
+		{
+			for (unsigned int x = 0; x < width; ++x)
+			{
+				swap(plane[y * width + x], plane[(height - y - 1) * width + x]);
+			}
+		}
+	}
+	memcpy(dst, tmp, bmp_header.datasize);
 	delete[]tmp;
 }
 
@@ -112,10 +123,10 @@ DWORD GetEPACompressedSize(FILE* epa)
 	fread(&epa_header, 1, sizeof(epa_header), epa);
 	fseek(epa, 0, SEEK_SET);
 
-	if(epa_header.epa1.mode == 1)
-		return size-sizeof(epa_header.epa1);
+	if (epa_header.epa1.mode == 1)
+		return size - sizeof(epa_header.epa1);
 	else
-		return size-sizeof(epa_header.epa2);
+		return size - sizeof(epa_header.epa2);
 
 }
 
@@ -126,19 +137,19 @@ void Epa_Encompress(BYTE* dst, BYTE* src, DWORD srclen)
 	unsigned int extra = srclen % 0x0f;
 	DWORD size;
 
-	if(extra == 0)
+	if (extra == 0)
 	{
 		size = srclen + extra_size;
 
 		DWORD curbyte = 0, psrc = 0;
 		BYTE* temp = new BYTE[size];
 
-		while(curbyte <= size)
+		while (curbyte <= size)
 		{
-			temp[curbyte++]=0x0F;
-			for(int i=0; i<0x0F; i++)
+			temp[curbyte++] = 0x0F;
+			for (int i = 0; i < 0x0F; i++)
 			{
-				temp[curbyte++]=src[psrc++];
+				temp[curbyte++] = src[psrc++];
 			}
 		}
 		memcpy(dst, temp, size);
@@ -151,36 +162,36 @@ void Epa_Encompress(BYTE* dst, BYTE* src, DWORD srclen)
 		DWORD curbyte = 0, psrc = 0;
 		BYTE* temp = new BYTE[size];
 
-		while(curbyte <= size-extra-1)
+		while (curbyte <= size - extra - 1)
 		{
-			temp[curbyte++]=0x0F;
-			for(int i=0; i<0x0F; i++)
+			temp[curbyte++] = 0x0F;
+			for (int i = 0; i < 0x0F; i++)
 			{
-				temp[curbyte++]=src[psrc++];
+				temp[curbyte++] = src[psrc++];
 			}
 		}
 		temp[curbyte++] = extra;
-		for(int j=0; j<extra; j++)
+		for (unsigned int j = 0; j < extra; j++)
 		{
 			temp[curbyte++] = src[psrc++];
 		}
 		memcpy(dst, temp, size);
 		delete[]temp;
 	}
-	
-	
 }
 
 
-int main(int argc, _TCHAR* argv[])
+int main(int argc, char *argv[])
 {
-	HWND hwnd=GetForegroundWindow();//直接获得前景窗口的句柄         
-	SendMessage(hwnd,WM_SETICON,ICON_BIG,(LPARAM)LoadIcon(NULL,IDI_QUESTION)); 
-
-	FILE * fbmp;
-	if(!(fbmp=fopen("sys_g_base022.bmp", "rb")))
+	if (argc != 4)
 	{
-		cout<<"No Such File!"<<endl;
+		printf("usage: %s in.epa out.bmp out.epa\n", argv[0]);
+		return -1;
+	}
+	FILE * fbmp;
+	if (!(fbmp = fopen(argv[2], "rb")))
+	{
+		printf("No Such File!\n");
 		return -1;
 	}
 
@@ -196,7 +207,7 @@ int main(int argc, _TCHAR* argv[])
 	unsigned int extra_size = bmp_header.datasize / 0x0f;
 	unsigned int extra = bmp_header.datasize % 0x0f;
 	DWORD size;
-	if(extra != 0)
+	if (extra != 0)
 		size = bmp_header.datasize + extra_size + 1;
 	else
 		size = bmp_header.datasize + extra_size;
@@ -205,24 +216,41 @@ int main(int argc, _TCHAR* argv[])
 
 	Epa_Encompress(epadata, rawdata, bmp_header.datasize);
 
-	FILE* fepa;
-	if(!(fepa=fopen("sys_g_base022.epa", "wb")))
+	FILE *fepa_in;
+	FILE *fepa_out;
+
+	if (!(fepa_out = fopen(argv[3], "wb")))
 	{
-		cout<<"Can not Create File!"<<endl;
+		printf("Can not Create File!\n");
+		return -1;
+	}
+	if (!(fepa_in = fopen(argv[1], "rb")))
+	{
+		printf("No Such File!\n");
 		return -1;
 	}
 
-	fwrite(epadata, 1, size, fepa);
+	epa_header_t epa_in;
+	fread(&epa_in, sizeof(epa_header_t), 1, fepa_in);
+	if (epa_in.epa1.mode == 1)
+	{
+		fwrite(&epa_in.epa1, sizeof(epa1_header_t), 1, fepa_out);
+	}
+	else
+	{
+		fwrite(&epa_in.epa2, sizeof(epa2_header_t), 1, fepa_out);
+	}
+	fwrite(epadata, size, 1, fepa_out);
 
-	cout<<"OK!"<<endl;
+	printf("Finished!\n");
 	delete[]data;
 	delete[]rawdata;
 	delete[]epadata;
 
+	fclose(fepa_in);
 	fclose(fbmp);
-	fclose(fepa);
+	fclose(fepa_out);
 
-	system("pause");
 	return 0;
 }
 
