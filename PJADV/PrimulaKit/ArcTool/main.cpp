@@ -67,8 +67,10 @@ int main(int argc, char* argv[])
 		byte *buffer = new byte[i_entry[i].size];
 		fread(buffer, i_entry[i].size, 1, fin);
 
-		if (!strcmp(n_entry[i].filename, "textdata.bin"))
+		if (!strcmp(n_entry[i].filename, "textdata.bin") || !strcmp(n_entry[i].filename, "dltextdata.bin"))
+		{
 			decrypt(buffer, i_entry[i].size);
+		}
 		fwrite(buffer, i_entry[i].size, 1, fcur);
 
 		delete[]buffer;

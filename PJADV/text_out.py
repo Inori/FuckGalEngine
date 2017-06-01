@@ -24,7 +24,8 @@ def dumpstring(file, offset):
             char2 = char_tuple[0]
 
             if char2 == 0:
-                string += str(bytestream, encoding='sjis')
+                #string += str(bytestream, encoding='sjis')
+                string += str(bytestream, encoding='shift_jisx0213')
                 # string += str(b'\x81\x9a', encoding='sjis', errors='ignore')
                 break
             else:
@@ -50,7 +51,7 @@ def scriptout(file, indexoffset, nameoffset, scriptoffset, count):
     res += "●%08d●%s\n\n" % (count, string)
     return res
 
-script_path = r'd:/archive/'
+script_path = r'C:/Users/bingk/Desktop/tai/'
 index = open(script_path + 'scenario.dat', 'rb')
 src = open(script_path + 'textdata.bin', 'rb')
 
