@@ -84,6 +84,10 @@ build/
 *.log
 *.scc
 
+#VAX
+*.VC.opendb
+*.VC.db
+
 # Visual C++ cache files
 ipch/
 *.aps
