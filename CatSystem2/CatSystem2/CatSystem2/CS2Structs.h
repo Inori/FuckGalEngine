@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define CS2_INT_HEADER_MAGIC    ('KIF')
-#define CS2_SCENE_MAGIC         ('CatScene')
+#define CS2_SCENE_MAGIC         ('CatS' << 32 + 'cene')
 #define CS2_FES_MAGIC           ('FES')
 #define CS2_HG2_MAGIC           ('HG-2')
 #define CS2_HG3_MAGIC           ('HG-3')
@@ -19,9 +19,10 @@ typedef struct
 	uint dwKey;
 } CS2IntHeader;
 
+#define CS2_FILENAME_LEN 0x40
 typedef struct
 {
-	char FileName[0x40];
+	char FileName[CS2_FILENAME_LEN];
 	uint dwOffset;
 	uint dwSize;
 } CS2IntEntry;
@@ -32,7 +33,7 @@ typedef struct
 	uint CompressedSize;
 	uint UncompressedSize;
 	byte CompressedData[1];
-} *PCS2SceneHeader;
+} CS2SceneHeader, *PCS2SceneHeader;
 
 typedef struct
 {
@@ -41,7 +42,7 @@ typedef struct
 	uint UncompressedSize;
 	uint Reserve;
 	byte CompressedData[1];
-} *PCS2FESHeader;
+} CS2FESHeader, *PCS2FESHeader;
 
 typedef struct
 {

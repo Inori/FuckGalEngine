@@ -152,9 +152,13 @@
     <ClInclude Include="CS2Structs.h" />
     <ClInclude Include="MTwister.h" />
     <ClInclude Include="types.h" />
+    <ClInclude Include="zlib.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="blowfish.h2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="zlib.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
