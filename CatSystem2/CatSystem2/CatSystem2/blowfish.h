@@ -76,6 +76,3 @@ public:
 	  } w;
 };
 #endif
-
-
-

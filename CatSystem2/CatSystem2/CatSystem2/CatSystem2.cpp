@@ -1,6 +1,31 @@
 #include "CatSystem2.h"
 #include <string.h>
 #include "zlib.h"
+#include <cstdlib>
+
+void* AllocAlign(uint nSize, uint nAlign)
+{
+	uint nMod = nSize % nAlign;
+	uint nAllocSize = 0;
+	if (nMod != 0)
+	{
+		nAllocSize = nSize - nMod + nAlign;
+	}
+	else
+	{
+		nAllocSize = nSize;
+	}
+
+	void* pMem = malloc(nAllocSize);
+	memset(pMem, 0, nAllocSize);
+
+	return pMem;
+}
+
+void Free(void* pMem)
+{
+	free(pMem);
+}
 
 CatSystem2::CatSystem2():
 	m_pInFile(NULL),
@@ -187,6 +212,21 @@ bool CatSystem2::DecryptEntries(CS2IntEntry* pEntries)
 
 bool CatSystem2::EncryptEntries(CS2IntEntry* pEntries)
 {
+	uint nFileCount = m_oHeader.dwFileNum;
+	uint nKey = m_oHeader.dwKey;
+
+	SetSeed(nKey);
+	nKey = m_oMTwist.GetRandom();
+	m_oBlowFish.Initialize((byte*)&nKey, sizeof(nKey));
+
+	CS2IntEntry* pIntEntry = pEntries;
+	for (size_t i = 1; nFileCount; ++i, --nFileCount)
+	{
+		RecoverFileName(pIntEntry->FileName, i);
+		m_oBlowFish.Encode((byte*)&pIntEntry->dwOffset, (byte*)&pIntEntry->dwOffset, 8);
+		pIntEntry->dwOffset -= i;
+		++pIntEntry;
+	}
 	return true;
 }
 
@@ -214,12 +254,14 @@ void CatSystem2::ExtractOneFile(CS2IntEntry* pEntry)
 
 
 	nBufferSize = pEntry->dwSize;
-	pBuffer = new byte[nBufferSize];
+	uint nDecodeSize = m_oBlowFish.GetOutputLength(nBufferSize);
+	pBuffer = new byte[nDecodeSize];
+	memset(pBuffer, 0, nDecodeSize);
 
 	fseek(m_pInFile, pEntry->dwOffset, SEEK_SET);
-	fread(pBuffer, nBufferSize, 1, m_pInFile);
+	fread(pBuffer, nDecodeSize, 1, m_pInFile);
 
-	m_oBlowFish.Decode(pBuffer, pBuffer, nBufferSize);
+	m_oBlowFish.Decode(pBuffer, pBuffer, nDecodeSize);
 
 	if (((PCS2SceneHeader)pBuffer)->Magic == CS2_SCENE_MAGIC)
 	{
@@ -230,7 +272,7 @@ void CatSystem2::ExtractOneFile(CS2IntEntry* pEntry)
 		nOutSize = pSceneHeader->UncompressedSize;
 		pUncomp = new byte[nOutSize];
 
-		if (uncompress(pUncomp, &nOutSize, pSceneHeader->CompressedData, pSceneHeader->CompressedSize) != Z_OK)
+		if (int a = uncompress(pUncomp, &nOutSize, pSceneHeader->CompressedData, pSceneHeader->CompressedSize) != Z_OK)
 		{
 			delete[] pUncomp;
 			goto RETURN_PROC;
@@ -300,8 +342,10 @@ void CatSystem2::InsertOneFile(CS2IntEntry* pEntry)
 	ulong nCompSize = compressBound(nUncompSize);
 	byte* pComp = new byte[nCompSize];
 
-	if (compress(pComp, &nCompSize, pBuffer, nUncompSize))
+	if (compress(pComp, &nCompSize, pBuffer, nUncompSize) != Z_OK)
 	{
+		printf("compress failed.");
+		goto RETURN_PROC;
 	}
 
 	pEntry->dwOffset = ftell(m_pOutFile);
@@ -326,6 +370,7 @@ void CatSystem2::InsertOneFile(CS2IntEntry* pEntry)
 
 	fwrite(pComp, nCompSize, 1, m_pOutFile);
 
+RETURN_PROC:
 	delete[] pComp;
 	if (pBuffer)
 	{
@@ -378,14 +423,23 @@ bool CatSystem2::ReadNewFile(const char* pszName, byte** ppBuffer, uint* pSize)
 
 void CatSystem2::WriteEntries(CS2IntEntry* pEntries)
 {
+	if (!pEntries)
+	{
+		return;
+	}
 
+	uint nEntryOffset = sizeof(CS2FESHeader);
+	fseek(m_pOutFile, nEntryOffset, SEEK_SET);
+	fwrite(pEntries, m_oHeader.dwFileNum * sizeof(CS2IntEntry), 1, m_pOutFile);
 }
 
 void CatSystem2::BackupFileNames(CS2IntEntry* pEntries)
 {
 	if (!m_pBackupFileNames)
 	{
-		m_pBackupFileNames = new char[m_oHeader.dwFileNum * CS2_FILENAME_LEN];
+		uint nNamesSize = m_oHeader.dwFileNum * CS2_FILENAME_LEN;
+		m_pBackupFileNames = new char[nNamesSize];
+		memset(m_pBackupFileNames, 0, nNamesSize);
 	}
 
 	uint nFileCount = m_oHeader.dwFileNum;
@@ -473,6 +527,7 @@ void CatSystem2::SetSeed(uint nSeed)
 
 char* CatSystem2::GetKeyCode()
 {
-	return NULL;
+	//return "FW-6JD55162";  //GRISAIA
+	return "FW-L3EY8BDY";  //ISLAND
 }
 

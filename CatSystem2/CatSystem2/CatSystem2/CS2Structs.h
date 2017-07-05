@@ -2,11 +2,11 @@
 
 #include "types.h"
 
-#define CS2_INT_HEADER_MAGIC    ('KIF')
-#define CS2_SCENE_MAGIC         ('CatS' << 32 + 'cene')
-#define CS2_FES_MAGIC           ('FES')
-#define CS2_HG2_MAGIC           ('HG-2')
-#define CS2_HG3_MAGIC           ('HG-3')
+#define CS2_INT_HEADER_MAGIC    ('FIK')
+#define CS2_SCENE_MAGIC         ((ulonglong)'StaC' + ((ulonglong)'enec' << 32))
+#define CS2_FES_MAGIC           ('SEF')
+#define CS2_HG2_MAGIC           ('2-GH')
+#define CS2_HG3_MAGIC           ('3-GH')
 
 #pragma pack(1)
 

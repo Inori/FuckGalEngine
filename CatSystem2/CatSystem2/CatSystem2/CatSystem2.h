@@ -38,7 +38,7 @@ private:
 	void	InsertOneFile(CS2IntEntry* pEntry);
 
 	void	WriteNewFile(const char* pszName, byte* pBuffer, uint nSize);
-	bool ReadNewFile(const char* pszName, byte** ppBuffer, uint* pSize);
+	bool	ReadNewFile(const char* pszName, byte** ppBuffer, uint* pSize);
 	void	WriteEntries(CS2IntEntry* pEntries);
 
 	void	BackupFileNames(CS2IntEntry* pEntries);
