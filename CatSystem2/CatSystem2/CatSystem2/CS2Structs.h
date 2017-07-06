@@ -32,7 +32,6 @@ typedef struct
 	ulonglong Magic;
 	uint CompressedSize;
 	uint UncompressedSize;
-	byte CompressedData[1];
 } CS2SceneHeader, *PCS2SceneHeader;
 
 typedef struct
@@ -41,7 +40,6 @@ typedef struct
 	uint CompressedSize;
 	uint UncompressedSize;
 	uint Reserve;
-	byte CompressedData[1];
 } CS2FESHeader, *PCS2FESHeader;
 
 typedef struct

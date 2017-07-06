@@ -45,7 +45,7 @@ private:
 	void	RecoverFileName(char* pOutName, uint nIndex);
 
 	int		HashString(char* pszName);
-	void	DecryptFileName(char* pszFileName, uint nFileNameHash);
+	void DecryptFileName(char* pszFileName, uint nSeed);
 
 	void	SetSeed(uint nSeed);
 	char*	GetKeyCode();
@@ -55,7 +55,5 @@ private:
 	CS2IntHeader m_oHeader;
 	CMTwister	m_oMTwist;
 	Blowfish	m_oBlowFish;
-	char	m_pCharTable[26 * 2];
-	char	m_pCharTableReverse[26 * 2];
 	char*	m_pBackupFileNames;
 };
