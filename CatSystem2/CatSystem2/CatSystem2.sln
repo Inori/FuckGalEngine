@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CatSystem2", "CatSystem2\CatSystem2.vcxproj", "{6CFBE10F-AB8D-4913-9575-505DF5239BFD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HG3PNG", "HG3PNG\HG3PNG.vcxproj", "{99D49C8F-9584-4CE3-9567-F67CB537E4C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{6CFBE10F-AB8D-4913-9575-505DF5239BFD}.Release|x64.Build.0 = Release|x64
 		{6CFBE10F-AB8D-4913-9575-505DF5239BFD}.Release|x86.ActiveCfg = Release|Win32
 		{6CFBE10F-AB8D-4913-9575-505DF5239BFD}.Release|x86.Build.0 = Release|Win32
+		{99D49C8F-9584-4CE3-9567-F67CB537E4C6}.Debug|x64.ActiveCfg = Debug|x64
+		{99D49C8F-9584-4CE3-9567-F67CB537E4C6}.Debug|x64.Build.0 = Debug|x64
+		{99D49C8F-9584-4CE3-9567-F67CB537E4C6}.Debug|x86.ActiveCfg = Debug|Win32
+		{99D49C8F-9584-4CE3-9567-F67CB537E4C6}.Debug|x86.Build.0 = Debug|Win32
+		{99D49C8F-9584-4CE3-9567-F67CB537E4C6}.Release|x64.ActiveCfg = Release|x64
+		{99D49C8F-9584-4CE3-9567-F67CB537E4C6}.Release|x64.Build.0 = Release|x64
+		{99D49C8F-9584-4CE3-9567-F67CB537E4C6}.Release|x86.ActiveCfg = Release|Win32
+		{99D49C8F-9584-4CE3-9567-F67CB537E4C6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
