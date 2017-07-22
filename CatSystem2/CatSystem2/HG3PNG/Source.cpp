@@ -11,6 +11,8 @@
 #include "as-util.h"
 #include "../CatSystem2/zlib.h"
 #include <string>
+#include "pngfile.h"
+#include <windows.h>
 
 using std::string;
 
@@ -150,7 +152,8 @@ void undeltafilter(unsigned char* buff,
 		unsigned char* line = out_buff + y * stride;
 		unsigned char* prev = out_buff + (y - 1) * stride;
 
-		for (unsigned long x = 0; x < stride; x++) {
+		for (unsigned long x = 0; x < stride; ++x) 
+		{
 			line[x] += prev[x];
 		}
 	}
@@ -228,6 +231,25 @@ void unrle(unsigned char*  buff,
 	}
 }
 
+
+void flip_image_rgba(unsigned char* buff, int width, int height)
+{
+	int size = width * height * 4;
+	unsigned char* new_buff = (unsigned char*)malloc(size);
+
+	for (int y0 = 0, y1 = height - 1; y1 >=0; ++y0, --y1)
+	{
+		unsigned char* old_line = &buff[y1 * width * 4];
+		unsigned char* new_line = &new_buff[y0 * width * 4];
+		memcpy(new_line, old_line, width * 4);
+	}
+
+	memcpy(buff, new_buff, size);
+	free(new_buff);
+}
+
+
+
 void process_image(int           fd,
 	const string& filename,
 	unsigned long width,
@@ -294,6 +316,21 @@ void process_image(int           fd,
 	}
 #endif
 
+	if (depth_bytes != 4 || width * height * 4 != rgba_len)
+	{
+		MessageBoxA(NULL, "not 32 byte image", "Error", MB_OK);
+		goto FINISH;
+	}
+
+	flip_image_rgba(rgba_buff, width, height);
+
+	pic_data pic = { 0 };
+	pic.bit_depth = 8;
+	pic.flag = HAVE_ALPHA;
+	pic.width = width;
+	pic.height = height;
+	pic.rgba = rgba_buff;
+	write_png_file(filename + ".png", &pic);
 	//as::write_bmp(filename + ".bmp",
 	//	rgba_buff,
 	//	rgba_len,
@@ -301,6 +338,7 @@ void process_image(int           fd,
 	//	height,
 	//	(unsigned short)depth_bytes);
 
+FINISH:
 	delete[] rgba_buff;
 	delete[] out_buff;
 	delete[] cmd_buff;
@@ -390,6 +428,9 @@ int main(int argc, char** argv) {
 					stdinfo.offset_y);
 
 				if (!memcmp(tag.signature, "img_al", 5)) {
+					
+					continue;
+
 					HG3IMGAL imghdr;
 					read(fd, &imghdr, sizeof(imghdr));
 

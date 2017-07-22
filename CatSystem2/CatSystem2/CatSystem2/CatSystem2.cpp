@@ -270,6 +270,7 @@ void CatSystem2::ExtractOneFile(CS2IntEntry* pEntry)
 
 		if (uncompress(pUncomp, &nOutSize, pBuffer + sizeof(CS2SceneHeader), pSceneHeader->CompressedSize) != Z_OK)
 		{
+			delete[] pUncomp;
 			goto RETURN_PROC;
 		}
 
@@ -286,15 +287,20 @@ void CatSystem2::ExtractOneFile(CS2IntEntry* pEntry)
 		nOutSize = pFesHeader->UncompressedSize;
 		pUncomp = new byte[nOutSize];
 
-		if (uncompress(pUncomp, &nOutSize, pBuffer + sizeof(CS2FESHeader), pFesHeader->CompressedSize) != Z_OK)
+	    if (uncompress(pUncomp, &nOutSize, pBuffer + sizeof(CS2FESHeader), pFesHeader->CompressedSize) != Z_OK)
 		{
 			delete[] pUncomp;
 			goto RETURN_PROC;
 		}
 
+
 		WriteNewFile(pEntry->FileName, pUncomp, nOutSize);
 
 		delete[] pUncomp;
+	}
+	else
+	{
+		WriteNewFile(pEntry->FileName, pBuffer, nBufferSize);
 	}
 
 	printf("Extract file: %s -> done.\n", pEntry->FileName);

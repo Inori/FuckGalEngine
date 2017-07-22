@@ -109,7 +109,7 @@ def ImportStrList(dst, offset_list, str_list):
         if type == b'\x01\x20' or type == b'\x01\x21':
             dst.seek(0, os.SEEK_END)
             new_off = dst.tell()
-            byte_str = str_list[i].encode(IMPORT_CODEPAGE, errors='ignore') + b'\x00'
+            byte_str = str_list[i].encode(IMPORT_CODEPAGE, errors='ignore').replace(b'\xa1\xee', b'\x87\x40') + b'\x00'
             i += 1
             dst.write(type)
             dst.write(byte_str)
@@ -118,7 +118,7 @@ def ImportStrList(dst, offset_list, str_list):
             if select_flag:
                 dst.seek(0, os.SEEK_END)
                 new_off = dst.tell()
-                byte_str = str_list[i].encode(IMPORT_CODEPAGE, errors='ignore') + b'\x00'
+                byte_str = str_list[i].encode(IMPORT_CODEPAGE, errors='ignore').replace(b'\xa1\xee', b'\x87\x40') + b'\x00'
                 i += 1
                 dst.write(type)
                 dst.write(byte_str)
@@ -147,7 +147,7 @@ def ReadFileLines(fname):
     src = open(fname, 'r', encoding='utf16')
     lines = src.readlines()
     src.close()
-    dst_lines = [line.replace('\\\\', '\\') for line in lines]
+    dst_lines = [line.replace('\\\\', '\\').replace('♡', '☆') for line in lines]
     return dst_lines
 
 def BuildTxtName(bin_name):
@@ -176,6 +176,7 @@ DO_PACK = True
 def Main():
     fl = walk('uncompress')
     for fn in fl:
+        print('process-> ' + fn)
         src = open(fn, 'rb+')
         fp = src
         # magic = src.read(8).decode('ascii')
@@ -225,10 +226,9 @@ def Main():
             RepairHeader(dst)
 
             dst.close()
-            print('import-> ' + txt_name)
 
         else:
-            dstname = 'script\\' + fn[5:-4] + '.txt'
+            dstname = 'script\\' + fn[11:-4] + '.txt'
             dst = open(dstname, 'w', encoding='utf16')
 
             i = 0
@@ -239,7 +239,7 @@ def Main():
             dst.close()
             #src.close()
             fp.close()
-            print(dstname)
+
 
 
 

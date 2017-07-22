@@ -18,14 +18,26 @@
     <ClCompile Include="Source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pngfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="as-util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="png.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pngfile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\CatSystem2\zlib.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="libpng16.lib">
       <Filter>Resource Files</Filter>
     </Library>
   </ItemGroup>
