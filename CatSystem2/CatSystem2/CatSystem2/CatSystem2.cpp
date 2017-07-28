@@ -38,26 +38,6 @@ CatSystem2::CatSystem2():
 
 void CatSystem2::Init()
 {
-	char up, low;
-	char *pUpStart, *pUpEnd, *pLowStart, *pLowEnd;
-
-	pUpStart = m_pCharTable;
-	pUpEnd = m_pCharTableReverse + countof(m_pCharTableReverse) - 1;
-	pLowStart = pUpStart + 26;
-	pLowEnd = pUpEnd - 26;
-
-	up = 'A';
-	low = 'a';
-	for (size_t i = 26; i; --i)
-	{
-		*pUpStart++ = up;
-		*pUpEnd-- = up;
-		*pLowStart++ = low;
-		*pLowEnd-- = low;
-
-		++up;
-		++low;
-	}
 }
 
 void CatSystem2::Unit()
@@ -122,7 +102,7 @@ bool CatSystem2::OpenOutput(char* pszName)
 		return false;
 	}
 
-	fwrite(&m_oHeader, sizeof(m_oHeader), 1, m_pOutFile);
+	fwrite(&m_oHeader, sizeof(CS2IntHeader), 1, m_pOutFile);
 
 	return true;
 }
@@ -201,6 +181,12 @@ bool CatSystem2::DecryptEntries(CS2IntEntry* pEntries)
 	CS2IntEntry* pIntEntry = pEntries;
 	for (size_t i = 1; nFileCount; ++i, --nFileCount)
 	{
+		if (!strcmp(pIntEntry->FileName, CS2_DEFAULT_KEYNAME))
+		{
+			++pIntEntry;
+			continue;
+		}
+	
 		DecryptFileName(pIntEntry->FileName, nFileNameHash + i);
 		pIntEntry->dwOffset += i;
 		m_oBlowFish.Decode((byte*)&pIntEntry->dwOffset, (byte*)&pIntEntry->dwOffset, 8);
@@ -222,7 +208,12 @@ bool CatSystem2::EncryptEntries(CS2IntEntry* pEntries)
 	CS2IntEntry* pIntEntry = pEntries;
 	for (size_t i = 1; nFileCount; ++i, --nFileCount)
 	{
-		RecoverFileName(pIntEntry->FileName, i);
+		if (!strcmp(pIntEntry->FileName, CS2_DEFAULT_KEYNAME))
+		{
+			++pIntEntry;
+			continue;
+		}
+		RecoverFileName(pIntEntry->FileName, i - 1);
 		m_oBlowFish.Encode((byte*)&pIntEntry->dwOffset, (byte*)&pIntEntry->dwOffset, 8);
 		pIntEntry->dwOffset -= i;
 		++pIntEntry;
@@ -237,9 +228,15 @@ void CatSystem2::ExtractFiles(CS2IntEntry* pEntries)
 		return;
 	}
 	uint nFileCount = m_oHeader.dwFileNum;
+	CS2IntEntry* pEntry = NULL;
 	for (uint i = 0; i != nFileCount; ++i)
 	{
-		ExtractOneFile(&pEntries[i]);
+		pEntry = &pEntries[i];
+		if (!strcmp(pEntry->FileName, CS2_DEFAULT_KEYNAME))
+		{
+			continue;
+		}
+		ExtractOneFile(pEntry);
 	}
 }
 
@@ -254,13 +251,12 @@ void CatSystem2::ExtractOneFile(CS2IntEntry* pEntry)
 
 
 	nBufferSize = pEntry->dwSize;
-	uint nDecodeSize = m_oBlowFish.GetOutputLength(nBufferSize);
-	pBuffer = new byte[nDecodeSize];
-	memset(pBuffer, 0, nDecodeSize);
+	pBuffer = new byte[nBufferSize];
 
 	fseek(m_pInFile, pEntry->dwOffset, SEEK_SET);
-	fread(pBuffer, nDecodeSize, 1, m_pInFile);
+	fread(pBuffer, nBufferSize, 1, m_pInFile);
 
+	uint nDecodeSize = (nBufferSize / 8) * 8;
 	m_oBlowFish.Decode(pBuffer, pBuffer, nDecodeSize);
 
 	if (((PCS2SceneHeader)pBuffer)->Magic == CS2_SCENE_MAGIC)
@@ -272,7 +268,7 @@ void CatSystem2::ExtractOneFile(CS2IntEntry* pEntry)
 		nOutSize = pSceneHeader->UncompressedSize;
 		pUncomp = new byte[nOutSize];
 
-		if (int a = uncompress(pUncomp, &nOutSize, pSceneHeader->CompressedData, pSceneHeader->CompressedSize) != Z_OK)
+		if (uncompress(pUncomp, &nOutSize, pBuffer + sizeof(CS2SceneHeader), pSceneHeader->CompressedSize) != Z_OK)
 		{
 			delete[] pUncomp;
 			goto RETURN_PROC;
@@ -291,16 +287,23 @@ void CatSystem2::ExtractOneFile(CS2IntEntry* pEntry)
 		nOutSize = pFesHeader->UncompressedSize;
 		pUncomp = new byte[nOutSize];
 
-		if (uncompress(pUncomp, &nOutSize, pFesHeader->CompressedData, pFesHeader->CompressedSize) != Z_OK)
+	    if (uncompress(pUncomp, &nOutSize, pBuffer + sizeof(CS2FESHeader), pFesHeader->CompressedSize) != Z_OK)
 		{
 			delete[] pUncomp;
 			goto RETURN_PROC;
 		}
 
+
 		WriteNewFile(pEntry->FileName, pUncomp, nOutSize);
 
 		delete[] pUncomp;
 	}
+	else
+	{
+		WriteNewFile(pEntry->FileName, pBuffer, nBufferSize);
+	}
+
+	printf("Extract file: %s -> done.\n", pEntry->FileName);
 
 RETURN_PROC:
 	delete[] pBuffer;
@@ -317,9 +320,15 @@ void CatSystem2::InsertFiles(CS2IntEntry* pEntries)
 	fseek(m_pOutFile, nFileOffset, SEEK_SET);
 
 	uint nFileCount = m_oHeader.dwFileNum;
+	CS2IntEntry* pEntry = NULL;
 	for (uint i = 0; i != nFileCount; ++i)
 	{
-		InsertOneFile(&pEntries[i]);
+		pEntry = &pEntries[i];
+		if (!strcmp(pEntry->FileName, CS2_DEFAULT_KEYNAME))
+		{
+			continue;
+		}
+		InsertOneFile(pEntry);
 	}
 }
 
@@ -348,16 +357,22 @@ void CatSystem2::InsertOneFile(CS2IntEntry* pEntry)
 		goto RETURN_PROC;
 	}
 
-	pEntry->dwOffset = ftell(m_pOutFile);
-	pEntry->dwSize = nCompSize;
+	
 
-	if (strstr(pEntry->FileName, ".sc"))
+	byte* pEncBuffer = NULL;
+	uint nEncSize = 0;
+	uint nHeaderSize = 0;
+	if (strstr(pEntry->FileName, ".cst"))
 	{
 		CS2SceneHeader oHeader = { 0 };
 		oHeader.Magic = CS2_SCENE_MAGIC;
 		oHeader.CompressedSize = nCompSize;
 		oHeader.UncompressedSize = nUncompSize;
-		fwrite(&oHeader, 0x10, 1, m_pOutFile);
+
+		nHeaderSize = sizeof(CS2SceneHeader);
+		nEncSize = nHeaderSize + nCompSize;
+		pEncBuffer = new byte[nEncSize];
+		memcpy(pEncBuffer, &oHeader, sizeof(CS2SceneHeader));
 	}
 	else if (strstr(pEntry->FileName, ".fes"))
 	{
@@ -365,10 +380,28 @@ void CatSystem2::InsertOneFile(CS2IntEntry* pEntry)
 		oHeader.Magic = CS2_FES_MAGIC;
 		oHeader.CompressedSize = nCompSize;
 		oHeader.UncompressedSize = nUncompSize;
-		fwrite(&oHeader, 0x10, 1, m_pOutFile);
+
+		nHeaderSize = sizeof(CS2FESHeader);
+		nEncSize = nHeaderSize + nCompSize;
+		pEncBuffer = new byte[nEncSize];
+		memcpy(pEncBuffer, &oHeader, sizeof(CS2FESHeader));
 	}
 
-	fwrite(pComp, nCompSize, 1, m_pOutFile);
+	memcpy(pEncBuffer + nHeaderSize, pComp, nCompSize);
+	uint nEncodeSize = (nEncSize / 8) * 8;
+	m_oBlowFish.Encode(pEncBuffer, pEncBuffer, nEncodeSize);
+
+
+	pEntry->dwOffset = ftell(m_pOutFile);
+	pEntry->dwSize = nEncSize;
+
+	fwrite(pEncBuffer, nEncSize, 1, m_pOutFile);
+	
+
+
+	delete[] pEncBuffer;
+
+	printf("Insert file: %s -> done.\n", pEntry->FileName);
 
 RETURN_PROC:
 	delete[] pComp;
@@ -428,7 +461,7 @@ void CatSystem2::WriteEntries(CS2IntEntry* pEntries)
 		return;
 	}
 
-	uint nEntryOffset = sizeof(CS2FESHeader);
+	uint nEntryOffset = sizeof(CS2IntHeader);
 	fseek(m_pOutFile, nEntryOffset, SEEK_SET);
 	fwrite(pEntries, m_oHeader.dwFileNum * sizeof(CS2IntEntry), 1, m_pOutFile);
 }
@@ -493,30 +526,55 @@ int CatSystem2::HashString(char* pszName)
 
 #define IN_RANGE(s, c, e) ((s <= c) && (c <= e))
 
-void CatSystem2::DecryptFileName(char* pszFileName, uint nFileNameHash)
+void CatSystem2::DecryptFileName(char* pszFileName, uint nSeed)
 {
-	uint ch, nIndex;
+	static unsigned char FWD[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	static unsigned char REV[] = "zyxwvutsrqponmlkjihgfedcbaZYXWVUTSRQPONMLKJIHGFEDCBA";
 
-	ch = *pszFileName;
-	if (ch == 0)
-		return;
+	SetSeed(nSeed);
+	unsigned long nKey = m_oMTwist.GetRandom();
+	unsigned long nShift = (unsigned char)((nKey >> 24) + (nKey >> 16) + (nKey >> 8) + nKey);
 
-	SetSeed(nFileNameHash);
-	nIndex = m_oMTwist.GetRandom();
-	nIndex = ((nIndex >> 16) + nIndex + (nIndex >> 24) + (nIndex >> 8)) & 0xFF;
-	for (; ch; ++nIndex, ch = *++pszFileName)
+	for (unsigned char* p = (unsigned char*)pszFileName; *p; p++) 
 	{
-		if (!IN_RANGE('A', ch & 0xDF, 'Z'))
-			continue;
+		unsigned long nIndex = 0;
+		unsigned long index2 = nShift;
 
-		for (size_t j = nIndex, i = countof(m_pCharTableReverse); i; --i)
+		while (REV[index2 % 0x34] != *p) 
 		{
-			if ((uint)m_pCharTableReverse[j++ % countof(m_pCharTableReverse)] == ch)
+			if (REV[(nShift + nIndex + 1) % 0x34] == *p) 
 			{
-				*pszFileName = m_pCharTable[countof(m_pCharTableReverse) - i];
+				nIndex += 1;
+				break;
+			}
+
+			if (REV[(nShift + nIndex + 2) % 0x34] == *p) 
+			{
+				nIndex += 2;
+				break;
+			}
+
+			if (REV[(nShift + nIndex + 3) % 0x34] == *p)
+			{
+				nIndex += 3;
+				break;
+			}
+
+			nIndex += 4;
+			index2 += 4;
+
+			if (nIndex > 0x34)
+			{
 				break;
 			}
 		}
+
+		if (nIndex < 0x34) 
+		{
+			*p = FWD[nIndex];
+		}
+
+		nShift++;
 	}
 }
 
@@ -525,9 +583,73 @@ void CatSystem2::SetSeed(uint nSeed)
 	m_oMTwist.SetSeed(nSeed);
 }
 
+//´ÓÓÎÏ·ExeÖÐÕÒKey
+
+//void copy_resource(HMODULE         h,
+//	const string&   name,
+//	const string&   type,
+//	unsigned char*& buff,
+//	unsigned long&  len)
+//{
+//	HRSRC r = FindResource(h, name.c_str(), type.c_str());
+//	if (!r) {
+//		fprintf(stderr, "Failed to find resource %s:%s\n", name.c_str(), type.c_str());
+//		exit(-1);
+//	}
+//
+//	HGLOBAL g = LoadResource(h, r);
+//	if (!g) {
+//		fprintf(stderr, "Failed to load resource %s:%s\n", name.c_str(), type.c_str());
+//		exit(-1);
+//	}
+//
+//	len = SizeofResource(h, r);
+//	buff = new unsigned char[(len + 7) & ~7];
+//
+//	void* locked_buff = LockResource(g);
+//	if (!locked_buff) {
+//		fprintf(stderr, "Failed to lock resource %s:%s\n", name.c_str(), type.c_str());
+//		exit(-1);
+//	}
+//
+//	memcpy(buff, locked_buff, len);
+//}
+//
+//string find_vcode2(const string& exe_filename) {
+//	HMODULE h = LoadLibraryEx(exe_filename.c_str(), NULL, LOAD_LIBRARY_AS_IMAGE_RESOURCE);
+//	if (!h) {
+//		fprintf(stderr, "Failed to load %s\n", exe_filename.c_str());
+//		exit(-1);
+//	}
+//
+//	unsigned long  key_len = 0;
+//	unsigned char* key_buff = NULL;
+//	copy_resource(h, "KEY", "KEY_CODE", key_buff, key_len);
+//
+//	for (unsigned long i = 0; i < key_len; i++) {
+//		key_buff[i] ^= 0xCD;
+//	}
+//
+//	unsigned long  vcode2_len = 0;
+//	unsigned char* vcode2_buff = NULL;
+//	copy_resource(h, "DATA", "V_CODE2", vcode2_buff, vcode2_len);
+//
+//	Blowfish bf;
+//	bf.Set_Key(key_buff, key_len);
+//	bf.Decrypt(vcode2_buff, (vcode2_len + 7) & ~7);
+//
+//	string vcode2((char*)vcode2_buff, vcode2_len);
+//
+//	delete[] vcode2_buff;
+//	delete[] key_buff;
+//
+//	FreeLibrary(h);
+//
+//	return vcode2;
+//}
 char* CatSystem2::GetKeyCode()
 {
 	//return "FW-6JD55162";  //GRISAIA
-	return "FW-L3EY8BDY";  //ISLAND
+	return "FW-M2RT6IID";  //ISLAND
 }
 
