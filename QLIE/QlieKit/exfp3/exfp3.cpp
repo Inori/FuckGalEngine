@@ -20,7 +20,10 @@
 //#define FP3_FLAVOR 2
 
 // Per-archive obfuscation with an initial key file and (unique?) compiled key data
-#define FP3_FLAVOR 3
+//#define FP3_FLAVOR 3
+
+
+#define FP3_FLAVOR 31
 
 
 struct PACKTRL {
@@ -65,6 +68,46 @@ unsigned __int64 padw(unsigned __int64 a, unsigned __int64 b) {
   return ret;
 }
 
+// Emulate mmx PSLLD instruction
+unsigned __int64 pslld(unsigned __int64 a, unsigned __int64 count) {
+	unsigned long* a_dwords = (unsigned long*)&a;
+
+	unsigned __int64 ret = 0;
+	unsigned long*  r_dwords = (unsigned long*)&ret;
+
+	r_dwords[0] = a_dwords[0] << count;
+	r_dwords[1] = a_dwords[1] << count;
+
+	return ret;
+}
+
+// Emulate mmx PSRLD instruction
+unsigned __int64 psrld(unsigned __int64 a, unsigned __int64 count) {
+	unsigned long* a_dwords = (unsigned long*)&a;
+
+	unsigned __int64 ret = 0;
+	unsigned long*  r_dwords = (unsigned long*)&ret;
+
+	r_dwords[0] = a_dwords[0] >> count;
+	r_dwords[1] = a_dwords[1] >> count;
+
+	return ret;
+}
+
+// Emulate mmx padw instruction
+__int64 pmaddwd(unsigned __int64 a, unsigned __int64 b) {
+	short* a_words = (short*)&a;
+	short* b_words = (short*)&b;
+
+	__int64 ret = 0;
+	long*  r_dwords = (long*)&ret;
+
+	r_dwords[0] = (long)(a_words[0] * b_words[0]) + (long)(a_words[1] * b_words[1]);
+	r_dwords[1] = (long)(a_words[2] * b_words[2]) + (long)(a_words[3] * b_words[3]);
+
+	return ret;
+}
+
 unsigned long crc_or_something(unsigned char* buff, unsigned long  len) 
 {
   unsigned __int64  key    = 0;
@@ -81,6 +124,26 @@ unsigned long crc_or_something(unsigned char* buff, unsigned long  len)
   result ^= (result >> 32);
 
   return (unsigned long) (result & 0xFFFFFFFF);
+}
+
+unsigned long crc_or_something31(unsigned char* buff, unsigned long  len)
+{
+	unsigned __int64  key = 0;
+	unsigned __int64  result = 0;
+	unsigned __int64* p = (unsigned __int64*)buff;
+	unsigned __int64* end = p + (len / sizeof(__int64));
+
+	while (p < end)
+	{
+		key = padw(key, 0xA35793A7A35793A7);
+		result = padw(result, *p++ ^ key);
+
+		result = pslld(result, 0x03) | psrld(result, 0x1D);
+	}
+
+	result = pmaddwd(result, result >> 0x20);
+
+	return (unsigned long)(result & 0xFFFFFFFF);
 }
 
 void unobfuscate_data(unsigned char* buff, 
@@ -117,6 +180,26 @@ void unobfuscate_filename(unsigned char* buff,
     buff[i - 1] ^= ((i ^ key) & 0xFF) + i;
   }
 }
+
+void unobfuscate_filename31(unsigned char* buff,
+	unsigned long  len,
+	unsigned long  seed)
+{
+	unsigned long char_len = len / 2; //UTF16
+	unsigned long mutator = seed ^ ( (seed >> 0x10) & 0xFFFF);
+	unsigned long key = ((char_len * char_len) ^ (char_len ^ 0x3E13) ^ mutator) & 0xFFFF;
+
+	unsigned long cur_key = key;
+	wchar_t* uni_name = (wchar_t*)buff;
+
+	for (unsigned int i = 0; i != char_len; ++i)
+	{
+		cur_key = ((cur_key << 3) + i + key) & 0xFFFF;
+		uni_name[i] ^= (wchar_t)cur_key;
+	}
+		
+}
+
 
 void unobfuscate_flavor2(const string&  filename,
                          unsigned char* buff, 
@@ -449,11 +532,22 @@ int main(int argc, char** argv)
   unsigned char* p = toc_buff;
 
   // Figure out how much data is TOC entries..
+
+#if FP3_FLAVOR == 31
+  for (i = 0; i < trl.entry_count; i++)
+  {
+	  unsigned short filename_len = (*(unsigned short*)p) * 2; 
+	  p += 2 + filename_len + sizeof(PACKENTRY);
+  }
+#else
+
   for (i = 0; i < trl.entry_count; i++) 
   {
     unsigned short filename_len = *(unsigned short*) p;
     p += 2 + filename_len + sizeof(PACKENTRY);
   }
+
+#endif
 
   // Compute the obfuscation seed from the CRC(?) of some hash data.
   HASHHDR*       hashhdr    = (HASHHDR*) p;
@@ -469,16 +563,30 @@ int main(int argc, char** argv)
 	  return -1;
   }
   
-  unsigned long  seed       = crc_or_something(hash_bytes, 256) & 0x0FFFFFFF;
+#if FP3_FLAVOR == 31
+  unsigned long  seed = crc_or_something31(hash_bytes, 256) & 0x0FFFFFFF;
+#else
+  unsigned long  seed = crc_or_something(hash_bytes, 256) & 0x0FFFFFFF;
+#endif
+
 
   p = toc_buff;
 
   for (i = 0; i < trl.entry_count; i++) 
   {
-    unsigned short filename_len = *(unsigned short*) p;
-    p += 2;
 
-    unobfuscate_filename(p, filename_len, seed);
+#if FP3_FLAVOR == 31
+	unsigned short filename_len = (*(unsigned short*)p) * 2;
+	p += 2;
+	unobfuscate_filename31(p, filename_len, seed);
+#else
+    unsigned short filename_len = *(unsigned short*) p;
+	p += 2;
+	unobfuscate_filename(p, filename_len, seed);
+#endif
+    
+
+    
 
     string filename((char*)p, filename_len);
     p += filename_len;
