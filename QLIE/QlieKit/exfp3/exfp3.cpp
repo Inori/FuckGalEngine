@@ -12,7 +12,10 @@
 
 #include "as-util.h"
 #include "mt.h"
-
+#include <mmintrin.h>
+#include <windows.h>
+#include <locale> 
+#include <codecvt>
 // Uniform obfuscation for all archives
 //#define FP3_FLAVOR 1
 
@@ -24,6 +27,8 @@
 
 
 #define FP3_FLAVOR 31
+
+
 
 
 struct PACKTRL {
@@ -68,45 +73,6 @@ unsigned __int64 padw(unsigned __int64 a, unsigned __int64 b) {
   return ret;
 }
 
-// Emulate mmx PSLLD instruction
-unsigned __int64 pslld(unsigned __int64 a, unsigned __int64 count) {
-	unsigned long* a_dwords = (unsigned long*)&a;
-
-	unsigned __int64 ret = 0;
-	unsigned long*  r_dwords = (unsigned long*)&ret;
-
-	r_dwords[0] = a_dwords[0] << count;
-	r_dwords[1] = a_dwords[1] << count;
-
-	return ret;
-}
-
-// Emulate mmx PSRLD instruction
-unsigned __int64 psrld(unsigned __int64 a, unsigned __int64 count) {
-	unsigned long* a_dwords = (unsigned long*)&a;
-
-	unsigned __int64 ret = 0;
-	unsigned long*  r_dwords = (unsigned long*)&ret;
-
-	r_dwords[0] = a_dwords[0] >> count;
-	r_dwords[1] = a_dwords[1] >> count;
-
-	return ret;
-}
-
-// Emulate mmx padw instruction
-__int64 pmaddwd(unsigned __int64 a, unsigned __int64 b) {
-	short* a_words = (short*)&a;
-	short* b_words = (short*)&b;
-
-	__int64 ret = 0;
-	long*  r_dwords = (long*)&ret;
-
-	r_dwords[0] = (long)(a_words[0] * b_words[0]) + (long)(a_words[1] * b_words[1]);
-	r_dwords[1] = (long)(a_words[2] * b_words[2]) + (long)(a_words[3] * b_words[3]);
-
-	return ret;
-}
 
 unsigned long crc_or_something(unsigned char* buff, unsigned long  len) 
 {
@@ -126,24 +92,33 @@ unsigned long crc_or_something(unsigned char* buff, unsigned long  len)
   return (unsigned long) (result & 0xFFFFFFFF);
 }
 
+inline __m64 _m_from_i64(unsigned __int64 i)
+{
+	__m64 m = {0};
+	m.m64_u64 = i;;
+	return m;
+}
+
 unsigned long crc_or_something31(unsigned char* buff, unsigned long  len)
 {
-	unsigned __int64  key = 0;
-	unsigned __int64  result = 0;
+
+	__m64 key = _mm_setzero_si64();
+	__m64 result = _mm_setzero_si64();
 	unsigned __int64* p = (unsigned __int64*)buff;
 	unsigned __int64* end = p + (len / sizeof(__int64));
+	
+	_m_empty();
 
 	while (p < end)
 	{
-		key = padw(key, 0xA35793A7A35793A7);
-		result = padw(result, *p++ ^ key);
-
-		result = pslld(result, 0x03) | psrld(result, 0x1D);
+		key = _m_paddw(key,  _m_from_i64(0xA35793A7A35793A7));
+		result = _m_paddw(result, _m_pxor(_m_from_i64(*p++), key));
+		result = _m_por( _m_pslld(result, _m_from_int(0x03)), _m_psrld(result, _m_from_int(0x1D)));
 	}
 
-	result = pmaddwd(result, result >> 0x20);
+	result = _m_pmaddwd(result, _m_psrlq(result , _m_from_int(0x20)));
 
-	return (unsigned long)(result & 0xFFFFFFFF);
+	return (unsigned long)(result.m64_u64 & 0xFFFFFFFF);
 }
 
 void unobfuscate_data(unsigned char* buff, 
@@ -277,6 +252,180 @@ void unobfuscate_flavor2(const string&  filename,
     p++;
   }
 }
+
+
+void unobfuscate_key_file(const wstring& keyname,
+	unsigned char* buff,
+	unsigned long len,
+	unsigned long seed)
+{
+	unsigned long key_b = 0x85F532;
+	unsigned long key_s = 0x33F641;
+
+	for (unsigned long i = 0; i != keyname.size(); ++i)
+	{
+		unsigned long wc = keyname[i];
+		key_b = (wc << ((i & 7) & 0xFF)) + key_b;
+		key_s ^= key_b;
+	}
+
+	unsigned long key = 0x8F32DC;
+
+	unsigned long len_key = len & 0x00FFFFFF;
+	len_key += len_key;
+	len_key += len_key;
+	len_key += len_key;
+	len_key -= (len & 0x00FFFFFF);
+
+	key = (key ^ len ^ key_b) + key_b + len + len_key;
+	key = ((key ^ seed) + key_s) & 0x00FFFFFF;
+	key = key + key * 8;
+
+	const unsigned long table_len = 64;
+	unsigned long table[table_len] = { 0 };
+
+	union mul_t
+	{
+		unsigned __int64 result;
+		struct
+		{
+			unsigned long eax;
+			unsigned long edx;
+		};
+	};
+
+	mul_t mutator = { 0 };
+	mutator.eax = key;
+
+	for (unsigned long j = 0; j != table_len; ++j)
+	{
+		mutator.eax ^= 0x8DF21431;
+		mutator.result = (unsigned __int64)mutator.eax * (unsigned __int64)0x8DF21431;
+		mutator.eax += mutator.edx;
+		table[j] = mutator.eax;
+	}
+
+	unsigned long key_idx = table[13];
+	key_idx &= 0x0F;
+	key_idx += key_idx;
+	key_idx += key_idx;
+	key_idx += key_idx;
+
+	unsigned char* ptable = (unsigned char*)table;
+	unsigned __int64* pbuffer = (unsigned __int64*)buff;
+	__m64 mm_key7 = _m_from_i64(*(unsigned __int64*)(ptable + 0x18));
+	__m64 mm_key6 = { 0 };
+	__m64 mm_key1 = { 0 };
+
+	unsigned long step = len / sizeof(unsigned __int64);
+	_m_empty();
+	for (unsigned long k = 0; k != step; ++k)
+	{
+		mm_key6 = _m_from_i64(*(unsigned __int64*)(ptable + key_idx));
+		mm_key7 = _m_pxor(mm_key7, mm_key6);
+		mm_key7 = _m_paddd(mm_key7, mm_key6);
+		mm_key1 = _m_from_i64(pbuffer[k]);
+		mm_key1 = _m_pxor(mm_key1, mm_key7);
+		pbuffer[k] = mm_key1.m64_u64;
+		mm_key7 = _m_paddb(mm_key7, mm_key1);
+		mm_key7 = _m_pxor(mm_key7, mm_key1);
+		mm_key7 = _m_pslld(mm_key7, _m_from_i64(0x1));
+		mm_key7 = _m_paddw(mm_key7, mm_key1);
+		key_idx = (key_idx + 8) & 0x7F;
+	}
+}
+
+
+void unobfuscate_normal_file(const wstring& filename,
+	unsigned char* buff,
+	unsigned long len,
+	unsigned long seed,
+	unsigned char* box,
+	unsigned long box_len)
+{
+	unsigned long key_b = 0x86F7E2;
+	unsigned long key_s = 0x4437F1;
+
+	for (unsigned long i = 0; i != filename.size(); ++i)
+	{
+		unsigned long wc = filename[i];
+		key_b = (wc << ((i & 7) & 0xFF)) + key_b;
+		key_s ^= key_b;
+	}
+
+	unsigned long key = 0x56E213;
+
+	union mul_t
+	{
+		unsigned __int64 result;
+		struct
+		{
+			unsigned long eax;
+			unsigned long edx;
+		};
+	};
+
+
+	long len_key = len & 0x00FFFFFF;
+	len_key *= 0xD;;
+
+	key = (key ^ len ^ key_b) + key_b + len + len_key;
+	key = ((key ^ seed) + key_s) & 0x00FFFFFF;
+	key *= 0xD;
+
+	const unsigned long table_len = 64;
+	unsigned long table[table_len] = { 0 };
+
+	mul_t mutator = { 0 };
+	mutator.eax = key;
+
+	for (unsigned long j = 0; j != table_len; ++j)
+	{
+		mutator.eax ^= 0x8A77F473;
+		mutator.result = (unsigned __int64)mutator.eax * (unsigned __int64)0x8A77F473;
+		mutator.eax += mutator.edx;
+		table[j] = mutator.eax;
+	}
+
+	unsigned long key_idx = table[8];
+	key_idx &= 0xD;
+	key_idx += key_idx;
+	key_idx += key_idx;
+	key_idx += key_idx;
+
+	unsigned char* ptable = (unsigned char*)table;
+	unsigned char* pbox = box;
+	unsigned __int64* pbuffer = (unsigned __int64*)buff;
+
+	__m64 mm_key7 = _m_from_i64(*(unsigned __int64*)(ptable + 0x18));
+	__m64 mm_key5 = { 0 };
+	__m64 mm_key6 = { 0 };
+	__m64 mm_key1 = { 0 };
+
+	unsigned long step = len / sizeof(unsigned __int64);
+	_m_empty();
+	for (unsigned long k = 0; k != step; ++k)
+	{
+		mm_key6 = _m_from_i64(*(unsigned __int64*)(ptable + (key_idx & 0xF) * 8));
+		mm_key5 = _m_from_i64(*(unsigned __int64*)(pbox + (key_idx & 0x7F) * 8));
+
+		mm_key6 = _m_pxor(mm_key6, mm_key5);
+		mm_key7 = _m_pxor(mm_key7, mm_key6);
+		mm_key7 = _m_paddd(mm_key7, mm_key6);
+		mm_key1 = _m_from_i64(pbuffer[k]);
+		mm_key1 = _m_pxor(mm_key1, mm_key7);
+		pbuffer[k] = mm_key1.m64_u64;
+		mm_key7 = _m_paddb(mm_key7, mm_key1);
+		mm_key7 = _m_pxor(mm_key7, mm_key1);
+		mm_key7 = _m_pslld(mm_key7, _m_from_int(1));
+		mm_key7 = _m_paddw(mm_key7, mm_key1);
+		key_idx = (key_idx + 1) & 0x7F;
+	}
+}
+
+
+
+
 
 struct bpe_hdr_t {
   unsigned char signature[4]; // "1PC\xFF"
@@ -462,6 +611,102 @@ bool search_key2_buff_from_exe(unsigned char *exe_buff, unsigned long exe_len, u
 	return false;
 }
 
+bool load_reskey_from_exe(const string& exe_name, unsigned char** key_buff, unsigned long* key_len)
+{
+	if (exe_name.empty())
+	{
+		return false;
+	}
+	HMODULE hExe = LoadLibraryA(exe_name.c_str());
+	if (!hExe)
+	{
+		return false;
+	}
+
+	HRSRC hRes = FindResourceA(hExe, "RESKEY", RT_RCDATA);
+	if (!hRes) 
+	{
+		fprintf(stderr, "Failed to find resource %s:%s\n", "RESKEY", "RCDATA");
+		exit(-1);
+	}
+
+	HGLOBAL hGlobal = LoadResource(hExe, hRes);
+	if (!hGlobal) 
+	{
+		fprintf(stderr, "Failed to load resource %s:%s\n", "RESKEY", "RCDATA");
+		exit(-1);
+	}
+
+	unsigned long len = SizeofResource(hExe, hRes);
+	unsigned char* buff = new unsigned char[len];
+
+	void* locked_buff = LockResource(hGlobal);
+	if (!locked_buff)
+	{
+		fprintf(stderr, "Failed to lock resource %s:%s\n", "RESKEY", "RCDATA");
+		exit(-1);
+	}
+
+	memcpy(buff, locked_buff, len);
+
+	*key_buff = buff;
+	*key_len = len;
+
+	FreeLibrary(hExe);
+
+	return true;
+}
+
+void make_decode_table(unsigned char* table, unsigned long len, unsigned char* key_buff, unsigned long key_len)
+{
+	unsigned long* ptable = (unsigned long*)table;
+	unsigned long step = len / (sizeof(unsigned long));
+
+	if (key_len < 0x80)
+	{
+		printf("key len too short");
+		exit(1);
+	}
+
+	for (long i = 0; i != step; ++i)
+	{
+		__int64 val = (__int64)i;
+		unsigned long mod = val % 3;
+		if (!mod)
+		{
+			ptable[i] = (i + 3) * (i + 7);
+		}
+		else
+		{
+			ptable[i] = (0 - (i + 3)) * (i + 7);
+		}
+	}
+
+	unsigned long key = *(key_buff + 0x31) % 0x49 + 0x80;
+	unsigned long init_key = *(key_buff + 0x31 + 0x1E) % 7 + 7;
+	
+	for (unsigned long j = 0; j != len; ++j)
+	{
+		key += init_key;
+		table[j] ^= *(key_buff + (key % key_len)) & 0xFF;
+	}
+}
+
+char *UnicodeToAnsi(const wchar_t *wstr, int code_page)
+{
+	static char result[1024];
+	int len = WideCharToMultiByte(code_page, 0, wstr, -1, NULL, 0, NULL, 0);
+	WideCharToMultiByte(code_page, 0, wstr, -1, result, len, NULL, 0);
+	result[len] = '\0';
+	return result;
+}
+
+string ws2s(const std::wstring& wstr)
+{
+	string str(UnicodeToAnsi(wstr.c_str(), 932));
+	return str;
+}
+
 int main(int argc, char** argv) 
 {
 
@@ -474,15 +719,14 @@ int main(int argc, char** argv)
     fprintf(stderr, "usage: %s <input.pack>\n", argv[0]);
     return -1;
   }
-#else
-#if FP3_FLAVOR == 2
+#elif FP3_FLAVOR == 2
   if (argc != 3) 
   {
     fprintf(stderr, "exfp3 v1.46 by asmodean\n\n");
     fprintf(stderr, "usage: %s <input.pack> <key.fkey>\n", argv[0]);
     return -1;
   }
-#else
+#elif FP3_FLAVOR == 3
   if (argc != 4) 
   {
     fprintf(stderr, "exfp3 v1.48 by asmodean & modified by Fuyin\n\n");
@@ -491,6 +735,7 @@ int main(int argc, char** argv)
   }
 
   string exe_name = argv[3];
+
   int exe_fd = as::open_or_die(exe_name, O_RDONLY | O_BINARY);
   unsigned long exe_size = as::get_file_size(exe_fd);
   unsigned char *exe_buff = new unsigned char[exe_size];
@@ -503,8 +748,6 @@ int main(int argc, char** argv)
   }
   delete[]exe_buff;
 
-#endif
-
   string key_filename(argv[2]);
 
   int            key_fd   = as::open_or_die(key_filename, O_RDONLY | O_BINARY);
@@ -512,6 +755,27 @@ int main(int argc, char** argv)
   unsigned char* key_buff = new unsigned char[key_len];  
   read(key_fd, key_buff, key_len);
   close(key_fd);
+
+#else
+	if (argc != 3)
+	{
+		fprintf(stderr, "exfp3 v1.5 by asmodean & modified by Fuyin\n\n");
+		fprintf(stderr, "usage: %s <input.pack> <game_name.exe>\n\n", argv[0]);
+		return -1;
+	}
+
+	string exe_name = argv[2];
+
+	unsigned char* reskey_buff = NULL;
+	unsigned long reskey_len = 0;
+	if (!load_reskey_from_exe(exe_name, &reskey_buff, &reskey_len))
+	{
+		fprintf(stderr, "Can't find key from exe file.\n\n");
+		return -1;
+	}
+
+	
+
 #endif 
 
   string in_filename(argv[1]);
@@ -536,7 +800,7 @@ int main(int argc, char** argv)
 #if FP3_FLAVOR == 31
   for (i = 0; i < trl.entry_count; i++)
   {
-	  unsigned short filename_len = (*(unsigned short*)p) * 2; 
+	  unsigned short filename_len = (*(unsigned short*)p) * sizeof(wchar_t); 
 	  p += 2 + filename_len + sizeof(PACKENTRY);
   }
 #else
@@ -569,6 +833,9 @@ int main(int argc, char** argv)
   unsigned long  seed = crc_or_something(hash_bytes, 256) & 0x0FFFFFFF;
 #endif
 
+  const unsigned long decode_table_len = 0x400;
+  unsigned char decode_table[decode_table_len] = { 0 };
+  make_decode_table(decode_table, decode_table_len, reskey_buff, reskey_len);
 
   p = toc_buff;
 
@@ -576,74 +843,121 @@ int main(int argc, char** argv)
   {
 
 #if FP3_FLAVOR == 31
-	unsigned short filename_len = (*(unsigned short*)p) * 2;
+	unsigned short filename_len = (*(unsigned short*)p) * sizeof(wchar_t);
 	p += 2;
 	unobfuscate_filename31(p, filename_len, seed);
+
+	wstring filename((wchar_t*)p, filename_len / sizeof(wchar_t));
+	p += filename_len;
+
+	PACKENTRY* entry = (PACKENTRY*)p;
+	p += sizeof(*entry);
+
+	unsigned long  len = entry->length;
+	unsigned char* buff = new unsigned char[len];
+	_lseeki64(fd, entry->offset, SEEK_SET);
+	read(fd, buff, len);
+
+	if (filename.find(L"pack_keyfile") != wstring::npos)
+	{
+		unobfuscate_key_file(filename, buff, len, seed);
+		delete[] buff;
+		continue;
+	}
+	else
+	{
+		unobfuscate_normal_file(filename, buff, len, seed, decode_table, decode_table_len);
+	}
+
+	unsigned long  out_len = entry->original_length;
+	unsigned char* out_buff = new unsigned char[out_len];
+
+	if (entry->is_compressed)
+	{
+		unbpe(buff, len, out_buff, out_len);
+	}
+	else
+	{
+		memcpy(out_buff, buff, out_len);
+	}
+
+	string outname = ws2s(filename);
+
+	as::make_path(outname);
+
+	if (!proc_dpng(outname, out_buff, out_len) && !proc_argb(outname, out_buff, out_len))
+	{
+		as::write_file(outname, out_buff, out_len);
+	}
+
+	delete[] out_buff;
+	delete[] buff;
+
 #else
     unsigned short filename_len = *(unsigned short*) p;
 	p += 2;
 	unobfuscate_filename(p, filename_len, seed);
-#endif
-    
 
-    
+	string filename((char*)p, filename_len);
 
-    string filename((char*)p, filename_len);
-    p += filename_len;
 
-    PACKENTRY* entry = (PACKENTRY*) p;
-    p += sizeof(*entry);
+	p += filename_len;
 
-    unsigned long  len  = entry->length;
-    unsigned char* buff = new unsigned char[len];
-    _lseeki64(fd, entry->offset, SEEK_SET);
-    read(fd, buff, len);
+	PACKENTRY* entry = (PACKENTRY*)p;
+	p += sizeof(*entry);
 
-    if (entry->is_obfuscated) 
-    {
+	unsigned long  len = entry->length;
+	unsigned char* buff = new unsigned char[len];
+	_lseeki64(fd, entry->offset, SEEK_SET);
+	read(fd, buff, len);
+
+	if (entry->is_obfuscated)
+	{
 #if FP3_FLAVOR == 1
-      unobfuscate_data(buff, len, seed);
+		unobfuscate_data(buff, len, seed);
 #else
-      unobfuscate_flavor2(filename, buff, len, seed, key_buff, key_len, key2_buff, key2_len);
+		//unobfuscate_flavor2(filename, buff, len, seed, key_buff, key_len, key2_buff, key2_len);
 #endif
-    }
+	}
 
-    unsigned long  out_len  = entry->original_length;
-    unsigned char* out_buff = new unsigned char[out_len];
+	unsigned long  out_len = entry->original_length;
+	unsigned char* out_buff = new unsigned char[out_len];
 
-    if (entry->is_compressed) 
-    {
-      unbpe(buff, len, out_buff, out_len);
-    } 
-    else 
-    {
-      memcpy(out_buff, buff, out_len);      
-    }
+	if (entry->is_compressed)
+	{
+		unbpe(buff, len, out_buff, out_len);
+	}
+	else
+	{
+		memcpy(out_buff, buff, out_len);
+	}
 
 #if FP3_FLAVOR != 1
-    if (filename.find("pack_keyfile") != string::npos) 
-    {
-      delete [] key_buff;
+	if (filename.find("pack_keyfile") != string::npos)
+	{
+		delete[] key_buff;
 
-      key_len  = out_len;
-      key_buff = new unsigned char[key_len];
-      memcpy(key_buff, out_buff, key_len);
-    }
+		key_len = out_len;
+		key_buff = new unsigned char[key_len];
+		memcpy(key_buff, out_buff, key_len);
+	}
 #endif
 
-    // Tenshi no Tamago has some pointless ARGB prefixed bitmaps
-    unsigned char* data_buff = out_buff;
-    unsigned long  data_len  = out_len;
+	// Tenshi no Tamago has some pointless ARGB prefixed bitmaps
+	unsigned char* data_buff = out_buff;
+	unsigned long  data_len = out_len;
 
-    as::make_path(filename);
+	as::make_path(filename);
 
-    if (!proc_dpng(filename, data_buff, data_len) && !proc_argb(filename, data_buff, data_len)) 
-    {       
-      as::write_file(filename, data_buff, data_len);
-    }
+	if (!proc_dpng(filename, data_buff, data_len) && !proc_argb(filename, data_buff, data_len))
+	{
+		as::write_file(filename, data_buff, data_len);
+	}
 
-    delete [] out_buff;
-    delete [] buff;
+	delete[] out_buff;
+	delete[] buff;
+#endif
+
   }
 
   delete [] toc_buff;
