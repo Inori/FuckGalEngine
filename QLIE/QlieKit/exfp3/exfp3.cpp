@@ -1,4 +1,4 @@
-// exfp3.cpp, v1.48 2015/3/31
+// exfp3.cpp, v1.5 2017/7/29
 // coded by asmodean
 // modified by Fuyin
 
@@ -25,7 +25,7 @@
 // Per-archive obfuscation with an initial key file and (unique?) compiled key data
 //#define FP3_FLAVOR 3
 
-
+//Support "FilePackVer3.1"
 #define FP3_FLAVOR 31
 
 
@@ -703,7 +703,7 @@ char *UnicodeToAnsi(const wchar_t *wstr, int code_page)
 
 string ws2s(const std::wstring& wstr)
 {
-	string str(UnicodeToAnsi(wstr.c_str(), 932));
+	string str(UnicodeToAnsi(wstr.c_str(), 936));
 	return str;
 }
 
