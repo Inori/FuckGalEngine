@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Text;
 using System.IO;
 using System.Windows.Forms;
@@ -55,7 +52,8 @@ namespace bExplorer
                 if (jis.GetString(b文件.bData.Hdr).Substring(0, 8) == "abdata10" ||
                     jis.GetString(b文件.bData.Hdr).Substring(0, 8) == "abdata11" ||
                     jis.GetString(b文件.bData.Hdr).Substring(0, 8) == "abdata12" ||
-                    jis.GetString(b文件.bData.Hdr).Substring(0, 8) == "abdata13")
+                    jis.GetString(b文件.bData.Hdr).Substring(0, 8) == "abdata13" ||
+                    jis.GetString(b文件.bData.Hdr).Substring(0, 8) == "abdata14")
                 {
                     buff = new byte[4];
                     bFileStream.Read(buff, 0, 4);
@@ -79,15 +77,31 @@ namespace bExplorer
 
                                 //System.Diagnostics.Debug.Write(bFileStream.Position);
 
-                                if (jis.GetString(b数据.Hdr).Substring(0, 10) == "abimgdat14" ||
-                                    jis.GetString(b数据.Hdr).Substring(0, 10) == "abimgdat13" ||
-                                    jis.GetString(b数据.Hdr).Substring(0, 10) == "abimgdat11")
+                                var header = jis.GetString(b数据.Hdr).Substring(0, 10);
+                                if (header == "abimgdat15" ||
+                                    header == "abimgdat14" ||
+                                    header == "abimgdat13" ||
+                                    header == "abimgdat11")
                                 {
+                                    if (header == "abimgdat15")
+                                    {
+                                        b数据.Unkown15 = new byte[4];
+                                        bFileStream.Read(b数据.Unkown15, 0, b数据.Unkown15.Length);
+                                    }
+
                                     buff = new byte[2];
                                     bFileStream.Read(buff, 0, 2);
                                     b数据.NameLen = BitConverter.ToInt16(buff, 0);
-                                    b数据.Name = new byte[b数据.NameLen];
-                                    bFileStream.Read(b数据.Name, 0, b数据.NameLen);
+                                    if (header == "abimgdat15")
+                                    {
+                                        b数据.Name = new byte[b数据.NameLen * 2];
+                                        bFileStream.Read(b数据.Name, 0, b数据.NameLen * 2);
+                                    }
+                                    else
+                                    {
+                                        b数据.Name = new byte[b数据.NameLen];
+                                        bFileStream.Read(b数据.Name, 0, b数据.NameLen);
+                                    }
 
                                     bFileStream.Read(buff, 0, 2);
                                     b数据.HashLen = BitConverter.ToInt16(buff, 0);
@@ -98,20 +112,25 @@ namespace bExplorer
                                         bFileStream.Read(b数据.Hash, 0, b数据.HashLen);
                                     }
 
-                                    if (jis.GetString(b数据.Hdr).Substring(0, 10) == "abimgdat14")
+                                    if (header == "abimgdat14")
                                     {
-                                        b数据.unkown = new byte[77];
-                                        bFileStream.Read(b数据.unkown, 0, b数据.unkown.Length);
+                                        b数据.Unkown = new byte[77];
+                                        bFileStream.Read(b数据.Unkown, 0, b数据.Unkown.Length);
                                     }
-                                    else if (jis.GetString(b数据.Hdr).Substring(0, 10) == "abimgdat13")
+                                    else if (header == "abimgdat13")
                                     {
-                                        b数据.unkown = new byte[13];
-                                        bFileStream.Read(b数据.unkown, 0, b数据.unkown.Length);
+                                        b数据.Unkown = new byte[13];
+                                        bFileStream.Read(b数据.Unkown, 0, b数据.Unkown.Length);
+                                    }
+                                    else if (header == "abimgdat15")
+                                    {
+                                        b数据.Unkown = new byte[18];
+                                        bFileStream.Read(b数据.Unkown, 0, b数据.Unkown.Length);
                                     }
                                     else
                                     {
-                                        b数据.unkown = new byte[1];
-                                        bFileStream.Read(b数据.unkown, 0, b数据.unkown.Length);
+                                        b数据.Unkown = new byte[1];
+                                        bFileStream.Read(b数据.Unkown, 0, b数据.Unkown.Length);
                                     }
 
                                     buff = new byte[4];
@@ -193,10 +212,7 @@ namespace bExplorer
         {
             comboBox1.SelectedIndex = 0;
         }
-
         
-
-
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -358,7 +374,7 @@ namespace bExplorer
                     {
                         文件流.Write(b数据.Hash, 0, b数据.Hash.Length);
                     }
-                    文件流.Write(b数据.unkown, 0, b数据.unkown.Length);
+                    文件流.Write(b数据.Unkown, 0, b数据.Unkown.Length);
                     文件流.Write(BitConverter.GetBytes(b数据.DataLen), 0, BitConverter.GetBytes(b数据.DataLen).Length);
                     b数据.Data.Seek(0, SeekOrigin.Begin);
                     byte[] buff = new byte[b数据.Data.Length];
@@ -391,6 +407,10 @@ namespace bExplorer
                 foreach (bImgData b数据 in b图像.DataList)
                 {
                     文件流.Write(b数据.Hdr, 0, b图像.Hdr.Length);
+                    if (jis.GetString(b数据.Hdr).Substring(0, 10) == "abimgdat15")
+                    {
+                        文件流.Write(b数据.Unkown15, 0, b数据.Unkown15.Length);
+                    }
                     文件流.Write(BitConverter.GetBytes(b数据.NameLen), 0, BitConverter.GetBytes(b数据.NameLen).Length);
                     文件流.Write(b数据.Name, 0, b数据.Name.Length);
                     文件流.Write(BitConverter.GetBytes(b数据.HashLen), 0, BitConverter.GetBytes(b数据.HashLen).Length);
@@ -398,7 +418,7 @@ namespace bExplorer
                     {
                         文件流.Write(b数据.Hash, 0, b数据.Hash.Length);
                     }
-                    文件流.Write(b数据.unkown, 0, b数据.unkown.Length);
+                    文件流.Write(b数据.Unkown, 0, b数据.Unkown.Length);
                     文件流.Write(BitConverter.GetBytes(b数据.DataLen), 0, BitConverter.GetBytes(b数据.DataLen).Length);
                     b数据.Data.Seek(0, SeekOrigin.Begin);
                     byte[] buff = new byte[b数据.Data.Length];
@@ -426,6 +446,10 @@ namespace bExplorer
                 foreach (bImgData b数据 in b图像.DataList)
                 {
                     文件流.Write(b数据.Hdr, 0, b图像.Hdr.Length);
+                    if (jis.GetString(b数据.Hdr).Substring(0, 10) == "abimgdat15")
+                    {
+                        文件流.Write(b数据.Unkown15, 0, b数据.Unkown15.Length);
+                    }
                     文件流.Write(BitConverter.GetBytes(b数据.NameLen), 0, BitConverter.GetBytes(b数据.NameLen).Length);
                     文件流.Write(b数据.Name, 0, b数据.Name.Length);
                     文件流.Write(BitConverter.GetBytes(b数据.HashLen), 0, BitConverter.GetBytes(b数据.HashLen).Length);
@@ -433,7 +457,7 @@ namespace bExplorer
                     {
                         文件流.Write(b数据.Hash, 0, b数据.Hash.Length);
                     }
-                    文件流.Write(b数据.unkown, 0, b数据.unkown.Length);
+                    文件流.Write(b数据.Unkown, 0, b数据.Unkown.Length);
                     文件流.Write(BitConverter.GetBytes(b数据.DataLen), 0, BitConverter.GetBytes(b数据.DataLen).Length);
                     b数据.Data.Seek(0, SeekOrigin.Begin);
                     byte[] buff = new byte[b数据.Data.Length];
@@ -474,13 +498,13 @@ namespace bExplorer
         private void button2_Click(object sender, EventArgs e)
         {
             MessageBox.Show(
-                "bExplorer Ver.0.9b\r\n"+
+                "bExplorer Ver.0.10\r\n"+
                 "bExplorer 可以对Qlie引擎的b文件(*.b)进行编辑,可以提取b文件中的图片,支持双击查看文件,支持多层b文件浏览.\r\n"+
                 "bExplorer 用于Qlie引擎游戏 \"空飛ぶ羊と真夏の花\" 与其他Qlie引擎游戏(?).\r\n\r\n"+
 
-                "By:      HIGAN\r\n" +
-                "E-mail:  higan@live.cn\r\n" +
-                "Website: higan.me\r\n",
+                "By: HIGAN\r\n" +
+                "E-mail: higan@live.cn\r\n" +
+                "Website: blog.higan.me\r\n",
                 "关于bExplorer",MessageBoxButtons.OK,MessageBoxIcon.Asterisk);
         }
 
@@ -532,9 +556,6 @@ namespace bExplorer
             选择b文件.ImageList[x].DataList[y].NameLen = (short)重命名.编码文件名.Length;
             显示列表(浏览器, 选择b文件);
         }
-
-
-
     }
 
     public class bFile
@@ -561,6 +582,8 @@ namespace bExplorer
         public byte[] Hdr = new byte[16];
         public int offset;
         public byte[] Data;
+
+        public String Header => Encoding.ASCII.GetString(Hdr);
     }
 
     public class bImage
@@ -568,6 +591,8 @@ namespace bExplorer
         public byte[] Hdr = new byte[16];
         public byte nData;
         public List<bImgData> DataList = new List<bImgData>();
+
+        public String Header => Encoding.ASCII.GetString(Hdr);
     }
 
     public class bImgData
@@ -577,13 +602,22 @@ namespace bExplorer
         public byte[] Name;
         public short HashLen;
         public byte[] Hash;
-        public byte[] unkown;
+        public byte[] Unkown;
+        public byte[] Unkown15;
         public int DataLen;
         public MemoryStream Data;
+        public String Header => Encoding.ASCII.GetString(Hdr);
 
         public string GetName()
         {
-            return B浏览器.编码.GetString(Name);
+            var encoding = B浏览器.编码;
+
+            if (Encoding.GetEncoding(932).GetString(Hdr).Substring(0, 10) == "abimgdat15")
+            {
+                encoding = Encoding.Unicode;
+            }
+
+            return encoding.GetString(Name);
         }
 
 
@@ -629,10 +663,5 @@ namespace bExplorer
             return ext;
 
         }
-
-        
     }
-
-    
-
 }
