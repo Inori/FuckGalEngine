@@ -367,6 +367,10 @@ namespace bExplorer
                 foreach (bImgData b数据 in b图像.DataList)
                 {
                     文件流.Write(b数据.Hdr, 0, b图像.Hdr.Length);
+                    if (jis.GetString(b数据.Hdr).Substring(0, 10) == "abimgdat15")
+                    {
+                        文件流.Write(b数据.Unkown15, 0, b数据.Unkown15.Length);
+                    }
                     文件流.Write(BitConverter.GetBytes(b数据.NameLen), 0, BitConverter.GetBytes(b数据.NameLen).Length);
                     文件流.Write(b数据.Name, 0, b数据.Name.Length);
                     文件流.Write(BitConverter.GetBytes(b数据.HashLen), 0, BitConverter.GetBytes(b数据.HashLen).Length);
@@ -555,6 +559,11 @@ namespace bExplorer
             重命名.编码文件名.CopyTo(选择b文件.ImageList[x].DataList[y].Name, 0);
             选择b文件.ImageList[x].DataList[y].NameLen = (short)重命名.编码文件名.Length;
             显示列表(浏览器, 选择b文件);
+        }
+
+        private void 浏览器_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 

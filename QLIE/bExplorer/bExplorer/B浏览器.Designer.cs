@@ -60,6 +60,7 @@
             this.浏览器.TabIndex = 0;
             this.浏览器.UseCompatibleStateImageBehavior = false;
             this.浏览器.View = System.Windows.Forms.View.Details;
+            this.浏览器.SelectedIndexChanged += new System.EventHandler(this.浏览器_SelectedIndexChanged);
             this.浏览器.DragDrop += new System.Windows.Forms.DragEventHandler(this.拖放文件);
             this.浏览器.DragEnter += new System.Windows.Forms.DragEventHandler(this.拖放开始);
             this.浏览器.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.浏览器_MouseDoubleClick);
