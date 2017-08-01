@@ -30,7 +30,7 @@ def FormatString(string, count):
     res = "☆%08d☆\n%s★%08d★\n%s\n"%(count, string+'\n', count, string+'\n')
     '''
     
-    res = "○%08d○%s●%08d●%s\r\n"%(count, string, count, string)
+    res = "○%08d○%s●%08d●%s\n"%(count, string, count, string)
     
     '''
     res = "●%08d●%s●\n%s\n"%(count, name, string)
