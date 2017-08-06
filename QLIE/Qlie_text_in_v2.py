@@ -22,16 +22,24 @@ def makestr(lines):
         elif line == '\n' or re.match('○[0-9A-Fa-f]+○', line):
             pass
         else:
+            print(line)
             pass
     return string_list
 
 def StringFilter(string):
+
+    string = string.replace('〜', '～')
     lst = re.findall('\[.+?\]', string)
     if not lst: return string
 
     for part in lst:
-        temp = part.replace('，', ',')
-        string = string.replace(part, temp)
+        if 'rb' in part:
+            temp = part.replace('，', ',')
+            string = string.replace(part, temp)
+        elif 'pc' in part:
+            temp = part.replace('pc，', 'pc,')
+            string = string.replace(part, temp)
+
     return string
 
 def StringFilter2(string):
@@ -43,14 +51,18 @@ def StringFilter2(string):
 f_lst = walk('jp')
 for fn in f_lst:
     dstname = 'done' + fn[2:]
-    dst = open(dstname,'w', encoding='gbk', errors='ignore')
+    #dst = open(dstname, 'w', encoding='gbk', errors='ignore')
+    dst = open(dstname,'w', encoding='utf16', errors='ignore')
+
+    print(dstname)
 
     rawname = 'cn' + fn[2:-2] + '.txt'
     raw = open(rawname, 'r', encoding='utf16')
     cn_lines = raw.readlines()
     cn_strlist = makestr(cn_lines)
-    
-    src = open(fn, 'r', encoding='sjis', errors='ignore')
+
+    #src = open(fn, 'r', encoding='sjis', errors='ignore')
+    src = open(fn, 'r', encoding='utf16', errors='ignore')
     jp_lines = src.readlines()
     
     selection_name = 'selection' + fn[2:-2] + '.txt'
@@ -75,7 +87,8 @@ for fn in f_lst:
             dstlines.append(StringFilter(cn_strlist[j]))
             j += 1
         else:
-            dstlines.append(line.encode('sjis').decode('gbk'))
+            #dstlines.append(line.encode('sjis').decode('gbk'))
+            dstlines.append(line)
 
     for l in dstlines:
         dst.write(l)
@@ -83,7 +96,7 @@ for fn in f_lst:
     raw.close()    
     src.close()
     dst.close()
-    print(dstname)
+    
 
-
+print('success')
 
