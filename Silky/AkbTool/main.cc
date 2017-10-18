@@ -6,8 +6,8 @@
 	parse and create the *.AKB files extracted from Layer.arc used by Silky
 	for more details please see the akb_image_decoder.cc in arc_unpacker
 	Tested Games:
-		∏˘—©§Œª√”∞ -∞◊ª®«P§Œ»À°©-
-		•∑•Û•Ω•¶•Œ•§•∫ °´ ‹–≈ÃΩÇ…§Œ ¬º˛≤æ°´
+		Ê†πÈõ™„ÅÆÂπªÂΩ± -ÁôΩËä±Ëçò„ÅÆ‰∫∫„ÄÖ-
+		„Ç∑„É≥„ÇΩ„Ç¶„Éé„Ç§„Ç∫ ÔΩûÂèó‰ø°Êé¢ÂÅµ„ÅÆ‰∫ã‰ª∂Á∞øÔΩû
 	Free software. Do what you want with it. Any authors with an interest
 	in game hacking, please contact me in English or Chinese.
 	If you do anything interesting with this source, let me know. :)
@@ -15,9 +15,9 @@
 	https://github.com/vn-tools/arc_unpacker
 */
 
-#include "algo/pack/lzss.h"
-#include "algo/range.h"
-#include "png.h"
+#include "lzss.h"
+#include "range.h"
+#include <png.h>
 #include <iostream>
 
 using namespace au;
@@ -43,10 +43,10 @@ struct AkbHeader
 
 struct PicData
 {
-	int width, height; /* ≥ﬂ¥Á */
-	int bit_depth;  /* Œª…Ó */
-	bool flag;   /* “ª∏ˆ±Í÷æ£¨±Ì æ «∑Ò”–alphaÕ®µ¿ */
-	u8 *rgba; /* Õº∆¨ ˝◊È */
+	int width, height; /* Â∞∫ÂØ∏ */
+	int bit_depth;  /* ‰ΩçÊ∑± */
+	bool flag;   /* ‰∏Ä‰∏™Ê†áÂøóÔºåË°®Á§∫ÊòØÂê¶ÊúâalphaÈÄöÈÅì */
+	u8 *rgba; /* ÂõæÁâáÊï∞ÁªÑ */
 };
 
 int get_file_size(FILE *file) // path to file
@@ -111,7 +111,7 @@ void encode_process(au::bstr& bdata, int canvas_width, int canvas_height, int ch
 }
 
 int write_png_file(string file_name, PicData *graph)
-/* π¶ƒ‹£∫Ω´LCUI_GraphΩ·ππ÷–µƒ ˝æ›–¥»Î÷¡pngŒƒº˛ */
+/* ÂäüËÉΩÔºöÂ∞ÜLCUI_GraphÁªìÊûÑ‰∏≠ÁöÑÊï∞ÊçÆÂÜôÂÖ•Ëá≥pngÊñá‰ª∂ */
 {
 	int j, i, temp;
 	png_byte color_type;
@@ -156,7 +156,7 @@ int write_png_file(string file_name, PicData *graph)
 		printf("[write_png_file] Error during writing header");
 		return -1;
 	}
-	/* ≈–∂œ“™–¥»Î÷¡Œƒº˛µƒÕº∆¨ ˝æ› «∑Ò”–Õ∏√˜∂»£¨¿¥—°‘Ò…´≤ ¿‡–Õ */
+	/* Âà§Êñ≠Ë¶ÅÂÜôÂÖ•Ëá≥Êñá‰ª∂ÁöÑÂõæÁâáÊï∞ÊçÆÊòØÂê¶ÊúâÈÄèÊòéÂ∫¶ÔºåÊù•ÈÄâÊã©Ëâ≤ÂΩ©Á±ªÂûã */
 	if (graph->flag == true) color_type = PNG_COLOR_TYPE_RGB_ALPHA;
 	else color_type = PNG_COLOR_TYPE_RGB;
 
@@ -285,11 +285,16 @@ int main(int argc, char *argv[])
 	if (argc != 4 && argc != 5)
 	{
 		printf("Usage:\n");
-		printf("parse mode: %s p in.akb out.png\n", argv[0]);
-		printf("create mode: %s c in.akb in.png out.akb\n", argv[0]);
+		printf("parse mode: %s -p in.akb out.png\n", argv[0]);
+		printf("create mode: %s -c in.akb in.png out.akb\n", argv[0]);
 		return -1;
 	}
-	FILE *infile = fopen(argv[2], "rb");
+	FILE *infile;
+    if (!(infile = fopen(argv[2], "rb")))
+    {
+        printf("cannot access \'%s\': No such file\n", argv[2]);
+        return -1;
+    }
 	int infile_size = get_file_size(infile);
 	AkbHeader header;
 	fread(&header, sizeof(AkbHeader), 1, infile);
@@ -299,9 +304,14 @@ int main(int argc, char *argv[])
 	int canvas_stride = canvas_width * channels;
 	int raw_data_size = canvas_height * canvas_width * channels;
 	// create mode
-	if (argv[1][0] == 'c')
+	if (strcmp(argv[1], "-c") == 0)
 	{
-		FILE *pngfile = fopen(argv[3], "rb");
+		FILE *pngfile;
+		if (!(pngfile = fopen(argv[3], "rb")))
+        {
+            printf("cannot access \'%s\': No such file\n", argv[3]);
+            return -1;
+        }
 		bstr pic_data(read_png_file(pngfile, canvas_height, canvas_width, channels), canvas_height * canvas_stride);
 		encode_process(pic_data, canvas_width, canvas_height, channels);
 		auto data = algo::pack::lzss_compress(pic_data);
@@ -313,7 +323,7 @@ int main(int argc, char *argv[])
 		fclose(outfile);
 	}
 	// parse mode
-	else if (argv[1][0] == 'p')
+	else if (strcmp(argv[1], "-p") == 0)
 	{
 		const auto buffer_size = infile_size - sizeof(header);
 		auto compressed_data = new u8[buffer_size];
