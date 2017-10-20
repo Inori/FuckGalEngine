@@ -1,10 +1,11 @@
 /*
-	AkbTool.cpp v1.0 2017/02/02
+	AkbTool.cpp v1.1 2017/10/20
 	by Neroldy
 	email: yuanhong742604720 [at] gmail.com
 	github: https://github.com/Neroldy
-	parse and create the *.AKB files extracted from Layer.arc used by Silky
-	for more details please see the akb_image_decoder.cc in arc_unpacker
+    1. Unpack *.arc file.
+	2. Parse and create the *.AKB files extracted from Layer.arc used by Silky.
+	for more details please see silky dec in arc_unpacker
 	Tested Games:
 		根雪の幻影 -白花荘の人々-
 		シンソウノイズ ～受信探偵の事件簿～
@@ -19,9 +20,24 @@
 #include "range.h"
 #include <png.h>
 #include <iostream>
+#ifdef _WIN32
+# define WIN32_LEAN_AND_MEAN
+# include <Windows.h>
+#else
+# include <sys/stat.h>
+# include <dirent.h>
+#endif
 
 using namespace au;
 using namespace std;
+
+struct ArcEntry
+{
+    string path;
+    u32 size_comp;
+    u32 size_orig;
+    u32 offset;
+};
 
 #pragma pack (1)
 struct AkbHeader
@@ -279,12 +295,22 @@ u8 *read_png_file(FILE *file, int canvas_height, int canvas_width, int channels)
 	}
 	return raw_data;
 }
+u32 read_be_32(u8 *buff, u32 &index)
+{
+    u32 res = 0;
+    res += buff[index++] << 24;
+    res += buff[index++] << 16;
+    res += buff[index++] << 8;
+    res += buff[index++];
+    return res;
+}
 
 int main(int argc, char *argv[])
 {
-	if (argc != 4 && argc != 5)
+	if (argc > 5 || argc < 3)
 	{
 		printf("Usage:\n");
+        printf("unpack mode: %s -u in.arc\n", argv[0]);
 		printf("parse mode: %s -p in.akb out.png\n", argv[0]);
 		printf("create mode: %s -c in.akb in.png out.akb\n", argv[0]);
 		return -1;
@@ -294,6 +320,55 @@ int main(int argc, char *argv[])
     {
         printf("cannot access \'%s\': No such file\n", argv[2]);
         return -1;
+    }
+    // unpack mode
+    if (strcmp(argv[1], "-u") == 0)
+    {
+        u32 table_size;
+        fread(&table_size, sizeof(u32), 1, infile);
+        u8 *ArcEntryBuf = new u8[table_size];
+        fread(ArcEntryBuf, table_size, 1, infile);
+        vector<ArcEntry> meta;
+        for (u32 i = 0; i < table_size;)
+        {
+            ArcEntry entry;
+            u8 name_size = ArcEntryBuf[i++];
+            char *name = new char[name_size];
+            for (u32 j = 0; j < name_size; ++j)
+            {
+                name[j] = ArcEntryBuf[i++] + name_size - j;
+            }
+            entry.path = string(name);
+            entry.size_comp = read_be_32(ArcEntryBuf, i);
+            entry.size_orig = read_be_32(ArcEntryBuf, i);
+            entry.offset = read_be_32(ArcEntryBuf, i);
+            meta.push_back(entry);
+        }
+        string folder_name(argv[2]);
+        size_t found = folder_name.find(".");
+        folder_name = folder_name.substr(0, found);
+#ifdef _WIN32
+        CreateDirectoryA(folder_name.c_str(), NULL);
+#else
+        mkdir(folder_name.c_str(), 0777);
+#endif
+        for (u32 i = 0; i < meta.size(); ++i)
+        {
+            u32 size = meta[i].size_comp;
+            u8 *data_buf = new u8[size];
+            fseek(infile, meta[i].offset, SEEK_SET);
+            fread(data_buf, size, 1, infile);
+            bstr data(data_buf, size);
+            auto output_data = algo::pack::lzss_decompress(data, meta[i].size_orig);
+            string path = folder_name + "/" + meta[i].path;
+            FILE *output = fopen(path.c_str(), "wb");
+            fwrite(output_data.get<u8>(), output_data.size(), 1, output);
+            delete[] data_buf;
+            fclose(output);
+        }
+        
+        fclose(infile);
+        return 0;
     }
 	int infile_size = get_file_size(infile);
 	AkbHeader header;
