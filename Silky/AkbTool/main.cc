@@ -295,6 +295,7 @@ u8 *read_png_file(FILE *file, int canvas_height, int canvas_width, int channels)
 	}
 	return raw_data;
 }
+
 u32 read_be_32(u8 *buff, u32 &index)
 {
     u32 res = 0;

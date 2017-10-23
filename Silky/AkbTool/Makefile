@@ -25,9 +25,7 @@ $(OBJ_DIR)/%.o: ./%.cc
 # Depencies
 -include $(OBJS:.o=.d)
 
-# Some convinient rules
-
-.PHONY: app run submit clean
+.PHONY: app clean
 app: $(BINARY)
 
 # Command to execute NEMU
