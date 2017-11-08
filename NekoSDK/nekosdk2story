@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+
+require 'yaml'
+require 'json'
+require 'set'
+require 'find'
+
+require_relative 'nekosdk2storyconverter'
+
+def imgs_file_read(fn)
+  imgs = {}
+  File.open(fn, 'r').each_line { |l|
+    img, w, h = l.chomp.split(/,/)
+    imgs[img] = {:w => w.to_i, :h => h.to_i}
+  }
+  imgs
+end
+
+if ARGV.size != 5
+  puts "Usage: bgi2story <meta.yaml> <lang> <imgs_list> <in_script> <out_story>"
+  exit 1
+end
+
+meta_fn, lang, imgs_fn, in_script, out_story = ARGV
+
+cnv = Nekosdk2StoryConverter.new(
+  in_script,
+  YAML.load(File.read(meta_fn)),
+#  YAML.load(File.read(chars_fn)),
+  lang,
+  imgs_file_read(imgs_fn)
+)
+
+cnv.run
+
+File.open(out_story, 'w') { |out|
+  out.print "program = "
+  out.puts JSON.pretty_generate(cnv.out)
+}

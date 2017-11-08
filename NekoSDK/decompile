@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+require_relative 'nekosdk_advscript2'
+
+class Decompiler
+  def initialize(fn)
+    @scr = NekosdkAdvscript2.from_file(fn)
+    @id_to_idx = []
+    @scr.nodes.each_with_index { |n, idx|
+      @id_to_idx[n.id] = idx
+    }
+  end
+
+  def dump(node)
+    puts "#{node.id}. type1=#{node.type1} opcode=#{node.opcode} some_ofs=#{node.some_ofs} next_id=#{node.next_id}"
+
+    node.strs.each_with_index { |s, i|
+      ss = s.value.rstrip
+      puts "  s#{i}: #{ss.encode('UTF-8')}" unless ss.empty?
+    }
+
+    puts
+  end
+
+  def run
+    i = 0
+
+    loop {
+      n = @scr.nodes[i]
+      return if n.nil?
+      dump(n)
+      i = @id_to_idx[n.next_id]
+    }
+  end
+end
+
+ARGV.each { |fn| Decompiler.new(fn).run }
