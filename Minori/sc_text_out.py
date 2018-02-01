@@ -64,6 +64,9 @@ for fn in fl:
             #测试
             sumlen += len(text.strip('\n'))*2 / 1024
             for t in dm:
+                if '#' in t and not is_alnum(t[1:]):
+                    name = t + ' ' + name
+                    continue
                 if not is_alnum(t):
                     print('\n')
                     print(t)
