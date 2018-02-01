@@ -1,30 +1,16 @@
 // secblock.h - written and placed in the public domain by Wei Dai
 
-//! \file secblock.h
-//! \brief Classes and functions for secure memory allocations.
-
 #ifndef CRYPTOPP_SECBLOCK_H
 #define CRYPTOPP_SECBLOCK_H
 
 #include "config.h"
-#include "stdcpp.h"
 #include "misc.h"
-
-#if CRYPTOPP_MSC_VERSION
-# pragma warning(push)
-# pragma warning(disable: 4700)
-# if (CRYPTOPP_MSC_VERSION >= 1400)
-#  pragma warning(disable: 6386)
-# endif
-#endif
+#include <assert.h>
 
 NAMESPACE_BEGIN(CryptoPP)
 
 // ************** secure memory allocation ***************
 
-//! \class AllocatorBase
-//! \brief Base class for all allocators used by SecBlock
-//! \tparam T the class or type
 template<class T>
 class AllocatorBase
 {
@@ -44,54 +30,13 @@ public:
 	pointer address(reference r) const {return (&r);}
 	const_pointer address(const_reference r) const {return (&r); }
 	void construct(pointer p, const T& val) {new (p) T(val);}
-	void destroy(pointer p) {CRYPTOPP_UNUSED(p); p->~T();}
-
-	//! \brief Returns the maximum number of elements the allocator can provide
-	//! \returns the maximum number of elements the allocator can provide
-	//! \details Internally, preprocessor macros are used rather than std::numeric_limits
-	//!   because the latter is \a not a \a constexpr. Some compilers, like Clang, do not
-	//!   optimize it well under all circumstances. Compilers like GCC, ICC and MSVC appear
-	//!   to optimize it well in either form.
-	size_type max_size() const {return (SIZE_MAX/sizeof(T));}
-	
-#if defined(CRYPTOPP_CXX11_VARIADIC_TEMPLATES) || defined(CRYPTOPP_DOXYGEN_PROCESSING)
-
-	//! \brief Constructs a new U using variadic arguments
-	//! \tparam U the type to be forwarded
-	//! \tparam Args the arguments to be forwarded
-	//! \param ptr pointer to type U
-	//! \param args variadic arguments
-	//! \details This is a C++11 feature. It is available when CRYPTOPP_CXX11_VARIADIC_TEMPLATES
-	//!   is defined. The define is controlled by compiler versions detected in config.h.
-    template<typename U, typename... Args>
-    void construct(U* ptr, Args&&... args) {::new ((void*)ptr) U(std::forward<Args>(args)...);}
-    
-	//! \brief Destroys an U constructed with variadic arguments
-	//! \tparam U the type to be forwarded
-	//! \details This is a C++11 feature. It is available when CRYPTOPP_CXX11_VARIADIC_TEMPLATES
-	//!   is defined. The define is controlled by compiler versions detected in config.h.
-    template<typename U>
-    void destroy(U* ptr) {if(ptr) ptr->~U();}
-
-#endif
+	void destroy(pointer p) {p->~T();}
+	size_type max_size() const {return ~size_type(0)/sizeof(T);}	// switch to std::numeric_limits<T>::max later
 
 protected:
-	
-	//! \brief Verifies the allocator can satisfy a request based on size
-	//! \param size the number of elements
-	//! \throws InvalidArgument
-	//! \details CheckSize verifies the number of elements requested is valid. 
-	//! \details If size is greater than max_size(), then InvalidArgument is thrown.
-	//!   The library throws InvalidArgument if the size is too large to satisfy.
-	//! \details Internally, preprocessor macros are used rather than std::numeric_limits
-	//!   because the latter is \a not a \a constexpr. Some compilers, like Clang, do not
-	//!   optimize it well under all circumstances. Compilers like GCC, ICC and MSVC appear
-	//!   to optimize it well in either form.
-	//! \note size is the count of elements, and not the number of bytes
-	static void CheckSize(size_t size)
+	static void CheckSize(size_t n)
 	{
-		// C++ throws std::bad_alloc (C++03) or std::bad_array_new_length (C++11) here.
-		if (size > (SIZE_MAX/sizeof(T)))
+		if (n > ~size_t(0) / sizeof(T))
 			throw InvalidArgument("AllocatorBase: requested size would cause integer overflow");
 	}
 };
@@ -105,123 +50,71 @@ typedef typename AllocatorBase<T>::const_pointer const_pointer;\
 typedef typename AllocatorBase<T>::reference reference;\
 typedef typename AllocatorBase<T>::const_reference const_reference;
 
-//! \brief Reallocation function
-//! \tparam T the class or type
-//! \tparam A the class or type's allocator
-//! \param alloc the allocator
-//! \param oldPtr the previous allocation
-//! \param oldSize the size of the previous allocation
-//! \param newSize the new, requested size
-//! \param preserve flag that indicates if the old allocation should be preserved
-//! \note oldSize and newSize are the count of elements, and not the
-//!   number of bytes.
+#if defined(_MSC_VER) && (_MSC_VER < 1300)
+// this pragma causes an internal compiler error if placed immediately before std::swap(a, b)
+#pragma warning(push)
+#pragma warning(disable: 4700)	// VC60 workaround: don't know how to get rid of this warning
+#endif
+
 template <class T, class A>
-typename A::pointer StandardReallocate(A& alloc, T *oldPtr, typename A::size_type oldSize, typename A::size_type newSize, bool preserve)
+typename A::pointer StandardReallocate(A& a, T *p, typename A::size_type oldSize, typename A::size_type newSize, bool preserve)
 {
-	assert((oldPtr && oldSize) || !(oldPtr || oldSize));
 	if (oldSize == newSize)
-		return oldPtr;
+		return p;
 
 	if (preserve)
 	{
-		typename A::pointer newPointer = alloc.allocate(newSize, NULL);
-		const size_t copySize = STDMIN(oldSize, newSize) * sizeof(T);
-		
-		if (oldPtr && newPointer) {memcpy_s(newPointer, copySize, oldPtr, copySize);}
-		alloc.deallocate(oldPtr, oldSize);
+		typename A::pointer newPointer = a.allocate(newSize, NULL);
+		memcpy_s(newPointer, sizeof(T)*newSize, p, sizeof(T)*STDMIN(oldSize, newSize));
+		a.deallocate(p, oldSize);
 		return newPointer;
 	}
 	else
 	{
-		alloc.deallocate(oldPtr, oldSize);
-		return alloc.allocate(newSize, NULL);
+		a.deallocate(p, oldSize);
+		return a.allocate(newSize, NULL);
 	}
 }
 
-//! \class AllocatorWithCleanup
-//! \brief Allocates a block of memory with cleanup
-//! \tparam T class or type 
-//! \tparam T_Align16 boolean that determines whether allocations should be aligned on 16-byte boundaries
-//! \details If T_Align16 is true, then AllocatorWithCleanup calls AlignedAllocate()
-//!    for memory allocations. If T_Align16 is false, then AllocatorWithCleanup() calls
-//!    UnalignedAllocate() for memory allocations.
-//! \details Template parameter T_Align16 is effectively controlled by cryptlib.h and mirrors
-//!    CRYPTOPP_BOOL_ALIGN16. CRYPTOPP_BOOL_ALIGN16 is often used as the template parameter.
+#if defined(_MSC_VER) && (_MSC_VER < 1300)
+#pragma warning(pop)
+#endif
+
 template <class T, bool T_Align16 = false>
 class AllocatorWithCleanup : public AllocatorBase<T>
 {
 public:
 	CRYPTOPP_INHERIT_ALLOCATOR_TYPES
 
-	//! \brief Allocates a block of memory
-	//! \param ptr the size of the allocation
-	//! \param size the size of the allocation
-	//! \returns a memory block
-	//! \throws InvalidArgument
-	//! \details allocate() first checks the size of the request. If it is non-0
-	//!   and less than max_size(), then an attempt is made to fulfill the request using either
-	//!   AlignedAllocate() or UnalignedAllocate().
-	//! \details AlignedAllocate() is used if T_Align16 is true.
-	//!   UnalignedAllocate() used if T_Align16 is false. 
-	//! \details This is the C++ *Placement New* operator. ptr is not used, and the function
-	//!   asserts in Debug builds if ptr is non-NULL.
-	//! \sa CallNewHandler() for the methods used to recover from a failed 
-	//!   allocation attempt.
-	//! \note size is the count of elements, and not the number of bytes
-	pointer allocate(size_type size, const void *ptr = NULL)
+	pointer allocate(size_type n, const void * = NULL)
 	{
-		CRYPTOPP_UNUSED(ptr); assert(ptr == NULL);
-		this->CheckSize(size);
-		if (size == 0)
+		this->CheckSize(n);
+		if (n == 0)
 			return NULL;
 
-#if CRYPTOPP_BOOL_ALIGN16
-		// TODO: should this need the test 'size*sizeof(T) >= 16'?
-		if (T_Align16 && size*sizeof(T) >= 16)
-			return (pointer)AlignedAllocate(size*sizeof(T));
+#if CRYPTOPP_BOOL_ALIGN16_ENABLED
+		if (T_Align16 && n*sizeof(T) >= 16)
+			return (pointer)AlignedAllocate(n*sizeof(T));
 #endif
 
-		return (pointer)UnalignedAllocate(size*sizeof(T));
+		return (pointer)UnalignedAllocate(n*sizeof(T));
 	}
 
-	//! \brief Deallocates a block of memory
-	//! \param ptr the size of the allocation
-	//! \param size the size of the allocation
-	//! \details Internally, SecureWipeArray() is called before deallocating the memory.
-	//!   Once the memory block is wiped or zeroized, AlignedDeallocate() or 
-	//!   UnalignedDeallocate() is called.
-	//! \details AlignedDeallocate() is used if T_Align16 is true.
-	//!   UnalignedDeallocate() used if T_Align16 is false. 
-	void deallocate(void *ptr, size_type size)
+	void deallocate(void *p, size_type n)
 	{
-		assert((ptr && size) || !(ptr || size));
-		SecureWipeArray((pointer)ptr, size);
+		SecureWipeArray((pointer)p, n);
 
-#if CRYPTOPP_BOOL_ALIGN16
-		if (T_Align16 && size*sizeof(T) >= 16)
-			return AlignedDeallocate(ptr);
+#if CRYPTOPP_BOOL_ALIGN16_ENABLED
+		if (T_Align16 && n*sizeof(T) >= 16)
+			return AlignedDeallocate(p);
 #endif
 
-		UnalignedDeallocate(ptr);
+		UnalignedDeallocate(p);
 	}
 
-	//! \brief Reallocates a block of memory
-	//! \param oldPtr the previous allocation
-	//! \param oldSize the size of the previous allocation
-	//! \param newSize the new, requested size
-	//! \param preserve flag that indicates if the old allocation should be preserved
-	//! \returns pointer to the new memory block
-	//! \details Internally, reallocate() calls StandardReallocate().
-	//! \details If preserve is true, then index 0 is used to begin copying the
-	//!   old memory block to the new one. If the block grows, then the old array
-	//!   is copied in its entirety. If the block shrinks, then only newSize
-	//!   elements are copied from the old block to the new one.
-	//! \note oldSize and newSize are the count of elements, and not the
-	//!   number of bytes.
-	pointer reallocate(T *oldPtr, size_type oldSize, size_type newSize, bool preserve)
+	pointer reallocate(T *p, size_type oldSize, size_type newSize, bool preserve)
 	{
-		assert((oldPtr && oldSize) || !(oldPtr || oldSize));
-		return StandardReallocate(*this, oldPtr, oldSize, newSize, preserve);
+		return StandardReallocate(*this, p, oldSize, newSize, preserve);
 	}
 
 	// VS.NET STL enforces the policy of "All STL-compliant allocators have to provide a
@@ -241,165 +134,88 @@ CRYPTOPP_DLL_TEMPLATE_CLASS AllocatorWithCleanup<word64>;
 CRYPTOPP_DLL_TEMPLATE_CLASS AllocatorWithCleanup<word, true>;	// for Integer
 #endif
 
-//! \class NullAllocator
-//! \brief NULL allocator
-//! \tparam T class or type
-//! \details A NullAllocator is useful for fixed-size, stack based allocations
-//!   (i.e., static arrays used by FixedSizeAllocatorWithCleanup).
-//! \details A NullAllocator always returns 0 for max_size(), and always returns
-//!   NULL for allocation requests. Though the allocator does not allocate at
-//!   runtime, it does perform a secure wipe or zeroization during cleanup.
 template <class T>
 class NullAllocator : public AllocatorBase<T>
 {
 public:
 	CRYPTOPP_INHERIT_ALLOCATOR_TYPES
 
-	// TODO: should this return NULL or throw bad_alloc? Non-Windows C++ standard
-	// libraries always throw. And late mode Windows throws. Early model Windows
-	// (circa VC++ 6.0) returned NULL.
-	pointer allocate(size_type n, const void* unused = NULL)
+	pointer allocate(size_type n, const void * = NULL)
 	{
-		CRYPTOPP_UNUSED(n); CRYPTOPP_UNUSED(unused);
-		assert(false); return NULL;
+		assert(false);
+		return NULL;
 	}
 
 	void deallocate(void *p, size_type n)
 	{
-		CRYPTOPP_UNUSED(p); CRYPTOPP_UNUSED(n);
 		assert(false);
 	}
 
 	size_type max_size() const {return 0;}
 };
 
-//! \class FixedSizeAllocatorWithCleanup
-//! \brief Static secure memory block with cleanup
-//! \tparam T class or type
-//! \tparam S fixed-size of the stack-based memory block
-//! \tparam A AllocatorBase derived class for allocation and cleanup
-//! \details FixedSizeAllocatorWithCleanup provides a fixed-size, stack-
-//!    based allocation at compile time. The class can grow its memory
-//!    block at runtime if a suitable allocator is available. If size
-//!    grows beyond S and a suitable allocator is available, then the
-//!    statically allocated array is obsoleted.
-//! \note This allocator can't be used with standard collections because
-//!   they require that all objects of the same allocator type are equivalent.
+// This allocator can't be used with standard collections because
+// they require that all objects of the same allocator type are equivalent.
+// So this is for use with SecBlock only.
 template <class T, size_t S, class A = NullAllocator<T>, bool T_Align16 = false>
 class FixedSizeAllocatorWithCleanup : public AllocatorBase<T>
 {
 public:
 	CRYPTOPP_INHERIT_ALLOCATOR_TYPES
 
-	//! \brief Constructs a FixedSizeAllocatorWithCleanup
 	FixedSizeAllocatorWithCleanup() : m_allocated(false) {}
 
-	//! \brief Allocates a block of memory
-	//! \param size size of the memory block
-	//! \details FixedSizeAllocatorWithCleanup provides a fixed-size, stack-
-	//!   based allocation at compile time. If size is less than or equal to
-	//!   S, then a pointer to the static array is returned.
-	//! \details The class can grow its memory block at runtime if a suitable
-	//!   allocator is available. If size grows beyond S and a suitable
-	//!   allocator is available, then the statically allocated array is
-	//!   obsoleted. If a suitable allocator is \a not available, as with a
-	//!   NullAllocator, then the function returns NULL and a runtime error
-	//!   eventually occurs.
-	//! \note size is the count of elements, and not the number of bytes.
-	//! \sa reallocate(), SecBlockWithHint
-	pointer allocate(size_type size)
+	pointer allocate(size_type n)
 	{
 		assert(IsAlignedOn(m_array, 8));
 
-		if (size <= S && !m_allocated)
+		if (n <= S && !m_allocated)
 		{
 			m_allocated = true;
 			return GetAlignedArray();
 		}
 		else
-			return m_fallbackAllocator.allocate(size);
+			return m_fallbackAllocator.allocate(n);
 	}
 
-	//! \brief Allocates a block of memory
-	//! \param size size of the memory block
-	//! \param hint an unused hint
-	//! \details FixedSizeAllocatorWithCleanup provides a fixed-size, stack-
-	//!   based allocation at compile time. If size is less than or equal to
-	//!   S, then a pointer to the static array is returned.
-	//! \details The class can grow its memory block at runtime if a suitable
-	//!   allocator is available. If size grows beyond S and a suitable
-	//!   allocator is available, then the statically allocated array is
-	//!   obsoleted. If a suitable allocator is \a not available, as with a
-	//!   NullAllocator, then the function returns NULL and a runtime error
-	//!   eventually occurs.
-	//! \note size is the count of elements, and not the number of bytes.
-	//! \sa reallocate(), SecBlockWithHint
-	pointer allocate(size_type size, const void *hint)
+	pointer allocate(size_type n, const void *hint)
 	{
-		if (size <= S && !m_allocated)
+		if (n <= S && !m_allocated)
 		{
 			m_allocated = true;
 			return GetAlignedArray();
 		}
 		else
-			return m_fallbackAllocator.allocate(size, hint);
+			return m_fallbackAllocator.allocate(n, hint);
 	}
 
-	//! \brief Deallocates a block of memory
-	//! \param ptr a pointer to the memory block to deallocate
-	//! \param size size of the memory block
-	//! \details The memory block is wiped or zeroized before deallocation.
-	//!   If the statically allocated memory block is active, then no
-	//!   additional actions are taken after the wipe.
-	//! \details If a dynamic memory block is active, then the pointer and
-	//!   size are passed to the allocator for deallocation.
-	void deallocate(void *ptr, size_type size)
+	void deallocate(void *p, size_type n)
 	{
-		if (ptr == GetAlignedArray())
+		if (p == GetAlignedArray())
 		{
-			assert(size <= S);
+			assert(n <= S);
 			assert(m_allocated);
 			m_allocated = false;
-			SecureWipeArray((pointer)ptr, size);
+			SecureWipeArray((pointer)p, n);
 		}
 		else
-			m_fallbackAllocator.deallocate(ptr, size);
+			m_fallbackAllocator.deallocate(p, n);
 	}
 
-	//! \brief Reallocates a block of memory
-	//! \param oldPtr the previous allocation
-	//! \param oldSize the size of the previous allocation
-	//! \param newSize the new, requested size
-	//! \param preserve flag that indicates if the old allocation should be preserved
-	//! \returns pointer to the new memory block
-	//! \details FixedSizeAllocatorWithCleanup provides a fixed-size, stack-
-	//!   based allocation at compile time. If size is less than or equal to
-	//!   S, then a pointer to the static array is returned.
-	//! \details The class can grow its memory block at runtime if a suitable
-	//!   allocator is available. If size grows beyond S and a suitable
-	//!   allocator is available, then the statically allocated array is
-	//!   obsoleted. If a suitable allocator is \a not available, as with a
-	//!   NullAllocator, then the function returns NULL and a runtime error
-	//!   eventually occurs.
-	//! \note size is the count of elements, and not the number of bytes.
-	//! \sa reallocate(), SecBlockWithHint
-	pointer reallocate(pointer oldPtr, size_type oldSize, size_type newSize, bool preserve)
+	pointer reallocate(pointer p, size_type oldSize, size_type newSize, bool preserve)
 	{
-		if (oldPtr == GetAlignedArray() && newSize <= S)
+		if (p == GetAlignedArray() && newSize <= S)
 		{
 			assert(oldSize <= S);
 			if (oldSize > newSize)
-				SecureWipeArray(oldPtr+newSize, oldSize-newSize);
-			return oldPtr;
+				SecureWipeArray(p+newSize, oldSize-newSize);
+			return p;
 		}
 
 		pointer newPointer = allocate(newSize, NULL);
-		if (preserve && newSize)
-		{
-			const size_t copySize = STDMIN(oldSize, newSize);
-			memcpy_s(newPointer, copySize, oldPtr, copySize);
-		}
-		deallocate(oldPtr, oldSize);
+		if (preserve)
+			memcpy(newPointer, p, sizeof(T)*STDMIN(oldSize, newSize));
+		deallocate(p, oldSize);
 		return newPointer;
 	}
 
@@ -410,17 +226,14 @@ private:
 	T* GetAlignedArray() {return m_array;}
 	T m_array[S];
 #else
-	T* GetAlignedArray() {return (CRYPTOPP_BOOL_ALIGN16 && T_Align16) ? (T*)(((byte *)m_array) + (0-(size_t)m_array)%16) : m_array;}
-	CRYPTOPP_ALIGN_DATA(8) T m_array[(CRYPTOPP_BOOL_ALIGN16 && T_Align16) ? S+8/sizeof(T) : S];
+	T* GetAlignedArray() {return (CRYPTOPP_BOOL_ALIGN16_ENABLED && T_Align16) ? (T*)(((byte *)m_array) + (0-(size_t)m_array)%16) : m_array;}
+	CRYPTOPP_ALIGN_DATA(8) T m_array[(CRYPTOPP_BOOL_ALIGN16_ENABLED && T_Align16) ? S+8/sizeof(T) : S];
 #endif
 	A m_fallbackAllocator;
 	bool m_allocated;
 };
 
-//! \class SecBlock
-//! \brief Secure memory block with allocator and cleanup
-//! \tparam T a class or type
-//! \tparam A AllocatorWithCleanup derived class for allocation and cleanup
+//! a block of memory allocated using A
 template <class T, class A = AllocatorWithCleanup<T> >
 class SecBlock
 {
@@ -430,39 +243,19 @@ public:
 	typedef typename A::const_pointer const_iterator;
 	typedef typename A::size_type size_type;
 
-	//! \brief Construct a SecBlock with space for size elements.
-	//! \param size the number of elements in the allocation
-	//! \throws std::bad_alloc
-	//! \details The elements are not initialized.
-	//! \note size is the count of elements, and not the number of bytes
 	explicit SecBlock(size_type size=0)
-		: m_size(size), m_ptr(m_alloc.allocate(size, NULL)) { }
-	
-	//! \brief Copy construct a SecBlock from another SecBlock
-	//! \param t the other SecBlock
-	//! \throws std::bad_alloc
+		: m_size(size) {m_ptr = m_alloc.allocate(size, NULL);}
 	SecBlock(const SecBlock<T, A> &t)
-		: m_size(t.m_size), m_ptr(m_alloc.allocate(t.m_size, NULL)) {
-			assert((!t.m_ptr && !m_size) || (t.m_ptr && m_size));
-			if (t.m_ptr) {memcpy_s(m_ptr, m_size*sizeof(T), t.m_ptr, t.m_size*sizeof(T));}
-		}
-
-	//! \brief Construct a SecBlock from an array of elements.
-	//! \param ptr a pointer to an array of T
-	//! \param len the number of elements in the memory block
-	//! \throws std::bad_alloc
-	//! \details If <tt>ptr!=NULL</tt> and <tt>len!=0</tt>, then the block is initialized from the pointer ptr. 
-	//!    If <tt>ptr==NULL</tt> and <tt>len!=0</tt>, then the block is initialized to 0.
-	//!    Otherwise, the block is empty and uninitialized.
-	//! \note size is the count of elements, and not the number of bytes
-	SecBlock(const T *ptr, size_type len)
-		: m_size(len), m_ptr(m_alloc.allocate(len, NULL)) {
-			assert((!m_ptr && !m_size) || (m_ptr && m_size));
-			if (ptr && m_ptr)
-				memcpy_s(m_ptr, m_size*sizeof(T), ptr, len*sizeof(T));
-			else if (m_size)
-				memset(m_ptr, 0, m_size*sizeof(T));
-		}
+		: m_size(t.m_size) {m_ptr = m_alloc.allocate(m_size, NULL); memcpy_s(m_ptr, m_size*sizeof(T), t.m_ptr, m_size*sizeof(T));}
+	SecBlock(const T *t, size_type len)
+		: m_size(len)
+	{
+		m_ptr = m_alloc.allocate(len, NULL);
+		if (t == NULL)
+			memset_z(m_ptr, 0, len*sizeof(T));
+		else
+			memcpy(m_ptr, t, len*sizeof(T));
+	}
 
 	~SecBlock()
 		{m_alloc.deallocate(m_ptr, m_size);}
@@ -482,179 +275,103 @@ public:
 		{return m_ptr;}
 #endif
 
-	//! \brief Provides an iterator pointing to the first element in the memory block
-	//! \returns iterator pointing to the first element in the memory block
+//	T *operator +(size_type offset)
+//		{return m_ptr+offset;}
+
+//	const T *operator +(size_type offset) const
+//		{return m_ptr+offset;}
+
+//	T& operator[](size_type index)
+//		{assert(index >= 0 && index < m_size); return m_ptr[index];}
+
+//	const T& operator[](size_type index) const
+//		{assert(index >= 0 && index < m_size); return m_ptr[index];}
+
 	iterator begin()
 		{return m_ptr;}
-	//! \brief Provides a constant iterator pointing to the first element in the memory block
-	//! \returns constant iterator pointing to the first element in the memory block
 	const_iterator begin() const
 		{return m_ptr;}
-	//! \brief Provides an iterator pointing beyond the last element in the memory block
-	//! \returns iterator pointing beyond the last element in the memory block
 	iterator end()
 		{return m_ptr+m_size;}
-	//! \brief Provides a constant iterator pointing beyond the last element in the memory block
-	//! \returns constant iterator pointing beyond the last element in the memory block
 	const_iterator end() const
 		{return m_ptr+m_size;}
 
-	//! \brief Provides a pointer to the first element in the memory block
-	//! \returns pointer to the first element in the memory block
 	typename A::pointer data() {return m_ptr;}
-	//! \brief Provides a pointer to the first element in the memory block
-	//! \returns constant pointer to the first element in the memory block
 	typename A::const_pointer data() const {return m_ptr;}
 
-	//! \brief Provides the count of elements in the SecBlock
-	//! \returns number of elements in the memory block
-	//! \note the return value is the count of elements, and not the number of bytes
 	size_type size() const {return m_size;}
-	//! \brief Determines if the SecBlock is empty
-	//! \returns true if number of elements in the memory block is 0, false otherwise
 	bool empty() const {return m_size == 0;}
 
-	//! \brief Provides a byte pointer to the first element in the memory block
-	//! \returns byte pointer to the first element in the memory block
 	byte * BytePtr() {return (byte *)m_ptr;}
-	//! \brief Return a byte pointer to the first element in the memory block
-	//! \returns constant byte pointer to the first element in the memory block
 	const byte * BytePtr() const {return (const byte *)m_ptr;}
-	//! \brief Provides the number of bytes in the SecBlock
-	//! \return the number of bytes in the memory block
-	//! \note the return value is the number of bytes, and not count of elements.
 	size_type SizeInBytes() const {return m_size*sizeof(T);}
 
-	//! \brief Set contents and size from an array
-	//! \param ptr a pointer to an array of T
-	//! \param len the number of elements in the memory block
-	//! \details If the memory block is reduced in size, then the unused area is set to 0.
-	void Assign(const T *ptr, size_type len)
+	//! set contents and size
+	void Assign(const T *t, size_type len)
 	{
 		New(len);
-		if (m_ptr && ptr && len)
-			{memcpy_s(m_ptr, m_size*sizeof(T), ptr, len*sizeof(T));}
+		memcpy_s(m_ptr, m_size*sizeof(T), t, len*sizeof(T));
 	}
 
-	//! \brief Copy contents from another SecBlock
-	//! \param t the other SecBlock
-	//! \details Assign checks for self assignment.
-	//! \details If the memory block is reduced in size, then the unused area is set to 0.
+	//! copy contents and size from another SecBlock
 	void Assign(const SecBlock<T, A> &t)
 	{
 		if (this != &t)
 		{
 			New(t.m_size);
-			if (m_ptr && t.m_ptr && t.m_size)
-				{memcpy_s(m_ptr, m_size*sizeof(T), t, t.m_size*sizeof(T));}
+			memcpy_s(m_ptr, m_size*sizeof(T), t.m_ptr, m_size*sizeof(T));
 		}
 	}
 
-	//! \brief Assign contents from another SecBlock
-	//! \param t the other SecBlock
-	//! \details Internally, operator=() calls Assign().
-	//! \details If the memory block is reduced in size, then the unused area is set to 0.
 	SecBlock<T, A>& operator=(const SecBlock<T, A> &t)
 	{
-		// Assign guards for self-assignment
 		Assign(t);
 		return *this;
 	}
 
-	//! \brief Append contents from another SecBlock
-	//! \param t the other SecBlock
-	//! \details Internally, this SecBlock calls Grow and then copies the new content.
-	//! \details If the memory block is reduced in size, then the unused area is set to 0.
+	// append to this object
 	SecBlock<T, A>& operator+=(const SecBlock<T, A> &t)
 	{
-		assert((!t.m_ptr && !t.m_size) || (t.m_ptr && t.m_ptr.m_size));
-
-		if(t.size)
-		{
-			size_type oldSize = m_size;
-			Grow(m_size+t.m_size);
-		
-			if (m_ptr && t.m_ptr)
-				{memcpy_s(m_ptr+oldSize, (m_size-oldSize)*sizeof(T), t.m_ptr, t.m_size*sizeof(T));}
-		}
+		size_type oldSize = m_size;
+		Grow(m_size+t.m_size);
+		memcpy_s(m_ptr+oldSize, m_size*sizeof(T), t.m_ptr, t.m_size*sizeof(T));
 		return *this;
 	}
 
-	//! \brief Concatenate contents from another SecBlock
-	//! \param t the other SecBlock
-	//! \returns a newly constructed SecBlock that is a conacentation of this and t
-	//! \details Internally, a temporary SecBlock is created and the content from this
-	//!    SecBlock and the other SecBlock are concatenated. The temporary
-	//!    SecBlock is returned to the caller.
+	// append operator
 	SecBlock<T, A> operator+(const SecBlock<T, A> &t)
 	{
-		assert((!m_ptr && !m_size) || (m_ptr && m_size));
-		assert((!t.m_ptr && !t.m_size) || (t.m_ptr && t.m_ptr.m_size));
-		if(!t.size) return SecBlock(*this);
-
 		SecBlock<T, A> result(m_size+t.m_size);
 		memcpy_s(result.m_ptr, result.m_size*sizeof(T), m_ptr, m_size*sizeof(T));
-		memcpy_s(result.m_ptr+m_size, (t.m_size-m_size)*sizeof(T), t.m_ptr, t.m_size*sizeof(T));
+		memcpy_s(result.m_ptr+m_size, t.m_size*sizeof(T), t.m_ptr, t.m_size*sizeof(T));
 		return result;
 	}
 
-	//! \brief Bitwise compare two SecBlocks
-	//! \param t the other SecBlock
-	//! \returns true if the size and bits are equal, false otherwise
-	//! \details Uses a constant time compare if the arrays are equal size. The constant time
-	//!    compare is VerifyBufsEqual() found in misc.h.
-	//! \sa operator!=()
 	bool operator==(const SecBlock<T, A> &t) const
 	{
 		return m_size == t.m_size && VerifyBufsEqual(m_ptr, t.m_ptr, m_size*sizeof(T));
 	}
 
-	//! \brief Bitwise compare two SecBlocks
-	//! \param t the other SecBlock
-	//! \returns true if the size and bits are equal, false otherwise
-	//! \details Uses a constant time compare if the arrays are equal size. The constant time
-	//!    compare is VerifyBufsEqual() found in misc.h.
-	//! \details Internally, operator!=() returns the inverse of operator==().
-	//! \sa operator==()
 	bool operator!=(const SecBlock<T, A> &t) const
 	{
 		return !operator==(t);
 	}
 
-	//! \brief Change size without preserving contents
-	//! \param newSize the new size of the memory block
-	//! \details Old content is \a not preserved. If the memory block is reduced in size,
-	//!    then the unused content is set to 0. If the memory block grows in size, then
-	//!    all content is uninitialized.
-	//! \details Internally, this SecBlock calls reallocate().
-	//! \sa New(), CleanNew(), Grow(), CleanGrow(), resize()
+	//! change size, without preserving contents
 	void New(size_type newSize)
 	{
 		m_ptr = m_alloc.reallocate(m_ptr, m_size, newSize, false);
 		m_size = newSize;
 	}
 
-	//! \brief Change size without preserving contents
-	//! \param newSize the new size of the memory block
-	//! \details Old content is not preserved. If the memory block is reduced in size,
-	//!    then the unused content is set to 0. Existing and new content is set to 0.
-	//! \details Internally, this SecBlock calls reallocate().
-	//! \sa New(), CleanNew(), Grow(), CleanGrow(), resize()
+	//! change size and set contents to 0
 	void CleanNew(size_type newSize)
 	{
 		New(newSize);
-		if (m_ptr) {memset_z(m_ptr, 0, m_size*sizeof(T));}
+		memset_z(m_ptr, 0, m_size*sizeof(T));
 	}
 
-	//! \brief Change size and preserve contents
-	//! \param newSize the new size of the memory block
-	//! \details Old content is preserved. If the memory block grows in size, then
-	//!    all content is uninitialized.
-	//! \details Internally, this SecBlock calls reallocate().
-	//! \note reallocate() is called if the size increases. If the size does not 
-	//!    increase, then Grow does not take action. If the size must change,
-	//!    then use resize().
-	//! \sa New(), CleanNew(), Grow(), CleanGrow(), resize()
+	//! change size only if newSize > current size. contents are preserved
 	void Grow(size_type newSize)
 	{
 		if (newSize > m_size)
@@ -664,110 +381,60 @@ public:
 		}
 	}
 
-	//! \brief Change size and preserve contents
-	//! \param newSize the new size of the memory block
-	//! \details Old content is preserved. If the memory block is reduced in size,
-	//!    then the unused content is set to 0. If the memory block grows in size,
-	//!    then the new content is uninitialized.
-	//! \details Internally, this SecBlock calls reallocate().
-	//! \note reallocate() is called if the size increases. If the size does not 
-	//!    increase, then Grow does not take action. If the size must change,
-	//!    then use resize().
-	//! \sa New(), CleanNew(), Grow(), CleanGrow(), resize()
+	//! change size only if newSize > current size. contents are preserved and additional area is set to 0
 	void CleanGrow(size_type newSize)
 	{
 		if (newSize > m_size)
 		{
 			m_ptr = m_alloc.reallocate(m_ptr, m_size, newSize, true);
-			memset_z(m_ptr+m_size, 0, (newSize-m_size)*sizeof(T));
+			memset(m_ptr+m_size, 0, (newSize-m_size)*sizeof(T));
 			m_size = newSize;
 		}
 	}
 
-	//! \brief Change size and preserve contents
-	//! \param newSize the new size of the memory block
-	//! \details Old content is preserved. If the memory block grows in size, then
-	//!    all content is uninitialized.
-	//! \details Internally, this SecBlock calls reallocate().
-	//! \note reallocate() is called if the size increases. If the size does not 
-	//!    increase, then Grow does not take action. If the size must change,
-	//!    then use resize().
-	//! \sa New(), CleanNew(), Grow(), CleanGrow(), resize()
+	//! change size and preserve contents
 	void resize(size_type newSize)
 	{
 		m_ptr = m_alloc.reallocate(m_ptr, m_size, newSize, true);
 		m_size = newSize;
 	}
 
-	//! \brief Swap contents with another SecBlock
-	//! \param b the other SecBlock
-	//! \details Internally, std::swap() is called on m_alloc, m_size and m_ptr.
+	//! swap contents and size with another SecBlock
 	void swap(SecBlock<T, A> &b)
 	{
-		// Swap must occur on the allocator in case its FixedSize that spilled into the heap.
 		std::swap(m_alloc, b.m_alloc);
 		std::swap(m_size, b.m_size);
 		std::swap(m_ptr, b.m_ptr);
 	}
 
-// protected:
+//private:
 	A m_alloc;
 	size_type m_size;
 	T *m_ptr;
 };
 
-#ifdef CRYPTOPP_DOXYGEN_PROCESSING
-//! \class SecByteBlock
-//! \brief SecByteBlock is a SecBlock<byte> typedef.
-class SecByteBlock : public SecBlock<byte> {};
-//! \class SecWordBlock
-//! \brief SecWordBlock is a SecBlock<word> typedef.
-class SecWordBlock : public SecBlock<word> {};
-//! \class AlignedSecByteBlock
-//! \brief AlignedSecByteBlock is a SecBlock<byte, AllocatorWithCleanup<byte, true> > typedef.
-class AlignedSecByteBlock SecBlock<byte, AllocatorWithCleanup<byte, true> > {};
-#else
 typedef SecBlock<byte> SecByteBlock;
-typedef SecBlock<word> SecWordBlock;
 typedef SecBlock<byte, AllocatorWithCleanup<byte, true> > AlignedSecByteBlock;
-#endif
+typedef SecBlock<word> SecWordBlock;
 
-// No need for move semantics on derived class *if* the class does not add any
-//   data members; see http://stackoverflow.com/q/31755703, and Rule of {0|3|5}.
-
-//! \class FixedSizeSecBlock
-//! \brief Fixed size stack-based SecBlock
-//! \tparam T class or type
-//! \tparam S fixed-size of the stack-based memory block
-//! \tparam A AllocatorBase derived class for allocation and cleanup
+//! a SecBlock with fixed size, allocated statically
 template <class T, unsigned int S, class A = FixedSizeAllocatorWithCleanup<T, S> >
 class FixedSizeSecBlock : public SecBlock<T, A>
 {
 public:
-	//! \brief Construct a FixedSizeSecBlock
 	explicit FixedSizeSecBlock() : SecBlock<T, A>(S) {}
 };
 
-//! \class FixedSizeAlignedSecBlock
-//! \brief Fixed size stack-based SecBlock with 16-byte alignment
-//! \tparam T class or type
-//! \tparam S fixed-size of the stack-based memory block
-//! \tparam A AllocatorBase derived class for allocation and cleanup
 template <class T, unsigned int S, bool T_Align16 = true>
 class FixedSizeAlignedSecBlock : public FixedSizeSecBlock<T, S, FixedSizeAllocatorWithCleanup<T, S, NullAllocator<T>, T_Align16> >
 {
 };
 
-//! \class SecBlockWithHint
-//! \brief Stack-based SecBlock that grows into the heap
-//! \tparam T class or type
-//! \tparam S fixed-size of the stack-based memory block
-//! \tparam A AllocatorBase derived class for allocation and cleanup
+//! a SecBlock that preallocates size S statically, and uses the heap when this size is exceeded
 template <class T, unsigned int S, class A = FixedSizeAllocatorWithCleanup<T, S, AllocatorWithCleanup<T> > >
 class SecBlockWithHint : public SecBlock<T, A>
 {
 public:
-	//! construct a SecBlockWithHint with a count of elements
 	explicit SecBlockWithHint(size_t size) : SecBlock<T, A>(size) {}
 };
 
@@ -796,9 +463,5 @@ __stl_alloc_rebind(CryptoPP::AllocatorWithCleanup<_Tp1>& __a, const _Tp2*)
 #endif
 
 NAMESPACE_END
-	
-#if CRYPTOPP_MSC_VERSION
-# pragma warning(pop)
-#endif
 
 #endif

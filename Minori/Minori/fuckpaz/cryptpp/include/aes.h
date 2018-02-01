@@ -1,8 +1,3 @@
-// aes.h - written and placed in the public domain by Wei Dai
-
-//! \file
-//! \brief Class file for the AES cipher (Rijndael)
-
 #ifndef CRYPTOPP_AES_H
 #define CRYPTOPP_AES_H
 

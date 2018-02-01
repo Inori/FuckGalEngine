@@ -1,9 +1,3 @@
-// dmac.h - written and placed in the public domain by Wei Dai
-
-//! \file
-//! \headerfile dmac.h
-//! \brief Classes for DMAC message authentication code
-
 #ifndef CRYPTOPP_DMAC_H
 #define CRYPTOPP_DMAC_H
 
@@ -20,7 +14,7 @@ public:
 
 	CRYPTOPP_CONSTANT(DIGESTSIZE=T::BLOCKSIZE)
 
-	DMAC_Base() : m_subkeylength(0), m_counter(0) {}
+	DMAC_Base() {}
 
 	void UncheckedSetKey(const byte *key, unsigned int length, const NameValuePairs &params);
 	void Update(const byte *input, size_t length);

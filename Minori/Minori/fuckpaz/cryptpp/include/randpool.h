@@ -3,9 +3,6 @@
 
 #include "cryptlib.h"
 #include "filters.h"
-#include "secblock.h"
-#include "smartptr.h"
-#include "aes.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 

@@ -1,18 +1,11 @@
-// ida.h - written and placed in the public domain by Wei Dai
-
-//! \file ida.h
-//! \brief Classes for Information Dispersal Algorithm (IDA)
-
 #ifndef CRYPTOPP_IDA_H
 #define CRYPTOPP_IDA_H
 
-#include "cryptlib.h"
 #include "mqueue.h"
 #include "filters.h"
 #include "channels.h"
-#include "secblock.h"
-#include "stdcpp.h"
-#include "misc.h"
+#include <map>
+#include <vector>
 
 NAMESPACE_BEGIN(CryptoPP)
 
@@ -21,8 +14,7 @@ class RawIDA : public AutoSignaling<Unflushable<Multichannel<Filter> > >
 {
 public:
 	RawIDA(BufferedTransformation *attachment=NULL)
-		: m_threshold (0), m_channelsReady(0), m_channelsFinished(0)
-			{Detach(attachment);}
+		{Detach(attachment);}
 
 	unsigned int GetThreshold() const {return m_threshold;}
 	void AddOutputChannel(word32 channelId);
@@ -104,7 +96,7 @@ class InformationDispersal : public CustomFlushPropagation<Filter>
 {
 public:
 	InformationDispersal(int threshold, int nShares, BufferedTransformation *attachment=NULL, bool addPadding=true)
-		: m_ida(new OutputProxy(*this, true)), m_pad(false), m_nextChannel(0)
+		: m_ida(new OutputProxy(*this, true))
 	{
 		Detach(attachment);
 		IsolatedInitialize(MakeParameters("RecoveryThreshold", threshold)("NumberOfShares", nShares)("AddPadding", addPadding));
@@ -125,7 +117,7 @@ class InformationRecovery : public RawIDA
 {
 public:
 	InformationRecovery(int threshold, BufferedTransformation *attachment=NULL, bool removePadding=true)
-		: RawIDA(attachment), m_pad(false)
+		: RawIDA(attachment)
 		{IsolatedInitialize(MakeParameters("RecoveryThreshold", threshold)("RemovePadding", removePadding));}
 
 	void IsolatedInitialize(const NameValuePairs &parameters=g_nullNameValuePairs);
@@ -142,10 +134,9 @@ class PaddingRemover : public Unflushable<Filter>
 {
 public:
 	PaddingRemover(BufferedTransformation *attachment=NULL)
-		: m_possiblePadding(false), m_zeroCount(0) {Detach(attachment);}
+		: m_possiblePadding(false) {Detach(attachment);}
 
-	void IsolatedInitialize(const NameValuePairs &parameters)
-		{CRYPTOPP_UNUSED(parameters); m_possiblePadding = false;}
+	void IsolatedInitialize(const NameValuePairs &parameters) {m_possiblePadding = false;}
 	size_t Put2(const byte *begin, size_t length, int messageEnd, bool blocking);
 
 	// GetPossiblePadding() == false at the end of a message indicates incorrect padding

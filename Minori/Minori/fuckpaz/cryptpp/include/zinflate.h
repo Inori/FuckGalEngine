@@ -1,10 +1,8 @@
 #ifndef CRYPTOPP_ZINFLATE_H
 #define CRYPTOPP_ZINFLATE_H
 
-#include "cryptlib.h"
-#include "secblock.h"
 #include "filters.h"
-#include "stdcpp.h"
+#include <vector>
 
 NAMESPACE_BEGIN(CryptoPP)
 
@@ -14,6 +12,7 @@ class LowFirstBitReader
 public:
 	LowFirstBitReader(BufferedTransformation &store)
 		: m_store(store), m_buffer(0), m_bitsBuffered(0) {}
+//	unsigned long BitsLeft() const {return m_store.MaxRetrievable() * 8 + m_bitsBuffered;}
 	unsigned int BitsBuffered() const {return m_bitsBuffered;}
 	unsigned long PeekBuffer() const {return m_buffer;}
 	bool FillBuffer(unsigned int length);
@@ -39,10 +38,8 @@ public:
 
 	class Err : public Exception {public: Err(const std::string &what) : Exception(INVALID_DATA_FORMAT, "HuffmanDecoder: " + what) {}};
 
-	HuffmanDecoder() : m_maxCodeBits(0), m_cacheBits(0), m_cacheMask(0), m_normalizedCacheMask(0) {}
-	HuffmanDecoder(const unsigned int *codeBitLengths, unsigned int nCodes)
-		: m_maxCodeBits(0), m_cacheBits(0), m_cacheMask(0), m_normalizedCacheMask(0)
-			{Initialize(codeBitLengths, nCodes);}
+	HuffmanDecoder() {}
+	HuffmanDecoder(const unsigned int *codeBitLengths, unsigned int nCodes)	{Initialize(codeBitLengths, nCodes);}
 
 	void Initialize(const unsigned int *codeBitLengths, unsigned int nCodes);
 	unsigned int Decode(code_t code, /* out */ value_t &value) const;
@@ -97,10 +94,9 @@ public:
 	class UnexpectedEndErr : public Err {public: UnexpectedEndErr() : Err(INVALID_DATA_FORMAT, "Inflator: unexpected end of compressed block") {}};
 	class BadBlockErr : public Err {public: BadBlockErr() : Err(INVALID_DATA_FORMAT, "Inflator: error in compressed block") {}};
 
-	//! \brief RFC 1951 Decompressor
-	//! \param attachment the filter's attached transformation
-	//! \param repeat decompress multiple compressed streams in series
-	//! \param autoSignalPropagation 0 to turn off MessageEnd signal
+	/*! \param repeat decompress multiple compressed streams in series
+		\param autoSignalPropagation 0 to turn off MessageEnd signal
+	*/
 	Inflator(BufferedTransformation *attachment = NULL, bool repeat = false, int autoSignalPropagation = -1);
 
 	void IsolatedInitialize(const NameValuePairs &parameters);

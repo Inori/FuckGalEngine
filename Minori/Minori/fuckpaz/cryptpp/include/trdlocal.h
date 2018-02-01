@@ -28,7 +28,7 @@ public:
 	};
 
 	ThreadLocalStorage();
-	~ThreadLocalStorage() CRYPTOPP_THROW;
+	~ThreadLocalStorage();
 
 	void SetValue(void *value);
 	void *GetValue() const;

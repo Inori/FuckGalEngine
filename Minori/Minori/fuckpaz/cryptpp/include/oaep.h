@@ -1,7 +1,6 @@
 #ifndef CRYPTOPP_OAEP_H
 #define CRYPTOPP_OAEP_H
 
-#include "cryptlib.h"
 #include "pubkey.h"
 #include "sha.h"
 

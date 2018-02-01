@@ -1,7 +1,6 @@
 #ifndef CRYPTOPP_ZLIB_H
 #define CRYPTOPP_ZLIB_H
 
-#include "cryptlib.h"
 #include "adler32.h"
 #include "zdeflate.h"
 #include "zinflate.h"
@@ -37,10 +36,9 @@ public:
 	class UnsupportedAlgorithm : public Err {public: UnsupportedAlgorithm() : Err(INVALID_DATA_FORMAT, "ZlibDecompressor: unsupported algorithm") {}};
 	class UnsupportedPresetDictionary : public Err {public: UnsupportedPresetDictionary() : Err(INVALID_DATA_FORMAT, "ZlibDecompressor: unsupported preset dictionary") {}};
 
-	//! \brief Construct a ZlibDecompressor
-	//! \param attachment a \ BufferedTransformation to attach to this object
-	//! \param repeat decompress multiple compressed streams in series
-	//! \param autoSignalPropagation 0 to turn off MessageEnd signal
+	/*! \param repeat decompress multiple compressed streams in series
+		\param autoSignalPropagation 0 to turn off MessageEnd signal
+	*/
 	ZlibDecompressor(BufferedTransformation *attachment = NULL, bool repeat = false, int autoSignalPropagation = -1);
 	unsigned int GetLog2WindowSize() const {return m_log2WindowSize;}
 

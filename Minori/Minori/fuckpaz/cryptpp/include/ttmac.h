@@ -5,7 +5,6 @@
 
 #include "seckey.h"
 #include "iterhash.h"
-#include "secblock.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 

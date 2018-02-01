@@ -5,9 +5,8 @@
 
 #include "cryptlib.h"
 #include "secblock.h"
-#include "algebra.h"
 #include "misc.h"
-#include "asn.h"
+#include "algebra.h"
 
 #include <iosfwd>
 
@@ -112,7 +111,7 @@ public:
 		byte GetByte(size_t n) const;
 
 		//! the zero polynomial will return a degree of -1
-		signed int Degree() const {return (signed int)(BitCount()-1U);}
+		signed int Degree() const {return BitCount()-1;}
 		//! degree + 1
 		unsigned int CoefficientCount() const {return BitCount();}
 		//! return coefficient for x^i
@@ -286,7 +285,7 @@ public:
 
 	virtual GF2NP * Clone() const {return new GF2NP(*this);}
 	virtual void DEREncode(BufferedTransformation &bt) const
-		{CRYPTOPP_UNUSED(bt); assert(false);}	// no ASN.1 syntax yet for general polynomial basis
+		{assert(false);}	// no ASN.1 syntax yet for general polynomial basis
 
 	void DEREncodeElement(BufferedTransformation &out, const Element &a) const;
 	void BERDecodeElement(BufferedTransformation &in, Element &a) const;
