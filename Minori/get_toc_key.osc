@@ -23,6 +23,8 @@ mov addr_key_byte, $RESULT + b
 
 label_continue:
 esto
+cmp eip, addr_key_byte
+je label_log_key
 
 mov addr_filename, [esp+4]
 find addr_filename, #700061007A00??00#
@@ -40,8 +42,13 @@ bp addr_key_byte
 label_get_key:
 esto
 cmp eip, addr_CreateFileW
-je label_continue
+jne label_log_key
 
+mov addr_filename, [esp+4]
+log addr_filename
+jmp label_continue
+
+label_log_key:
 
 log al
 
