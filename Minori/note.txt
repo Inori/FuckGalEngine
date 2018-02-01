@@ -3,7 +3,16 @@ Blowfish_Decrypt入口sig:
 004756F3  |.  83E4 F8       and     esp, 0xFFFFFFF8
 004756F6  |.  B8 54100000   mov     eax, 0x1054
 
+
+
+
 找crud+读封包+生成key：
+
+2018/02/01:
+这个方法不是很靠谱
+对于trinoline genesis这个游戏，这里获取toc_key的方法不对，获取到只有dat_key
+而且对于dat_key，顺序也不一定，有的在文件名log前，有的在后，要自己尝试
+
 搜索
 mov eax,dword ptr ds:[eax+0x10]
 mov ecx,dword ptr ds:[ecx+0x10]
