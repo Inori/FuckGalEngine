@@ -89,10 +89,11 @@ for fn in fl:
 
 print('文本总量'+str(sumlen)+' KB')
 
-namefile = open('name.txt', 'w', encoding='utf16')
+
+namefile = open('cnname.txt', 'w', encoding='utf16')
 count = 0
 for name in namedic.keys():
-    string = "<%04d>%s\=\n\n"%(count, name.encode('sjis').decode('gbk'))
+    string = "<%04d>%s\=\n\n"%(count, name)
     namefile.write(string)
     count += 1
 

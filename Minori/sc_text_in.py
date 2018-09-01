@@ -30,7 +30,7 @@ def makestr(lines):
         elif re.match('○[0-9A-Fa-f]+○', line):
             pass
         elif not line == '\n':
-            print(line)
+            print("{}:{}".format(index, line))
     return string_list
 
 alnum = [' ','.',',','[',']', '_',

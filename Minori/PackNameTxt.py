@@ -56,9 +56,9 @@ def makestr(lines):
     oldstr_list = []
     newstr_list = []
     for index,line in enumerate(lines):
-        part = re.match('<.+>(.*)\=(.*)\n', line)
+        part = re.match('<.+>(.*)\\\=(.*)\n', line)
         if part:
-            oldstr = part.group(1)[:-1].encode('sjis').decode('gbk')
+            oldstr = part.group(1)
             newstr = part.group(2)
             oldstr_list.append(fixjpstr(oldstr))
             newstr_list.append(fixcnstr(newstr))
@@ -106,7 +106,7 @@ def WriteString(src, oldstr_list, newstr_list):
     for oldstr, newstr in zip(oldstr_list, newstr_list):
 
         oldoff = src.tell()
-        bstring = oldstr.encode('gbk')
+        bstring = oldstr.encode('sjis')
         hash = BKDRHash(bstring)
         oldlen = len(bstring)
         src.write(bstring)
