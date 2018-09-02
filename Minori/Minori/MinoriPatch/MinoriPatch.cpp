@@ -421,6 +421,21 @@ HWND WINAPI NewCreateWindowExA(DWORD dwExStyle, LPCTSTR lpClassName, LPCTSTR lpW
 
 	return hwnd;
 }
+
+
+typedef BOOL(WINAPI *PfuncSetWindowTextA)(HWND hwnd, LPCSTR lpString);
+PfuncSetWindowTextA g_pOldSetWindowTextA = SetWindowTextA;
+BOOL WINAPI NewSetWindowTextA(HWND hwnd, LPCSTR lpString)
+{
+	const char* szWndName = "Trinoline";
+	const char* szOldName = "\x83\x67\x83\x8A\x83\x6D\x83\x89\x83\x43\x83\x93\x00";
+
+	if (!strcmp(lpString, "トリノライン"))
+	{
+		lpString = szWndName;
+	}
+	return g_pOldSetWindowTextA(hwnd, lpString);
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma pack (1)
@@ -685,6 +700,7 @@ void SetHook()
 	DetourTransactionBegin();
 	DetourAttach((void**)&pDirect3DCreate9, newDirect3DCreate9);
 	DetourAttach((void**)&g_pOldCreateWindowExA, NewCreateWindowExA);
+	DetourAttach((void**)&g_pOldSetWindowTextA, NewSetWindowTextA);
 	DetourAttach((void**)&GetTextGlyph, NewGetTextGlyph);
 	//DetourAttach((void**)&pBeforePresent, DrawAsyncText);  //改用新的Com Hook, 这个废弃了
 	DetourTransactionCommit();

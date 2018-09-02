@@ -42,6 +42,8 @@ def is_alnum(string):
     return True
 
 fl = walk('sc')
+fselect = open('select.txt', 'w', encoding='utf16')
+
 sumlen = 0
 namedic = {}
 for fn in fl:
@@ -81,12 +83,16 @@ for fn in fl:
             else:
                 dst.write(FormatString(text, i))
             i += 1
+
+        if '.select' in line:
+            fselect.write('{}:{}->{}'.format(os.path.basename(fn), j, line))
         j+=1
             
     print(dstname)
     src.close()
     dst.close()
 
+fselect.close()
 print('文本总量'+str(sumlen)+' KB')
 
 
