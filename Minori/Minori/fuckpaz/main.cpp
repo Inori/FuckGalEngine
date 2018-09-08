@@ -7,6 +7,7 @@
 //Add a new game support(×ï¥Î¹â¥é¥ó¥Ç¥ô©`).
 //Add a new game support(¥È¥ê¥Î¥é¥¤¥ó). 2017/4/1
 //Add a new game support(¥È¥ê¥Î¥é¥¤¥ó£º¥¸¥§¥Í¥·¥¹). 2018/2/1
+//Add two game support(¥½¥ì¥è¥ê¥ÎÇ°×àÔŠ¡¡¥¢¥Ú¥ó¥ÉH and ×ï¥Î¹â¥é¥ó¥Ç¥ô©`¡¡¤ß¤«¤ó¥Ö¥í¥Ã¥µ¥à). 2018/9/8
 
 // This tool extracts and rebuilds data from *.paz archives used by minori.
 
