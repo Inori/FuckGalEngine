@@ -102,7 +102,7 @@ for fn in fl:
                 
             dst_lines.append(' '.join(dm))
         else:
-            dst_lines.append(raw_lines[i])
+            dst_lines.append(raw_lines[i].encode('sjis').decode('gbk'))
             i += 1
 
     for string in dst_lines:
