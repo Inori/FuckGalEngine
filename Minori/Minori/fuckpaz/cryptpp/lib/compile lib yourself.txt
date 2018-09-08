@@ -1,0 +1,3 @@
+The compiled cryptlib.lib is too big,
+it's not convenient to check it in the git repo,
+you can just compile it yourself using source code in cryptopp562.7z in Minori folder.
