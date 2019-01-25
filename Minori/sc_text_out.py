@@ -27,7 +27,7 @@ def FormatString(string, count):
     res = "○%08d○%s●%08d●%s\n"%(count, string,count, string)
     return res
 
-alnum = [' ','.',',','[',']', '_',
+alnum = [' ','.',',','[',']', '_',';',
          '-', '\t',
          '0','1','2','3','4','5','6','7','8','9',
          'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
@@ -42,6 +42,8 @@ def is_alnum(string):
     return True
 
 fl = walk('sc')
+fselect = open('select.txt', 'w', encoding='utf16')
+
 sumlen = 0
 namedic = {}
 for fn in fl:
@@ -81,18 +83,23 @@ for fn in fl:
             else:
                 dst.write(FormatString(text, i))
             i += 1
+
+        if '.select' in line:
+            fselect.write('{}:{}->{}'.format(os.path.basename(fn), j, line))
         j+=1
             
     print(dstname)
     src.close()
     dst.close()
 
+fselect.close()
 print('文本总量'+str(sumlen)+' KB')
 
-namefile = open('name.txt', 'w', encoding='utf16')
+
+namefile = open('cnname.txt', 'w', encoding='utf16')
 count = 0
 for name in namedic.keys():
-    string = "<%04d>%s\=\n\n"%(count, name.encode('sjis').decode('gbk'))
+    string = "<%04d>%s\=\n\n"%(count, name)
     namefile.write(string)
     count += 1
 

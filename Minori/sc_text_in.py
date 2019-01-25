@@ -30,7 +30,7 @@ def makestr(lines):
         elif re.match('○[0-9A-Fa-f]+○', line):
             pass
         elif not line == '\n':
-            print(line)
+            print("{}:{}".format(index, line))
     return string_list
 
 alnum = [' ','.',',','[',']', '_',
@@ -102,7 +102,7 @@ for fn in fl:
                 
             dst_lines.append(' '.join(dm))
         else:
-            dst_lines.append(raw_lines[i])
+            dst_lines.append(raw_lines[i].encode('sjis').decode('gbk'))
             i += 1
 
     for string in dst_lines:

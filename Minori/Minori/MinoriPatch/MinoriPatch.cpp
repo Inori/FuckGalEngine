@@ -10,7 +10,6 @@
 #include "tools.h"
 #include "translate.h"
 #include "types.h"
-//#include "ImageStone.h"
 #include "png.h"
 
 
@@ -165,8 +164,8 @@ HANDLE WINAPI NewCreateFileA(
 }
 
 //搜索 .paz ,第二个下面的CreateFileA
-PVOID pCreateFileA = (PVOID)0x00409A2E;
-PVOID pCreateFileARetn = (PVOID)0x00409A34;
+PVOID pCreateFileA = (PVOID)0x004099AE;
+PVOID pCreateFileARetn = (PVOID)0x004099B4;
 __declspec(naked) void _CreateFileA()
 {
 	__asm
@@ -228,6 +227,7 @@ void __stdcall _D3DDrawText()
 	}
 }
 
+
 /*
 004148F6   .  8B15 346B5300 mov     edx, dword ptr[0x536B34]
 004148FC   .  8B0E          mov     ecx, dword ptr[esi]
@@ -244,6 +244,7 @@ void __stdcall _D3DDrawText()
 //在D3D::Present之前DrawText
 void *pBeforePresent = (void*)0x00416035;
 
+//改用新的Com Hook, 这个废弃了
 __declspec(naked) void DrawAsyncText()
 {
 	__asm
@@ -256,10 +257,30 @@ __declspec(naked) void DrawAsyncText()
 }
 
 
+typedef HRESULT (__stdcall * PFUNC_D3D9Present)(
+	void* pThis,
+	const RECT *pSourceRect, 
+	const RECT *pDestRect,
+	HWND hDestWindowOverride, 
+	const RGNDATA *pDirtyRegion);
+
+PFUNC_D3D9Present OldD3D9Present = NULL;
+HRESULT __stdcall NewD3D9Present(
+	void* pThis,
+	const RECT *pSourceRect,
+	const RECT *pDestRect,
+	HWND hDestWindowOverride,
+	const RGNDATA *pDirtyRegion
+)
+{
+	_D3DDrawText();
+	return OldD3D9Present(pThis, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+}
+
 //搜索 cmp     ecx, 0x81
 //第一个找到的所在函数
 typedef bool(__stdcall *pfuncGetTextGlyph)(ulong var1, ulong var2, ulong var3, ulong var4);
-pfuncGetTextGlyph GetTextGlyph = (pfuncGetTextGlyph)0x00421DA0;
+pfuncGetTextGlyph GetTextGlyph = (pfuncGetTextGlyph)0x00422660;
 
 bool __stdcall NewGetTextGlyph(ulong var1, ulong var2, ulong var3, ulong var4)
 {
@@ -315,6 +336,17 @@ HRESULT WINAPI newCreateDevice(
 	if (status == D3D_OK)
 	{
 		pDevice = *ppReturnedDeviceInterface;
+		if (!pDevice)
+		{
+			return E_FAIL;
+		}
+
+		OldD3D9Present = (PFUNC_D3D9Present)*(DWORD*)(*(DWORD*)pDevice + 17 * sizeof(void*));
+
+		DetourTransactionBegin();
+		DetourUpdateThread(GetCurrentThread());
+		DetourAttach((void**)&OldD3D9Present, NewD3D9Present);
+		DetourTransactionCommit();
 
 		D3DXCreateFontW(pDevice, -28, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
 			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
@@ -377,7 +409,7 @@ funcCreateWindowExA g_pOldCreateWindowExA = CreateWindowExA;
 
 HWND WINAPI NewCreateWindowExA(DWORD dwExStyle, LPCTSTR lpClassName, LPCTSTR lpWindowName, DWORD dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
-	const char* szWndName = "［罪之光 -|- Rendezvous］";
+	const char* szWndName = "Trinoline";
 	hwnd = g_pOldCreateWindowExA(dwExStyle, lpClassName, (LPCTSTR)szWndName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
 
 	DWORD dwThreadid = GetCurrentThreadId();
@@ -388,6 +420,21 @@ HWND WINAPI NewCreateWindowExA(DWORD dwExStyle, LPCTSTR lpClassName, LPCTSTR lpW
 	}
 
 	return hwnd;
+}
+
+
+typedef BOOL(WINAPI *PfuncSetWindowTextA)(HWND hwnd, LPCSTR lpString);
+PfuncSetWindowTextA g_pOldSetWindowTextA = SetWindowTextA;
+BOOL WINAPI NewSetWindowTextA(HWND hwnd, LPCSTR lpString)
+{
+	const char* szWndName = "Trinoline";
+	const char* szOldName = "\x83\x67\x83\x8A\x83\x6D\x83\x89\x83\x43\x83\x93\x00";
+
+	if (!strcmp(lpString, "トリノライン"))
+	{
+		lpString = szWndName;
+	}
+	return g_pOldSetWindowTextA(hwnd, lpString);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -475,23 +522,28 @@ void __stdcall SavePngName(char* szPngName)
 	strcpy(g_szPngName, szPngName);
 }
 
-//004686AB | .  8845 08       mov     byte ptr[ebp + 0x8], al
-//004686AE | .  8B43 08       mov     eax, dword ptr[ebx + 0x8]
-//004686B1 | .  83C0 74       add     eax, 0x74
-//004686B4 | .  8378 14 10    cmp     dword ptr[eax + 0x14], 0x10
-//004686B8 | .  72 02         jb      short 004686BC
-//004686BA | .  8B00          mov     eax, dword ptr[eax]
-//004686BC | > 8B75 08       mov     esi, [arg.1];  eax = filename
-//004686BF | .  8B93 D81B0000 mov     edx, dword ptr[ebx + 0x1BD8]
-//004686C5 | .  8B8B F01B0000 mov     ecx, dword ptr[ebx + 0x1BF0]
-//004686CB | .  6A 02         push    0x2
-//004686CD | .  56            push    esi
-//004686CE | .  52            push    edx
-//004686CF | .  8B93 D41B0000 mov     edx, dword ptr[ebx + 0x1BD4]
-//004686D5 | .  52            push    edx
-//004686D6 | .E8 D52BFDFF   call    0043B2B0
+//搜索
+//add     r32, 0x74
+//cmp     dword ptr[r32 + 0x14], 0x10
 
-void *pSavePngName  = (void*)0x004686BC;
+//0046AC08 | .  0F95C0        setne   al
+//0046AC0B | .  8845 08       mov     byte ptr[ebp + 0x8], al
+//0046AC0E | .  8B43 0C       mov     eax, dword ptr[ebx + 0xC]
+//0046AC11 | .  83C0 74       add     eax, 0x74
+//0046AC14 | .  8378 14 10    cmp     dword ptr[eax + 0x14], 0x10
+//0046AC18 | .  72 02         jb      short 0046AC1C
+//0046AC1A | .  8B00          mov     eax, dword ptr[eax]
+//0046AC1C | > 8B75 08       mov     esi, [arg.1]
+//0046AC1F | .  8B93 F01B0000 mov     edx, dword ptr[ebx + 0x1BF0]
+//0046AC25 | .  8B8B 081C0000 mov     ecx, dword ptr[ebx + 0x1C08]
+//0046AC2B | .  6A 02         push    0x2
+//0046AC2D | .  56            push    esi
+//0046AC2E | .  52            push    edx
+//0046AC2F | .  8B93 EC1B0000 mov     edx, dword ptr[ebx + 0x1BEC]
+//0046AC35 | .  52            push    edx
+//0046AC36 | .E8 3518FDFF   call    0043C470
+
+void *pSavePngName = (void*)0x0046AC1C;
 
 __declspec(naked) void _SavePngName()
 {
@@ -580,8 +632,6 @@ bool ReplacePngReadFn(const info_t& oInfo, png_structp png_ptr)
 }
 
 
-void* p_old_png_read_data = (void*)0x00427A90;
-
 void __stdcall png_read_info_wrapper(png_structp png_ptr, png_infop info_ptr)
 {
 	do
@@ -615,7 +665,7 @@ void __stdcall png_read_info_wrapper(png_structp png_ptr, png_infop info_ptr)
 //004BC887 | .B8 BCE15200   mov     eax, 0052E1BC;  ASCII "PNG file corrupted by ASCII conversion"
 
 
-void* p_old_png_read_info = (void*)0x004BC800;
+void* p_old_png_read_info = (void*)0x004C1650;
 __declspec(naked) void new_png_read_info()
 {
 	__asm
@@ -650,8 +700,9 @@ void SetHook()
 	DetourTransactionBegin();
 	DetourAttach((void**)&pDirect3DCreate9, newDirect3DCreate9);
 	DetourAttach((void**)&g_pOldCreateWindowExA, NewCreateWindowExA);
+	DetourAttach((void**)&g_pOldSetWindowTextA, NewSetWindowTextA);
 	DetourAttach((void**)&GetTextGlyph, NewGetTextGlyph);
-	DetourAttach((void**)&pBeforePresent, DrawAsyncText);
+	//DetourAttach((void**)&pBeforePresent, DrawAsyncText);  //改用新的Com Hook, 这个废弃了
 	DetourTransactionCommit();
 	
 }
