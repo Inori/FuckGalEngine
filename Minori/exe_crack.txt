@@ -8,9 +8,9 @@ set PE header Characteristics bit (COFF header signature) from 0 to 1
 1. 
 
 search 
-mov     byte ptr [esi+0x31], 0x0
-mov     esi, dword ptr [ebp-0x10]
-cmp     byte ptr [esi+0x31], 0x0
+mov     byte ptr [r32+0x31], 0x0
+mov     r32, dword ptr [ebp-0x10]
+cmp     byte ptr [r32+0x31], 0x0
 
 
 00484183   .  8846 31       mov     byte ptr [esi+0x31], al
