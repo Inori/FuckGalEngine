@@ -42,13 +42,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)\dxsdk\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\dxsdk\Lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\Common;$(ProjectDir)\dxsdk\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\Common;$(ProjectDir)\dxsdk\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\dxsdk\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\dxsdk\Lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\Common;$(ProjectDir)\dxsdk\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\Common;$(ProjectDir)\dxsdk\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
