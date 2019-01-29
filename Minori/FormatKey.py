@@ -1,6 +1,4 @@
 
-
-
 def main():
     with open('key.txt') as src, open('out.txt', 'w') as dst:
 
