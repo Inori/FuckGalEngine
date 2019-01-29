@@ -152,6 +152,29 @@ std::string GetSetupPathByFileDlg()
 	return strPath;
 }
 
+std::string GetSysTempPath()
+{
+	std::string strPath;
+	CHAR szPath[MAX_PATH] = { 0 };
+	do 
+	{
+		if (!GetWindowsDirectoryA(szPath, MAX_PATH - 1))
+		{
+			break;
+		}
+
+		strPath.assign(szPath);
+		strPath += "\\";
+		strPath += "Temp";
+
+		if (_access(strPath.c_str(), 0))
+		{
+			CreateDirectoryA(strPath.c_str(), NULL);
+		}
+	} while (FALSE);
+	return strPath;
+}
+
 std::string	GetPatchDllPath()
 {
 	CHAR szExePath[MAX_PATH] = { 0 };
@@ -220,24 +243,21 @@ std::string ReleasePatchDllToTemp()
 			break;
 		}
 
-		CHAR lpTempPathBuffer[MAX_PATH] = {0};
-
-		//  Gets the temp path env string (no guarantee it's a valid path).
-		DWORD dwRetVal = GetTempPathA(MAX_PATH,          // length of the buffer
-			lpTempPathBuffer); // buffer for path 
-		if (dwRetVal > MAX_PATH || (dwRetVal == 0))
+		std::string strTemp = GetSysTempPath();
+		if (strTemp.empty())
 		{
 			break;
 		}
 
-		strcat(lpTempPathBuffer, PATCH_DLL_NAME);
+		strTemp += "\\";
+		strTemp += PATCH_DLL_NAME;
 
-		if (!WriteNewFile(lpTempPathBuffer, pBuffer, dwSize))
+		if (!WriteNewFile(strTemp.c_str(), pBuffer, dwSize))
 		{
 			break;
 		}
 
-		strFileName.assign(lpTempPathBuffer);
+		strFileName.assign(strTemp);
 
 	} while (FALSE);
 	
@@ -319,6 +339,16 @@ VOID OnInitDialog(HWND hWnd)
 	SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
 }
 
+VOID OnExitDialog(HWND hWnd)
+{
+	std::string strDllPath = GetSysTempPath();
+	strDllPath += "\\";
+	strDllPath += PATCH_DLL_NAME;
+	DeleteFileA(strDllPath.c_str());
+
+	EndDialog(hWnd, 0);
+}
+
 LRESULT CALLBACK DialogProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
 {
 	BOOL bRet = FALSE;
@@ -331,7 +361,7 @@ LRESULT CALLBACK DialogProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
 		bRet = OnDlgCommand(wParam, lParam);
 		break;
 	case WM_CLOSE:
-		EndDialog(hWnd, 0);
+		OnExitDialog(hWnd);
 		break;
 	default:
 		break;
