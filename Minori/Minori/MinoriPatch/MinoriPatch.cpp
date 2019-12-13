@@ -164,8 +164,8 @@ HANDLE WINAPI NewCreateFileA(
 }
 
 //搜索 .paz ,第二个下面的CreateFileA
-PVOID pCreateFileA = (PVOID)0x004099AE;
-PVOID pCreateFileARetn = (PVOID)0x004099B4;
+PVOID pCreateFileA = (PVOID)0x0040981E;
+PVOID pCreateFileARetn = (PVOID)0x00409824;
 __declspec(naked) void _CreateFileA()
 {
 	__asm
@@ -280,7 +280,7 @@ HRESULT __stdcall NewD3D9Present(
 //搜索 cmp     ecx, 0x81
 //第一个找到的所在函数
 typedef bool(__stdcall *pfuncGetTextGlyph)(ulong var1, ulong var2, ulong var3, ulong var4);
-pfuncGetTextGlyph GetTextGlyph = (pfuncGetTextGlyph)0x00422660;
+pfuncGetTextGlyph GetTextGlyph = (pfuncGetTextGlyph)0x00422340;
 
 bool __stdcall NewGetTextGlyph(ulong var1, ulong var2, ulong var3, ulong var4)
 {
@@ -409,7 +409,7 @@ funcCreateWindowExA g_pOldCreateWindowExA = CreateWindowExA;
 
 HWND WINAPI NewCreateWindowExA(DWORD dwExStyle, LPCTSTR lpClassName, LPCTSTR lpWindowName, DWORD dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
-	const char* szWndName = "Trinoline";
+	const char* szWndName = "少女与野獣";
 	hwnd = g_pOldCreateWindowExA(dwExStyle, lpClassName, (LPCTSTR)szWndName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
 
 	DWORD dwThreadid = GetCurrentThreadId();
@@ -427,10 +427,10 @@ typedef BOOL(WINAPI *PfuncSetWindowTextA)(HWND hwnd, LPCSTR lpString);
 PfuncSetWindowTextA g_pOldSetWindowTextA = SetWindowTextA;
 BOOL WINAPI NewSetWindowTextA(HWND hwnd, LPCSTR lpString)
 {
-	const char* szWndName = "Trinoline";
+	const char* szWndName = "少女与野獣";
 	const char* szOldName = "\x83\x67\x83\x8A\x83\x6D\x83\x89\x83\x43\x83\x93\x00";
 
-	if (!strcmp(lpString, "トリノライン"))
+	if (!strstr(lpString, "その日の獣には、"))
 	{
 		lpString = szWndName;
 	}
@@ -543,7 +543,7 @@ void __stdcall SavePngName(char* szPngName)
 //0046AC35 | .  52            push    edx
 //0046AC36 | .E8 3518FDFF   call    0043C470
 
-void *pSavePngName = (void*)0x0046AC1C;
+void *pSavePngName = (void*)0x0046B47C;
 
 __declspec(naked) void _SavePngName()
 {
@@ -658,14 +658,14 @@ void __stdcall png_read_info_wrapper(png_structp png_ptr, png_infop info_ptr)
 }
 
 
-//这两个字符串所在的函数
+//这两个字符串所在的函数的函数头，即 push ebp 那行
 //004BC87C | .B8 ACE15200   mov     eax, 0052E1AC;  ASCII "Not a PNG file"
 //004BC881 | .E8 5A520000   call    004C1AE0
 //004BC886 | > 56            push    esi
 //004BC887 | .B8 BCE15200   mov     eax, 0052E1BC;  ASCII "PNG file corrupted by ASCII conversion"
 
 
-void* p_old_png_read_info = (void*)0x004C1650;
+void* p_old_png_read_info = (void*)0x004C1700;
 __declspec(naked) void new_png_read_info()
 {
 	__asm
