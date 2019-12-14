@@ -430,7 +430,7 @@ BOOL WINAPI NewSetWindowTextA(HWND hwnd, LPCSTR lpString)
 	const char* szWndName = "少女与野獣";
 	const char* szOldName = "\x83\x67\x83\x8A\x83\x6D\x83\x89\x83\x43\x83\x93\x00";
 
-	if (!strstr(lpString, "その日の獣には、"))
+	if (strstr(lpString, "その日の獣には、"))
 	{
 		lpString = szWndName;
 	}
