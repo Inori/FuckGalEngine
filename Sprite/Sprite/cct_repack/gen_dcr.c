@@ -14,7 +14,6 @@
 #define CHDIR _chdir
 #define STRICMP _stricmp
 #else
-#include <sys/stat.h>
 #include <unistd.h>
 #define CHDIR chdir
 #define STRICMP strcasecmp
