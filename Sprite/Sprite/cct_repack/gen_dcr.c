@@ -8,8 +8,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <direct.h>
 #include "zlib.h"
+#ifdef _WIN32
+#include <direct.h>
+#define CHDIR _chdir
+#define STRICMP _stricmp
+#else
+#include <sys/stat.h>
+#include <unistd.h>
+#define CHDIR chdir
+#define STRICMP strcasecmp
+#endif
 
 #define C2INT(a,b,c,d) ((unsigned int)((d) | (c << 8) | (b << 16) | (a << 24)))
 #define bswap32(x) (((x & 0xFF) << 24) | ((x & 0xFF00) << 8) | ((x >> 8) & 0xFF00) | ((x >> 24) & 0xFF));
@@ -447,7 +456,7 @@ void buildDCR(char *outname, int isCCT, char *srcdir)
 
     printf("writing the final output...\n");
 
-    _chdir(".."); ///-------
+    CHDIR(".."); ///------- 
 
     outfile = fopen(outname, "wb");
     if (outfile == NULL)
@@ -456,7 +465,7 @@ void buildDCR(char *outname, int isCCT, char *srcdir)
         return;
     }
 
-    _chdir(srcdir); ///-------
+    CHDIR(srcdir); ///-------
 
     //file header
     infile = fopen("zheader","rb");
@@ -552,9 +561,9 @@ usage:\n\
         return 3;
     }
 
-    if (_stricmp(fname, ".dcr") == 0)
+    if (STRICMP(fname, ".dcr") == 0)
         extmode = 0;
-    else if (_stricmp(fname, ".cct") == 0)
+    else if (STRICMP(fname, ".cct") == 0)
         extmode = 1;
     else
     {
@@ -562,7 +571,7 @@ usage:\n\
         return 3;
     }
 
-    ret = _chdir(argv[1]);
+    ret = CHDIR(argv[1]);
     if (ret != 0)
     {
         printf("could not open the directory %s\n", argv[1]);

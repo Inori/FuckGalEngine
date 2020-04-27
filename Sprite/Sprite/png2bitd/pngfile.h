@@ -1,6 +1,7 @@
 #ifndef PNGFILE_H
 #define PNGFILE_H
 #include <string>
+#include <cstring>
 #include <stdio.h>
 
 #include "zconf.h"
@@ -16,11 +17,11 @@ using namespace std;
 
 typedef struct _pic_data
 {
-	unsigned int width, height; /* 尺寸 */
-	int bit_depth;  /* 位深 */
-	int flag;   /* 一个标志，表示是否有alpha通道 */
+	unsigned int width, height; /* 灏哄 */
+	int bit_depth;  /* 浣嶆繁 */
+	int flag;   /* 涓�涓爣蹇楋紝琛ㄧず鏄惁鏈塧lpha閫氶亾 */
 
-	unsigned char *rgba; /* 图片数组 */
+	unsigned char *rgba; /* 鍥剧墖鏁扮粍 */
 } pic_data;
 
 int read_png_file(string filepath, pic_data *out);
