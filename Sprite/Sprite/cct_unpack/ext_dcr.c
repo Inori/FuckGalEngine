@@ -8,8 +8,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <direct.h>
 #include "zlib.h"
+
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 #define C2INT(a,b,c,d) ((unsigned int)((d) | (c << 8) | (b << 16) | (a << 24)))
 #define bswap32(x) (((x & 0xFF) << 24) | ((x & 0xFF00) << 8) | ((x >> 8) & 0xFF00) | ((x >> 24) & 0xFF));
@@ -480,8 +486,13 @@ usage:\n\
         return 2;
     }
 
+    #ifdef _WIN32
     _mkdir(argv[2]);
     _chdir(argv[2]);
+    #else
+    mkdir(argv[2], S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+    chdir(argv[2]);
+    #endif
 
     fread(&fsize, 1, 4, infile);
 

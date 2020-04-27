@@ -1,4 +1,3 @@
-#include <Windows.h>
 #include <string>
 
 #include "pngfile.h"
@@ -8,8 +7,8 @@ using namespace std;
 typedef unsigned char byte;
 typedef unsigned long dword;
 
-//COPY_LEN Ô½´ó£¬Êä³öµÄÑ¹ËõÎÄ¼þÔ½Ð¡
-//ÕâÀïÕâ¸öCOPY_LENµ½µ×Ó¦¸ÃÊÇ¶àÉÙÎÒÒ²Ëµ²»×¼£¬²»¹ý2ÊÇ¸ö±£ÏÕµÄÊý×Ö
+//COPY_LEN è¶Šå¤§ï¼Œè¾“å‡ºçš„åŽ‹ç¼©æ–‡ä»¶è¶Šå°
+//è¿™é‡Œè¿™ä¸ªCOPY_LENåˆ°åº•åº”è¯¥æ˜¯å¤šå°‘æˆ‘ä¹Ÿè¯´ä¸å‡†ï¼Œä¸è¿‡2æ˜¯ä¸ªä¿é™©çš„æ•°å­—
 #define COPY_LEN 0x2
 #define FLAG (COPY_LEN-1)
 
@@ -18,7 +17,7 @@ esi = src
 ebx = width
 edx = width * 3
 
-00411ACD  |> /8BCB          /MOV ECX,EBX                             ;  ×ª»»Í¨µÀÊý¾Ý
+00411ACD  |> /8BCB          /MOV ECX,EBX                             ;  è½¬æ¢é€šé“æ•°æ®
 00411ACF  |> |8A0416        |MOV AL,BYTE PTR DS:[ESI+EDX]
 00411AD2  |. |AA            |STOS BYTE PTR ES:[EDI]
 00411AD3  |. |8A045E        |MOV AL,BYTE PTR DS:[ESI+EBX*2]
@@ -175,7 +174,7 @@ bool bitd_compress(byte* dst, dword dstlen, byte *src, bool have_mod, dword mod_
 {
 
 	bool ret = false;
-	DWORD curbyte = 0, psrc = 0;
+	dword curbyte = 0, psrc = 0;
 
 	if (!have_mod)
 	{

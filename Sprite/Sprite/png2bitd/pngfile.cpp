@@ -1,14 +1,14 @@
 #include "pngfile.h"
 
 int read_png_file(string filepath, pic_data *out)
-/* ÓÃÓÚ½âÂëpngÍ¼Æ¬ */
+/* ç”¨äºŽè§£ç pngå›¾ç‰‡ */
 {
 	FILE *pic_fp;
 	pic_fp = fopen(filepath.c_str(), "rb");
-	if (pic_fp == NULL) /* ÎÄ¼þ´ò¿ªÊ§°Ü */
+	if (pic_fp == NULL) /* æ–‡ä»¶æ‰“å¼€å¤±è´¥ */
 		return -1;
 
-	/* ³õÊ¼»¯¸÷ÖÖ½á¹¹ */
+	/* åˆå§‹åŒ–å„ç§ç»“æž„ */
 	png_structp png_ptr;
 	png_infop   info_ptr;
 	char        buf[PNG_BYTES_TO_CHECK];
@@ -17,55 +17,55 @@ int read_png_file(string filepath, pic_data *out)
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	info_ptr = png_create_info_struct(png_ptr);
 
-	setjmp(png_jmpbuf(png_ptr)); // Õâ¾äºÜÖØÒª
+	setjmp(png_jmpbuf(png_ptr)); // è¿™å¥å¾ˆé‡è¦
 
 	temp = fread(buf, 1, PNG_BYTES_TO_CHECK, pic_fp);
 	temp = png_sig_cmp((png_const_bytep)buf, (png_size_t)0, PNG_BYTES_TO_CHECK);
 
-	/*¼ì²âÊÇ·ñÎªpngÎÄ¼þ*/
+	/*æ£€æµ‹æ˜¯å¦ä¸ºpngæ–‡ä»¶*/
 	if (temp != 0) return 1;
 
 	rewind(pic_fp);
-	/*¿ªÊ¼¶ÁÎÄ¼þ*/
+	/*å¼€å§‹è¯»æ–‡ä»¶*/
 	png_init_io(png_ptr, pic_fp);
-	// ¶ÁÎÄ¼þÁË
+	// è¯»æ–‡ä»¶äº†
 	png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_EXPAND, 0);
 
 	int color_type, channels;
 
-	/*»ñÈ¡¿í¶È£¬¸ß¶È£¬Î»Éî£¬ÑÕÉ«ÀàÐÍ*/
-	channels = png_get_channels(png_ptr, info_ptr); /*»ñÈ¡Í¨µÀÊý*/
+	/*èŽ·å–å®½åº¦ï¼Œé«˜åº¦ï¼Œä½æ·±ï¼Œé¢œè‰²ç±»åž‹*/
+	channels = png_get_channels(png_ptr, info_ptr); /*èŽ·å–é€šé“æ•°*/
 
-	out->bit_depth = png_get_bit_depth(png_ptr, info_ptr); /* »ñÈ¡Î»Éî */
-	color_type = png_get_color_type(png_ptr, info_ptr); /*ÑÕÉ«ÀàÐÍ*/
+	out->bit_depth = png_get_bit_depth(png_ptr, info_ptr); /* èŽ·å–ä½æ·± */
+	color_type = png_get_color_type(png_ptr, info_ptr); /*é¢œè‰²ç±»åž‹*/
 
 	int i, j;
 	int size;
-	/* row_pointersÀï±ß¾ÍÊÇrgbaÊý¾Ý */
+	/* row_pointersé‡Œè¾¹å°±æ˜¯rgbaæ•°æ® */
 	png_bytep* row_pointers;
 	row_pointers = png_get_rows(png_ptr, info_ptr);
 	out->width = png_get_image_width(png_ptr, info_ptr);
 	out->height = png_get_image_height(png_ptr, info_ptr);
 
-	size = out->width * out->height; /* ¼ÆËãÍ¼Æ¬µÄ×ÜÏñËØµãÊýÁ¿ */
+	size = out->width * out->height; /* è®¡ç®—å›¾ç‰‡çš„æ€»åƒç´ ç‚¹æ•°é‡ */
 
 	if (channels == 4 || color_type == PNG_COLOR_TYPE_RGB_ALPHA)
-	{/*Èç¹ûÊÇRGB+alphaÍ¨µÀ£¬»òÕßRGB+ÆäËü×Ö½Ú*/
-		size *= (4 * sizeof(unsigned char)); /* Ã¿¸öÏñËØµãÕ¼4¸ö×Ö½ÚÄÚ´æ */
-		out->flag = HAVE_ALPHA;    /* ±ê¼Ç */
+	{/*å¦‚æžœæ˜¯RGB+alphaé€šé“ï¼Œæˆ–è€…RGB+å…¶å®ƒå­—èŠ‚*/
+		size *= (4 * sizeof(unsigned char)); /* æ¯ä¸ªåƒç´ ç‚¹å 4ä¸ªå­—èŠ‚å†…å­˜ */
+		out->flag = HAVE_ALPHA;    /* æ ‡è®° */
 		out->rgba = (unsigned char*)malloc(size);
 		if (out->rgba == NULL)
-		{/* Èç¹û·ÖÅäÄÚ´æÊ§°Ü */
+		{/* å¦‚æžœåˆ†é…å†…å­˜å¤±è´¥ */
 			fclose(pic_fp);
-			puts("´íÎó(png):ÎÞ·¨·ÖÅä×ã¹»µÄÄÚ´æ¹©´æ´¢Êý¾Ý!");
+			puts("é”™è¯¯(png):æ— æ³•åˆ†é…è¶³å¤Ÿçš„å†…å­˜ä¾›å­˜å‚¨æ•°æ®!");
 			return 1;
 		}
 
-		temp = (4 * out->width);/* Ã¿ÐÐÓÐ4 * out->width¸ö×Ö½Ú */
+		temp = (4 * out->width);/* æ¯è¡Œæœ‰4 * out->widthä¸ªå­—èŠ‚ */
 		for (i = 0; i < out->height; i++)
 		{
 			for (j = 0; j < temp; j += 4)
-			{/* Ò»¸ö×Ö½ÚÒ»¸ö×Ö½ÚµÄ¸³Öµ */
+			{/* ä¸€ä¸ªå­—èŠ‚ä¸€ä¸ªå­—èŠ‚çš„èµ‹å€¼ */
 				out->rgba[i*temp + j] = row_pointers[i][j+2];       // red
 				out->rgba[i*temp + j + 1] = row_pointers[i][j + 1];   // green
 				out->rgba[i*temp + j + 2] = row_pointers[i][j ];   // blue
@@ -74,23 +74,23 @@ int read_png_file(string filepath, pic_data *out)
 		}
 	}
 	else if (channels == 3 || color_type == PNG_COLOR_TYPE_RGB)
-	{/* Èç¹ûÊÇRGBÍ¨µÀ */
-		size *= (3 * sizeof(unsigned char)); /* Ã¿¸öÏñËØµãÕ¼3¸ö×Ö½ÚÄÚ´æ */
-		out->flag = NO_ALPHA;    /* ±ê¼Ç */
+	{/* å¦‚æžœæ˜¯RGBé€šé“ */
+		size *= (3 * sizeof(unsigned char)); /* æ¯ä¸ªåƒç´ ç‚¹å 3ä¸ªå­—èŠ‚å†…å­˜ */
+		out->flag = NO_ALPHA;    /* æ ‡è®° */
 		out->rgba = (unsigned char*)malloc(size);
 		memset(out->rgba, 0, size);
 		if (out->rgba == NULL)
-		{/* Èç¹û·ÖÅäÄÚ´æÊ§°Ü */
+		{/* å¦‚æžœåˆ†é…å†…å­˜å¤±è´¥ */
 			fclose(pic_fp);
-			puts("´íÎó(png):ÎÞ·¨·ÖÅä×ã¹»µÄÄÚ´æ¹©´æ´¢Êý¾Ý!");
+			puts("é”™è¯¯(png):æ— æ³•åˆ†é…è¶³å¤Ÿçš„å†…å­˜ä¾›å­˜å‚¨æ•°æ®!");
 			return 1;
 		}
 
-		temp = (3 * out->width);/* Ã¿ÐÐÓÐ3 * out->width¸ö×Ö½Ú */
+		temp = (3 * out->width);/* æ¯è¡Œæœ‰3 * out->widthä¸ªå­—èŠ‚ */
 		for (i = 0; i < out->height; i++)
 		{
 			for (j = 0; j < temp; j += 3)
-			{/* Ò»¸ö×Ö½ÚÒ»¸ö×Ö½ÚµÄ¸³Öµ */
+			{/* ä¸€ä¸ªå­—èŠ‚ä¸€ä¸ªå­—èŠ‚çš„èµ‹å€¼ */
 				out->rgba[i*temp + j] = row_pointers[i][j];       // red
 				out->rgba[i*temp + j + 1] = row_pointers[i][j + 1];   // green
 				out->rgba[i*temp + j + 2] = row_pointers[i][j + 2];   // blue
@@ -99,13 +99,13 @@ int read_png_file(string filepath, pic_data *out)
 	}
 	else return 1;
 
-	/* ³·ÏúÊý¾ÝÕ¼ÓÃµÄÄÚ´æ */
+	/* æ’¤é”€æ•°æ®å ç”¨çš„å†…å­˜ */
 	png_destroy_read_struct(&png_ptr, &info_ptr, 0);
 	return 0;
 }
 
 int write_png_file(string file_name, pic_data *graph)
-/* ¹¦ÄÜ£º½«LCUI_Graph½á¹¹ÖÐµÄÊý¾ÝÐ´ÈëÖÁpngÎÄ¼þ */
+/* åŠŸèƒ½ï¼šå°†LCUI_Graphç»“æž„ä¸­çš„æ•°æ®å†™å…¥è‡³pngæ–‡ä»¶ */
 {
 	int j, i, temp;
 	png_byte color_type;
@@ -150,7 +150,7 @@ int write_png_file(string file_name, pic_data *graph)
 		printf("[write_png_file] Error during writing header");
 		return -1;
 	}
-	/* ÅÐ¶ÏÒªÐ´ÈëÖÁÎÄ¼þµÄÍ¼Æ¬Êý¾ÝÊÇ·ñÓÐÍ¸Ã÷¶È£¬À´Ñ¡ÔñÉ«²ÊÀàÐÍ */
+	/* åˆ¤æ–­è¦å†™å…¥è‡³æ–‡ä»¶çš„å›¾ç‰‡æ•°æ®æ˜¯å¦æœ‰é€æ˜Žåº¦ï¼Œæ¥é€‰æ‹©è‰²å½©ç±»åž‹ */
 	if (graph->flag == HAVE_ALPHA) color_type = PNG_COLOR_TYPE_RGB_ALPHA;
 	else color_type = PNG_COLOR_TYPE_RGB;
 
