@@ -1,11 +1,13 @@
 #include <stdio.h>
-#include <Windows.h>
-#include "cryptpp\include\modes.h"
-#include "cryptpp\include\aes.h"
-#include "cryptpp\include\filters.h"
-#include "cryptpp\include\files.h"
+#include "cryptpp/include/modes.h"
+#include "cryptpp/include/aes.h"
+#include "cryptpp/include/filters.h"
+#include "cryptpp/include/files.h"
 
 #include "zlib.h"
+
+typedef unsigned long DWORD;
+typedef unsigned char BYTE;
 
 using namespace CryptoPP;
 
